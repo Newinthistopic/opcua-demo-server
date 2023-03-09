@@ -40,7 +40,7 @@ module.exports = {
         });
         
         
-        for (var i = 0; i<14; i++){
+        for (let i = 0; i<14; i++){
             var nr = namespace3.addVariable({
             componentOf: udtEmPz,
             browseName : i.toString(),
@@ -58,51 +58,47 @@ module.exports = {
             nodeId     : "s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\""+ "[" + i + "]." + "\"rPzTemp\""
            
         }
-        )
-      
-     
-        
-        var rSet= namespace3.addVariable({
-            componentOf: rPzTemp,
-            browseName : "rSet",
-            dataType   : opcua.DataType.Float,
-            nodeId     : "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\""+ "[" + i + "]." + "\"rPzTemp\".\"rSet\"",
-            value      : {
-               get: function () {
-              console.log(serverValues);
-                   return new opcua.Variant({dataType: opcua.DataType.Float, value: serverValues[i]});
-                   
-              },
-                set: function (variant) {
-                    serverValues[i] = parseFloat(variant.value);
-                    
-                    console.log(serverValues);
-                                        return opcua.StatusCodes.Good;
-                    }
-                                     
-                }
-                        }
-        )
-        var rAct= namespace3.addVariable({
-            componentOf: rPzTemp,
-            browseName : "rAct",
-            dataType   : opcua.DataType.Float,
-            nodeId     : "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\""+ "[" + i + "]." + "\"rPzTemp\".\"rAct\"",
-            value      : {
-                get: function () {
-                    serverValues[rAct] = 20;
-                    return new opcua.Variant({dataType: opcua.DataType.Float, value: serverValues[i] });
-                    
-                },
-                set: function (variant) {
-                    
-                    serverValues[i] = parseFloat(variant.value);
-                    return opcua.StatusCodes.Good;
-                    }
-                }
+        ) 
 
+        var rSet = namespace3.addVariable({
+            componentOf: rPzTemp,
+            browseName: "rSet",
+            dataType: opcua.DataType.Float,
+            nodeId: "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\".\"rSet\"",
+            value: {
+              get: function () {
+                const nodeIdValue = this.nodeId.value;
+                return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nodeIdValue] });
+              },
+              set: function (variant) {
+              
+                const nodeIdValue = this.nodeId.value;
+                
+              serverValues[nodeIdValue] = parseFloat(variant.value);
+              console.log(`Setter-Funktion aufgerufen für rSet ${i} mit nodeId ${nodeIdValue}: ${serverValues[nodeIdValue]}`);
+                return opcua.StatusCodes.Good;
+              }
+            }
+          });
+          
+         
+  
+          var rAct = namespace3.addVariable({
+              componentOf: rPzTemp,
+              browseName: "rAct",
+              dataType: opcua.DataType.Float,
+              nodeId: "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\".\"rAct\"",
+              value: {
+                get: function () {
+                  const rSetNodeId = "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\".\"rSet\"";
+                  const rSetValue = serverValues[rSetNodeId];
+                  return new opcua.Variant({ dataType: opcua.DataType.Float, value: rSetValue });
                 }
-        )
+              }
+            });
+
+          
+          
 
      /*  var rMaLimMax=namespace3.addVariable({
           componentOf: rPzTemp,
