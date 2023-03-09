@@ -1,0 +1,7 @@
+{
+  "manufacturerName": "ACME Inc.",
+  "manufacturerId"  : "00-1239-1234",
+  "type"            : "regulated",
+  "currentValue"    : 34,
+  "unit"            : "%"
+}
