@@ -66,6 +66,7 @@ if (fs.existsSync(varConfigDir)) {
 
 
 
+        
 
 
 (async () => {
@@ -88,6 +89,7 @@ if (fs.existsSync(varConfigDir)) {
             }
         );
 
+        
         
         await server.initialize();
         if (verbose) console.log("[OK] OPC UA: Server created");

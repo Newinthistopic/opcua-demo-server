@@ -7,7 +7,7 @@ module.exports = {
        
         // create ppC_Compound_V3 object
 
-        const namespace3=addressSpace.getNamespace('http://mynamespace-3/UA/');
+        var namespace3=addressSpace.getNamespace('http://mynamespace-3/UA/');
 
 
         var ppC_Compound_V3 = namespace3.addObject({
@@ -59,46 +59,78 @@ module.exports = {
            
         }
         ) 
+        
+        var rActNodeId;
+        serverValues[rActNodeId] = 20;
+        var rAct = namespace3.addVariable({
+            componentOf: rPzTemp,
+            browseName: "rAct",
+            dataType: opcua.DataType.Float,
+            nodeId: "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\".\"rAct\"",
+            value: {
+            get: function () {
+                //console.log(`Getting value for ${this.nodeId.value}`);
+                const rActNodeId = this.nodeId.value;
+                return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rActNodeId] });
+              },
+              set: function (variant) {
+                serverValues[rActNodeId] = parseFloat(variant.value);
+                console.log(`Setter-Funktion aufgerufen für rAct mit nodeId ${this.nodeId.value}: ${rActValue}`);
+                
+                return opcua.StatusCodes.Good;
+              }
+            }
+        });
+        
 
+
+        
         var rSet = namespace3.addVariable({
             componentOf: rPzTemp,
             browseName: "rSet",
             dataType: opcua.DataType.Float,
             nodeId: "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\".\"rSet\"",
             value: {
-              get: function () {
-                const nodeIdValue = this.nodeId.value;
-                return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nodeIdValue] });
-              },
-              set: function (variant) {
-              
-                const nodeIdValue = this.nodeId.value;
-                
-              serverValues[nodeIdValue] = parseFloat(variant.value);
-              console.log(`Setter-Funktion aufgerufen für rSet ${i} mit nodeId ${nodeIdValue}: ${serverValues[nodeIdValue]}`);
-                return opcua.StatusCodes.Good;
-              }
-            }
-          });
-          
-         
-  
-          var rAct = namespace3.addVariable({
-              componentOf: rPzTemp,
-              browseName: "rAct",
-              dataType: opcua.DataType.Float,
-              nodeId: "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\".\"rAct\"",
-              value: {
                 get: function () {
-                  const rSetNodeId = "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\".\"rSet\"";
-                  const rSetValue = serverValues[rSetNodeId];
-                  return new opcua.Variant({ dataType: opcua.DataType.Float, value: rSetValue });
-                }
-              }
-            });
+                    const nodeIdValue = this.nodeId.value;
+                    return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nodeIdValue] });
+                },
+                set: function (variant) {
+                    const rSetNodeId = this.nodeId.value;
+                    serverValues[rSetNodeId] = parseFloat(variant.value);
+      
+                    // Find the corresponding rAct node and update its value
+                    rActNodeId = rSetNodeId.replace("rSet", "rAct");
+                    serverValues[rActNodeId] = serverValues[rSetNodeId];
+                    console.log(`rAct nodeId: ${rActNodeId},\n rAct Wert: ${serverValues[rActNodeId]}`);
 
-          
-          
+                    
+                    console.log(`Setter-Funktion aufgerufen für rSet  mit nodeId ${rSetNodeId}: ${serverValues[rSetNodeId]}`);
+      
+                    // Hier kann die Methode aufgerufen werden, um den Wert von rAct zu aktualisieren
+                    updateRActValue(serverValues[rActNodeId],rActNodeId);
+                    return opcua.StatusCodes.Good;
+                    
+        
+                   
+                }
+
+              
+            }
+        });
+
+
+        
+        function updateRActValue(newRSetValue,rActNodeId) {
+            // Hier kann die Logik implementiert werden, um den Wert von rAct entsprechend zu aktualisieren
+            serverValues[rActNodeId] = newRSetValue;
+            //rActValue = newRSetValue;
+            console.log(`Die Node-ID "${rActNodeId}" hat den Wert ${serverValues[rActNodeId]}.`);
+
+         //   console.log(`rAct Wert aktualisiert: ${newRSetValue}`);
+            //console.log(`rAct Wert aktualisiert: ${rActValue}`);
+          }  
+
 
      /*  var rMaLimMax=namespace3.addVariable({
           componentOf: rPzTemp,
