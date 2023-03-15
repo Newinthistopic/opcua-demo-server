@@ -1,3 +1,4 @@
+const { Interval } = require("node-opcua");
 
 
 module.exports = {
@@ -59,26 +60,32 @@ module.exports = {
            
         }
         ) 
-        
+  
+
+
+
+       
+        var initialStart=20;
         var rActNodeId;
-        serverValues[rActNodeId] = 20;
+        
         var rAct = namespace3.addVariable({
             componentOf: rPzTemp,
             browseName: "rAct",
             dataType: opcua.DataType.Float,
             nodeId: "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\".\"rAct\"",
             value: {
-            get: function () {
-                //console.log(`Getting value for ${this.nodeId.value}`);
-                const rActNodeId = this.nodeId.value;
-                return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rActNodeId] });
-              },
+                get: function () {
+                    const rActNodeId = this.nodeId.value;
+                    if (!(rActNodeId in serverValues)) {
+                      // Initialisiere rAct mit initialStart, wenn es noch keinen Wert gibt
+                      serverValues[rActNodeId] = initialStart;
+                    }
+                    return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rActNodeId] });
+                  },
               set: function (variant) {
-                serverValues[rActNodeId] = parseFloat(variant.value);
-                console.log(`Setter-Funktion aufgerufen für rAct mit nodeId ${this.nodeId.value}: ${rActValue}`);
-                
+               
                 return opcua.StatusCodes.Good;
-              }
+            }
             }
         });
         
@@ -96,41 +103,106 @@ module.exports = {
                     return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nodeIdValue] });
                 },
                 set: function (variant) {
+                    
                     const rSetNodeId = this.nodeId.value;
-                    serverValues[rSetNodeId] = parseFloat(variant.value);
-      
-                    // Find the corresponding rAct node and update its value
-                    rActNodeId = rSetNodeId.replace("rSet", "rAct");
-                    serverValues[rActNodeId] = serverValues[rSetNodeId];
-                    console.log(`rAct nodeId: ${rActNodeId},\n rAct Wert: ${serverValues[rActNodeId]}`);
+                    const SetPoint = parseFloat(variant.value);
+                    if (SetPoint >= 20) {
+                      serverValues[rSetNodeId] = SetPoint;
+                    } else {
+                      console.log("Set-point must be greater than 20.");
+                      return opcua.StatusCodes.Good;
+                    }
+                  
+                
+          
+                        // Find the corresponding rAct node and update its value
+                        rActNodeId = rSetNodeId.replace("rSet", "rAct");
+                       // serverValues[rActNodeId] = serverValues[rSetNodeId];
+                        
+    
+                        console.log(`Setter-Funktion aufgerufen für rSet mit nodeId "${rSetNodeId}": ${serverValues[rSetNodeId]}`);
+console.log(`------------------------------------`);
+console.log(`rAct nodeId:${rActNodeId}\nrAct Wert: ${serverValues[rActNodeId]}\n`);
+console.log(`********************************************\n`);
 
-                    
-                    console.log(`Setter-Funktion aufgerufen für rSet  mit nodeId ${rSetNodeId}: ${serverValues[rSetNodeId]}`);
+
+function pt1Loop(startValue, targetValue, deltaTime, k, tau, startSlope = null) {
+    let currentValue = startValue;
+    let previousValue = startValue;
+    let previousTime = Date.now();
+    let slope = startSlope;
+    const pt1Gain = k * deltaTime / tau;
+    const pt1TimeConstant = tau / deltaTime;
+    
+    if (!slope) {
+      slope = pt1Gain * (targetValue - startValue);
+    }
+    
+    const intervalId = setInterval(() => {
+      previousValue = currentValue;
+      currentValue += slope * deltaTime / 1000;
+      serverValues[rActNodeId] = currentValue;
+    
+      console.log(`Current value: ${currentValue.toFixed(2)}`);
+    
+      if (Math.abs(currentValue - targetValue) < 0.01) {
+        clearInterval(intervalId);
+        return;
+      }
+    
+      const newSetPoint = serverValues[rSetNodeId];
+      if (newSetPoint !== targetValue) {
+        targetValue = newSetPoint;
+        const currentTime = Date.now();
+        const timeDelta = currentTime - previousTime;
+        const valueDelta = currentValue - previousValue;
+        slope = valueDelta / timeDelta * 1000 / deltaTime;
+        console.log(`Slope: ${slope.toFixed(2)}`);
+        previousTime = currentTime;
+        clearInterval(intervalId);
+        pt1Loop(currentValue, targetValue, deltaTime, k, tau, 0);
+      }
       
-                    // Hier kann die Methode aufgerufen werden, um den Wert von rAct zu aktualisieren
-                    updateRActValue(serverValues[rActNodeId],rActNodeId);
-                    return opcua.StatusCodes.Good;
-                    
-        
-                   
-                }
+    }, deltaTime);
+  }
+ // Hier wird eine neue Variable previousValue verwendet, um den vorherigen Messwert zu speichern, und eine Variable previousTime, um die Zeit der vorherigen Messung zu speichern. Am Ende jeder Iteration wird die Steigung der Kurve berechnet, indem die Änderung des Messwerts durch die Änderung der Zeit dividiert wird. Die Steigung wird dann in der Konsole ausgegeben.
+  
+  
+  
+  
+  
+  
+  
+  const deltaTime = 160; // Intervallzeit in Millisekunden
+  const k = 0.2; // PT1-Gain
+  const tau = 1500; // PT1-Zeitkonstante in Millisekunden
+
+  pt1Loop(serverValues[rActNodeId], serverValues[rSetNodeId], deltaTime, k, tau);
+
+
+                       
+                        
+                        return opcua.StatusCodes.Good;
+                        
+
+                       
+                    }
 
               
             }
         });
 
-
         
-        function updateRActValue(newRSetValue,rActNodeId) {
-            // Hier kann die Logik implementiert werden, um den Wert von rAct entsprechend zu aktualisieren
-            serverValues[rActNodeId] = newRSetValue;
-            //rActValue = newRSetValue;
-            console.log(`Die Node-ID "${rActNodeId}" hat den Wert ${serverValues[rActNodeId]}.`);
+     
+          
+          
+          
+        
+        
 
-         //   console.log(`rAct Wert aktualisiert: ${newRSetValue}`);
-            //console.log(`rAct Wert aktualisiert: ${rActValue}`);
-          }  
+    
 
+ 
 
      /*  var rMaLimMax=namespace3.addVariable({
           componentOf: rPzTemp,
@@ -165,29 +237,13 @@ module.exports = {
              }
         }
 
-    }
-        )
-        var rOpMax=namespace3.addVariable({
-            componentOf: rPzTemp,
-            browseName : "rOpMax",
-            dataType   : opcua.DataType.Double,
-            nodeId     : "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\""+ "[" + i + "]." + "\"rPzTemp\".\"rOpMax\"",
-                       value      : {
-              get: function () {
-                  return new opcua.Variant({dataType: opcua.DataType.Double, value: serverValues[rOpMax]=355});
-             },
-               
-             set: function (variant) {
-                serverValues[rOpMax] = parseFloat(variant.value);
-              return opcua.StatusCodes.Good;                     
-               }
-          }
-  
-      }
-        ) 
+    }*/
+
+        
+       
 
 
-        var rOpMin=namespace3.addVariable({
+     /*   var rOpMin=namespace3.addVariable({
             componentOf: rPzTemp,
             browseName : "rOpMin",
             dataType   : opcua.DataType.Float,
@@ -202,11 +258,10 @@ module.exports = {
               return opcua.StatusCodes.Good;     
              }
 
-    }
+    }*/
 
-        }*/
+        
         
     }
-    }
-        
+}
 }
