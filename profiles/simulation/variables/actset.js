@@ -1,66 +1,71 @@
-
+const initial = require('./../../../funktionen');
 
 
 module.exports = {
+
     run: function (addressSpace, device, opcua, verbose, serverValues) {
 
-        // create ppC_Compound_V3 object
 
+        // create ppC_Compound_V3 object
+        var namespace2 = addressSpace.getNamespace('http://mynamespace-2/UA/');
         var namespace3 = addressSpace.getNamespace('http://mynamespace-3/UA/');
 
 
         var ppC_Compound_V3 = namespace3.addObject({
             organizedBy: device,
             browseName: "ppC_Compound_V3",
-            nodeId: "s=ppC_Compound_V3",
+            nodeId: "s=PLC",
             description: "The PLC instance which supports you with OPC UA functionality"
         })
 
         // create DatablocksGlobal object
-        var datablocksGlobal = namespace3.addObject({
+        var dataBlocksGlobal = namespace3.addObject({
             organizedBy: ppC_Compound_V3,
-            browseName: "DatablocksGlobal",
+            browseName: "DataBlocksGlobal",
             nodeId: "s=DatablocksGlobal"
         });
 
-        // create ZEEX_3111_Hmi object
-        var prefix = namespace3.addObject({
-            organizedBy: datablocksGlobal,
+
+
+        var ZEEX_3111_Hmi = namespace3.addObject({
+            organizedBy: dataBlocksGlobal,
             browseName: "ZEEX_3111_Hmi",
             nodeId: "s=" + "\"ZEEX_3111_Hmi\""
         });
 
+
+
+
+
+
+        //   nodeId: "s=" + "\"ZEEX_3111_Hmi\""
+
+
+
         // create udtEmPz variable undefined Datatype Equipment Module Process Zone
         var udtEmPz = namespace3.addVariable({
-            componentOf: prefix,
+            componentOf: ZEEX_3111_Hmi,
             browseName: "udtEmPz",
             dataType: opcua.DataType.Double,
             nodeId: "s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"",
         });
 
         for (let i = 0; i < 14; i++) {
-            var dwStatNodeId;
+
             var nr = namespace3.addVariable({
                 componentOf: udtEmPz,
                 browseName: i.toString(),
                 dataType: opcua.DataType.Double,
                 nodeId: "s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]",
-
-
-            }
-            )
+            })
 
             var rPzTemp = namespace3.addVariable({
                 componentOf: nr,
                 browseName: "rPzTemp",
-                dataType: opcua.DataType.String,
-                nodeId: "s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\""
+                dataType: opcua.DataType.Float,
+                nodeId: "s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\"",
 
-            }
-            )
-
-            var initialStart = 20;
-            var rActNodeId;
+            })
 
             var rAct = namespace3.addVariable({
                 componentOf: rPzTemp,
@@ -70,18 +75,28 @@ module.exports = {
                 value: {
                     get: function () {
                         const rActNodeId = this.nodeId.value;
-                        if (!(rActNodeId in serverValues)) {
-                            // Initialisiere rAct mit initialStart, wenn es noch keinen Wert gibt
-                            serverValues[rActNodeId] = initialStart;
-                        }
+                        initial.initialstartrAct(i, rActNodeId, serverValues);
                         return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rActNodeId] });
                     },
                     set: function (variant) {
-
                         return opcua.StatusCodes.Good;
                     }
                 }
-            });
+            })
+
+
+            function get_rActValue() {
+                const rActNodeId = this.nodeId.value;
+                initial.initialstartrAct(i, rActNodeId, serverValues);
+
+                return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rActNodeId] });
+            }
+
+            // Definieren Sie die set-Funktion separat
+            function set_rActValue(variant) {
+                return opcua.StatusCodes.Good;
+            }
+
 
 
             var rSet = namespace3.addVariable({
@@ -101,9 +116,6 @@ module.exports = {
                         serverValues[rSetNodeId] = parseFloat(variant.value);
 
 
-
-
-
                         const rActNodeId = rSetNodeId.replace("rSet", "rAct");
 
 
@@ -112,11 +124,6 @@ module.exports = {
                         console.log(`------------------------------------`);
                         console.log(`rAct nodeId:${rActNodeId}\nrAct Wert: ${serverValues[rActNodeId]}\n`);
                         console.log(`********************************************\n`);
-                        if (serverValues[rSetNodeId] > serverValues[rActNodeId]) {
-                            rampUpToSetPoint(rActNodeId, rSetNodeId, 1000);
-                        } else {
-                            rampDownToSetPoint(rActNodeId, rSetNodeId, 1000);
-                        }
 
 
                         return opcua.StatusCodes.Good;
@@ -124,60 +131,6 @@ module.exports = {
                 }
 
             });
-
-            function rampUpToSetPoint(rActNodeId, rSetNodeId, time) {
-                console.log("Starte die Funktion rampUpToSetPoint");
-                const T = time;
-                const startValue = serverValues[rActNodeId];
-                const endValue = serverValues[rSetNodeId];
-                const step = (endValue - startValue) / (T / 88);
-                let currentValue = startValue;
-                var dwStatNodeId = rSetNodeId.replace("rSet", "dwStat");
-                serverValues[dwStatNodeId] = 4194304;
-                const interval = setInterval(() => {
-                    currentValue += step;
-                    if (currentValue >= endValue) {
-
-                        currentValue = endValue;
-                        serverValues[dwStatNodeId] = 0
-                        clearInterval(interval);
-                    }
-                    if (currentValue < 20) { // Verhindern, dass der Wert unter 20 fällt
-                        currentValue = 20;
-                        clearInterval(interval);
-                    }
-                    serverValues[rActNodeId] = currentValue;
-
-                    console.log("Current Value:", currentValue);
-                }, 1200);
-            }
-
-            function rampDownToSetPoint(rActNodeId, rSetNodeId, time) {
-                console.log("Starte die Funktion rampDownToSetPoint");
-                const T = time;
-                const startValue = serverValues[rActNodeId];
-                const endValue = serverValues[rSetNodeId];
-                const step = (startValue - endValue) / (T / 100);
-                let currentValue = startValue;
-
-
-                const interval = setInterval(() => {
-                    currentValue -= step;
-                    if (currentValue <= endValue) {
-
-                        currentValue = endValue;
-                        clearInterval(interval);
-                    }
-                    if (currentValue < 20) { // Verhindern, dass der Wert unter 20 fällt
-                        currentValue = 20;
-                        clearInterval(interval);
-                    }
-                    serverValues[rActNodeId] = currentValue;
-                    console.log("Current Value:", currentValue);
-                }, 1500);
-            }
-
-
 
 
             var rOpMin = namespace3.addVariable({
@@ -188,6 +141,8 @@ module.exports = {
                 value: {
                     get: function () {
                         return new opcua.Variant({ dataType: opcua.DataType.Float, value: 0 });
+                        // 
+
                     },
 
                     set: function (variant) {
@@ -204,7 +159,10 @@ module.exports = {
                 nodeId: "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\".\"rOpMax\"",
                 value: {
                     get: function () {
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: 311 });
+                        const rOpMaxNodeId = this.nodeId.value;
+                        initial.initialstartrOpMax(i, rOpMaxNodeId, serverValues);
+                        //  console.log(`Node-ID von rOpMax: ${rOpMaxNodeId}`);
+                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rOpMaxNodeId] });
                     },
 
                     set: function (variant) {
@@ -215,101 +173,13 @@ module.exports = {
                 }
 
             })
-            /*
-            
-            [0]  - Module exists
-               [1]  - Module inactive
-               [2]  - (not used)
-               [3]  - HMI control of module enabled
-               [4]  - (not used)
-               [5]  - (not used)
-               [6]  - Tolerance monitoring max max limit active
-               [7]  - Tolerance monitoring max  limit active
-               [8]  - Tolerance monitoring min limit active
-               [9]  - Tolerance monitoring min min limit active
-               [10] - Actual Value exists
-              *[11] - Set point value exists
-               [12] - Recipe value exists
-              *[13] - Change of set point enabled
-              *[14] - Tolerance values are relative
-               [15] - Tolerance monitoring active
-              *[16] - Out of tolerance max max
-              *[17] - Out of tolerance max
-              *[18] - Out of tolerance min
-              *[19] - Out of tolerance min min
-               [20] - Module simulation mode active
-               [21] - (not used)
-              *[22] - Value increasing
-              *[23] - Value decreasing
-               [24] - (not used)
-               [25] - (not used)
-               [26] - (not used)
-               [27] - Module interlock active
-               [28] - Module info active
-               [29] - Module warning active
-               [30] - Module alarm active
-               [31] - Module hardware fault active*/
-
-            var dwStat = namespace3.addVariable({
-                componentOf: nr,
-                browseName: "dwStat",
-                dataType: opcua.DataType.Float,
-                nodeId: "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\".\"dwStat\"",
-                value: {
-                    get: function () {
-                        const dwStatNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[dwStatNodeId] });
-                    },
-
-                    set: function (variant) {
-                        // do nothing
-                    }
-                }
-            })
-
-            /************************* */
-            //Experts Settings//
-
-            //In der HMI Tolerance H //
-            /*  var rSetTolMax = namespace3.addVariable({
-                  componentOf: rPzTemp,
-                  browseName: "rSetTolMax",
-                  dataType: opcua.DataType.Float,
-                  nodeId: "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]\".rTempH.Set\"",
-                  get: function () {
-                      //  const  rSetTo|MaxMaxNodeId = this.nodeId.value;
-                          return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rSetTolMax]   });
-                      },
-  
-                      set: function (variant) {
-                         
-                      serverValues[rSetTolMax] = parseFloat(variant.value);
-                          
-                      }
-              })*/
 
 
+            /******************************************************************* */
+            /*********************************************************************/
+            // Extruder ==> More ==> Experts Settings ==> Prozess Zones / Parameter //
 
-            /*  var rSetTolMaxMax = namespace3.addVariable({
-                  componentOf: rPzTemp,
-                  browseName: "rSetTolMaxMax",
-                  dataType: opcua.DataType.Float,
-                  nodeId: "ns=3;s=" + "\"ZEEX_3111_Parameter\".\"udtEmPz\"" + "[" + i + "]."+ "\"rTempHH.Set\"",
-                  value: {
-                      get: function () {
-                          const nodeIdValue = this.nodeId.value;
-  
-                          return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nodeIdValue] });
-                      },
-                      set: function (variant) {
-  
-                          const rSetTolMaxMaxtNodeId = this.nodeId.value;
-                          serverValues[rSetTolMaxMaxtNodeId] = parseFloat(variant.value);
-                          
-                      }
-                  }
-              })*/
-            //Tolerance H
+            //Tolerance H Setten
             var rSetTolH = namespace3.addVariable({
                 componentOf: rPzTemp,
                 browseName: "rSetTolH",
@@ -317,20 +187,34 @@ module.exports = {
                 nodeId: "ns=3;s=" + "\"ZEEX_3111_Parameter\".\"udtEmPz\"" + "[" + i + "]" + ".\"rTempTolH\".\"Set\"",
                 value: {
                     get: function () {
-                        const rSetTolHNodeId = this.nodeId.value;
-
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rSetTolHNodeId] });
+                        const rSetTolNodeId = this.nodeId.value;
+                        initial.initialstartrSetTolHNodeId(i, rSetTolNodeId, serverValues);
+                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rSetTolNodeId] });
                     },
                     set: function (variant) {
 
                         const rSetTolHNodeId = this.nodeId.value;
+
                         serverValues[rSetTolHNodeId] = parseFloat(variant.value);
+
+                        console.log(`Setter-Funktion aufgerufen für rSetTolH (Tolerance) mit nodeId "${rSetTolHNodeId}": ${serverValues[rSetTolHNodeId]}`);
+                        console.log(`------------------------------------`);
+
+                        const neueNodeId = rSetTolHNodeId.replace("Set", "Min");
+                        //Replace Funktion wurde hier zwei mal angewendet, zuerst Set durch min tauschen und dann rTempTolH auf rTempTolHH
+                        const rSetTolHHMinNodeId = neueNodeId.replace("rTempTolH", "rTempTolHH");
+                        serverValues[rSetTolHHMinNodeId] = serverValues[rSetTolHNodeId]
+                        console.log(`rSetTolHHMin nodeId:${rSetTolHHMinNodeId}\nrSetTolHHMin Wert: ${serverValues[rSetTolHHMinNodeId]}\n`);
+
+                        // serverValues[rActNodeId] = serverValues[rSetNodeId];
+
+
                         return opcua.StatusCodes.Good;
 
                     }
                 }
             })
-            //Tolerance HH
+            //Tolerance HH Setten
             var rSetTolHH = namespace3.addVariable({
                 componentOf: rPzTemp,
                 browseName: "rSetTolHH",
@@ -340,18 +224,37 @@ module.exports = {
                     get: function () {
                         const rSetTolHHNodeId = this.nodeId.value;
 
+                        initial.initialstartrSetTolHHNodeId(i, rSetTolHHNodeId, serverValues);
+
+
+                        const rSetTolHHValue = serverValues[rSetTolHHNodeId];
+                        const rSetTolHNodeId = rSetTolHHNodeId.replace(".\"Set\"", ".\"Min\"");
+                        const rSetTolHValue = serverValues[rSetTolHNodeId];
+
+                        if (rSetTolHHValue < rSetTolHValue) {
+                            serverValues[rSetTolHHNodeId] = rSetTolHValue;
+                            console.log(`Setter-Funktion aufgerufen für rSetTolHH (Tolerance) mit nodeId "${rSetTolHHNodeId}": ${serverValues[rSetTolHHNodeId]}`);
+                            console.log(`------------------------------------`);
+                            console.log(`rSetTolHH wurde automatisch auf den Wert von rSetTolH gesetzt: ${serverValues[rSetTolHHNodeId]}\n`);
+                        }
                         return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rSetTolHHNodeId] });
                     },
                     set: function (variant) {
 
                         const rSetTolHHNodeId = this.nodeId.value;
                         serverValues[rSetTolHHNodeId] = parseFloat(variant.value);
+                        console.log(`Setter-Funktion aufgerufen für rSetTolHH (Tolerance) mit nodeId "${rSetTolHHNodeId}": ${serverValues[rSetTolHHNodeId]}`);
+                        console.log(`------------------------------------`);
+
+
+
                         return opcua.StatusCodes.Good;
 
                     }
                 }
             })
-            //Tolerance H min
+
+            //Tolerance H min numpad
             var rSetTolHMin = namespace3.addVariable({
                 componentOf: rPzTemp,
                 browseName: "rSetTolHMin",
@@ -360,8 +263,8 @@ module.exports = {
                 value: {
                     get: function () {
                         const rSetTolHMinNodeId = this.nodeId.value;
-
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rSetTolHMinNodeId] = 11 });
+                        initial.initialstartrSetTolHMinNodeId(i, rSetTolHMinNodeId, serverValues);
+                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rSetTolHMinNodeId] });
                     },
                     set: function (variant) {
 
@@ -371,7 +274,7 @@ module.exports = {
                 }
             })
 
-            //Tolerance  H max
+            //Tolerance  H max numpad
             var rSetTolHMax = namespace3.addVariable({
                 componentOf: rPzTemp,
                 browseName: "rSetTolHMax",
@@ -380,19 +283,19 @@ module.exports = {
                 value: {
                     get: function () {
                         const rSetTolHMaxNodeId = this.nodeId.value;
-
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rSetTolHMaxNodeId] = 22 });
+                        initial.initialstartrSetTolHMaxNodeId(i, rSetTolHMaxNodeId, serverValues);
+                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rSetTolHMaxNodeId] });
+                        //Der Wert für H max numpad ist konstant bei 10
                     },
                     set: function (variant) {
-
-                        //do nothing
+                        // do nothing
 
                     }
                 }
             })
 
 
-            //Tolerance HH min Numpad
+            //Tolerance HH min numpad
             var rSetTolHHMin = namespace3.addVariable({
                 componentOf: nr,
                 browseName: "rSetTolHHMin",
@@ -400,9 +303,9 @@ module.exports = {
                 nodeId: "ns=3;s=" + "\"ZEEX_3111_Parameter\".\"udtEmPz\"" + "[" + i + "]" + ".\"rTempTolHH\".\"Min\"",
                 value: {
                     get: function () {
-                        const rSetTolHHMinNodeId = this.nodeId.value;
-
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rSetTolHHMinNodeId] = 45 });
+                        const rSetTolHNodeId = this.nodeId.value;
+                        initial.initialstartrSetTolHHMinNodeId(i, rSetTolHHMin, serverValues);
+                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rSetTolHNodeId] });
                     },
                     set: function (variant) {
 
@@ -412,7 +315,7 @@ module.exports = {
                 }
             })
 
-            //Tolerance  HH max fürs Numpad
+            //Tolerance  HH max numpad
             var rSetTolHHMax = namespace3.addVariable({
                 componentOf: nr,
                 browseName: "rSetTolHHMax",
@@ -421,18 +324,17 @@ module.exports = {
                 value: {
                     get: function () {
                         const rSetTolHHMaxNodeId = this.nodeId.value;
-
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rSetTolHHMaxNodeId] = 78 });
+                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rSetTolHHMaxNodeId] = 20 });
+                        //Der Wert für HH max numpad ist konstant und liegt bei 20
                     },
                     set: function (variant) {
-
                         //do nothing
-
                     }
                 }
             })
 
-            //Warning H
+            //Warning H setten
+            // Warning H setten beeinflusst den max numpad Wert von op max, den Max Wert beim Numpad Setten Bereucg Plastification
             var WarningH = namespace3.addVariable({
                 componentOf: nr,
                 browseName: "WarningH",
@@ -441,18 +343,72 @@ module.exports = {
                 value: {
                     get: function () {
                         const WarningHNodeId = this.nodeId.value;
-
+                        initial.initialstartWarningH(i, WarningHNodeId, serverValues);
                         return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[WarningHNodeId] });
                     },
                     set: function (variant) {
-
                         const WarningHNodeId = this.nodeId.value;
-                        serverValues[WarningHNodeId] = parseFloat(variant.value);
-                        return opcua.StatusCodes.Good;
 
+                        serverValues[WarningHNodeId] = parseFloat(variant.value);
+
+                        console.log(`Setter-Funktion aufgerufen für WarningH mit nodeId "${WarningHNodeId}": ${serverValues[WarningHNodeId]}`);
+                        console.log(`------------------------------------`);
+                        const neueNodeIdAlarmHHMin = WarningHNodeId.replace("Set", "Min");
+                        //Replace Funktion wurde hier zwei mal angewendet, zuerst Set durch min tauschen und dann rTempTolH auf rTempTolHH
+                        const AlarmHHMinNodeId = neueNodeIdAlarmHHMin.replace("rTempH", "rTempHH");
+                        serverValues[AlarmHHMinNodeId] = serverValues[WarningHNodeId];
+
+                        console.log(`AlarmHHMin nodeId:${AlarmHHMinNodeId}\nAlarmHHMin Wert: ${serverValues[AlarmHHMinNodeId]}\n`);
+                        // serverValues[rActNodeId] = serverValues[rSetNodeId];
+
+                        const rOpMaxNodeId = WarningHNodeId.replace("ZEEX_3111_Parameter", "ZEEX_3111_Hmi")
+                            .replace("rTempH", "rPzTemp")
+                            .replace("Set", "rOpMax");
+
+                        serverValues[rOpMaxNodeId] = serverValues[WarningHNodeId];
+
+                        console.log(`rOpMax nodeId: ${rOpMaxNodeId}`);
+                        console.log(`serverValues[${rOpMaxNodeId}]: ${serverValues[rOpMaxNodeId]}`);
+                        return opcua.StatusCodes.Good;
                     }
                 }
             })
+
+
+            //Alarm HH Setten
+            var AlarmHH = namespace3.addVariable({
+                componentOf: nr,
+                browseName: "AlarmHH",
+                dataType: opcua.DataType.Float,
+                nodeId: "ns=3;s=" + "\"ZEEX_3111_Parameter\".\"udtEmPz\"" + "[" + i + "]" + ".\"rTempHH\".\"Set\"",
+                value: {
+                    get: function () {
+                        const AlarmHHNodeId = this.nodeId.value;
+
+                        initial.initialstartAlarmHH(i, AlarmHHNodeId, serverValues);
+
+
+                        const AlarmHHValue = serverValues[AlarmHHNodeId];
+                        const WarningHNodeId = AlarmHHNodeId.replace(".\"Set\"", ".\"Min\"");
+                        const WarningHValue = serverValues[WarningHNodeId];
+
+                        if (AlarmHHValue < WarningHValue) {
+                            serverValues[AlarmHHNodeId] = WarningHValue;
+                            console.log(`Setter-Funktion aufgerufen für AlarmHH mit nodeId "${AlarmHHNodeId}": ${serverValues[AlarmHHNodeId]}`);
+                            console.log(`------------------------------------`);
+                            console.log(`AlarmHH wurde automatisch auf den Wert von Warning gesetzt: ${serverValues[WarningHNodeId]}\n`);
+                        }
+                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[AlarmHHNodeId] });
+                    },
+                    set: function (variant) {
+
+                        const AlarmHHNodeId = this.nodeId.value;
+                        serverValues[AlarmHHNodeId] = parseFloat(variant.value);
+                        return opcua.StatusCodes.Good;
+                    }
+                }
+            })
+
 
             //Warning H min im Numpad
             var WarningHMin = namespace3.addVariable({
@@ -463,17 +419,16 @@ module.exports = {
                 value: {
                     get: function () {
                         const WarningHMinNodeId = this.nodeId.value;
-
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[WarningHMinNodeId]=1 });
+                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[WarningHMinNodeId] = 0 });
+                        // Der Wert für Warning H min im numpad ist konstant und liegt bei 0
                     },
                     set: function (variant) {
                         //do nothing
-
                     }
                 }
             })
 
- //Warning H max im Numpad
+            //Warning H max im Numpad
             var WarningHMax = namespace3.addVariable({
                 componentOf: nr,
                 browseName: "WarningHMax",
@@ -482,44 +437,16 @@ module.exports = {
                 value: {
                     get: function () {
                         const WarningHMaxNodeId = this.nodeId.value;
-
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[WarningHMaxNodeId]=3 });
+                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[WarningHMaxNodeId] = 1000 });
+                        // Der Wert für Warning H max im numpad ist konstant und liegt bei 1000
                     },
                     set: function (variant) {
-
                         //do nothing
-
                     }
                 }
             })
 
-
-
-
-            var AlarmHH = namespace3.addVariable({
-                componentOf: nr,
-                browseName: "AlarmHH",
-                dataType: opcua.DataType.Float,
-                nodeId: "ns=3;s=" + "\"ZEEX_3111_Parameter\".\"udtEmPz\"" + "[" + i + "]" + ".\"rTempHH\".\"Set\"",
-                value: {
-                    get: function () {
-                        const AlarmHHNodeId = this.nodeId.value;
-
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[AlarmHHNodeId] });
-                    },
-                    set: function (variant) {
-
-                        const AlarmHHNodeId = this.nodeId.value;
-                        serverValues[AlarmHHNodeId] = parseFloat(variant.value);
-                        return opcua.StatusCodes.Good;
-
-                    }
-                }
-            })
-
-           
-
-            // AlarmHH min fürs Numpad
+            // AlarmHH min  Numpad
             var AlarmHHMin = namespace3.addVariable({
                 componentOf: nr,
                 browseName: "AlarmHHMin",
@@ -529,18 +456,16 @@ module.exports = {
                     get: function () {
                         const AlarmHHMinNodeId = this.nodeId.value;
 
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[AlarmHHMinNodeId]=21 });
+                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[AlarmHHMinNodeId] });
                     },
                     set: function (variant) {
 
-                      //do nothing
-
+                        //do nothing
                     }
                 }
             })
 
-
- // AlarmHH max fürs Numpad
+            // AlarmHH max numpad
             var AlarmHHMax = namespace3.addVariable({
                 componentOf: nr,
                 browseName: "AlarmHHMax",
@@ -550,20 +475,18 @@ module.exports = {
                     get: function () {
                         const AlarmHHMaxNodeId = this.nodeId.value;
 
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[AlarmHHMaxNodeId ]=26 });
+                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[AlarmHHMaxNodeId] = 1000 });
+                        // Der Wert für AlarmHH max im numpad ist konstant und liegt bei 1000
                     },
                     set: function (variant) {
-//do nothing
-                        
-
+                        //do nothing
                     }
                 }
             })
 
         }
 
+
     }
+
 }
-
-
-

@@ -111,53 +111,46 @@ if (fs.existsSync(varConfigDir)) {
 
         module.exports = {
 
-             namespaceUri2 ,
-             namespace2 ,
-             namespaceIndex3 ,
+             namespaceUri2: namespaceUri2 ,
+             namespace2: namespace2 ,
+             namespaceIndex3: namespaceIndex3 ,
     
-            namespaceUri3 ,
-             namespace3 ,
-             namespaceIndex4 ,
+            namespaceUri3: namespaceUri3,
+             namespace3: namespace3  ,
+             namespaceIndex4 : namespaceIndex4
     
         };
-        
+        const deviceNodeId = "ns=2;s=5001"
     
-        const device = namespace.addObject(
+        const device = namespace2.addObject(
             {
                 organizedBy: addressSpace.rootFolder.objects,
-                browseName : config.opcua.browseName
+                browseName : config.opcua.browseName,
+                nodeId: deviceNodeId
             }
         );
-            var testObject = namespace3.addObject({
-            organizedBy: device,
-            browseName: "TestObject",
-            dataType   : opcua.DataType.Double,
-            nodeID: "ns=3;s=PLC"
-            });  
+          
         
-            /*var testtest = namespace2.addVariable({
-            organizedBy: device,
-            browseName: "DatablocksGlobal34343",
-            dataType   : opcua.DataType.Double,
-            //nodeId: "ns=2;s=DatablocksGlobalsdsfsfs"
-        });*/
+        
 
         
 
         /*****************/
         /*** VARIABLES ***/
         /*****************/
+        
+        
         if (varFiles.length) {
             if (verbose) console.log("[..] OPC UA: Creating variables from " + varFiles.length + ' external files');
             varFiles.forEach(function (file) {
-                var module            = require(profileDir + '/variables/' + file);
-                var varName           = file.replace(/\.js$/);
+                var module = require(profileDir + '/variables/' + file);
+                var varName = file.replace(/\.js$/);
                 serverValues[varName] = module.run(addressSpace, device, opcua, verbose, serverValues);
             });
             if (verbose) console.log("[OK] OPC UA: Variables created");
         }
         
-        
+
            
         /********************/
         /*** START SERVER ***/
