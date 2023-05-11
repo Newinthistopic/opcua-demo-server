@@ -1,4 +1,4 @@
-const initial = require('./../../../funktionen');
+const initial = require('../../../funktionen');
 
 module.exports = {
 

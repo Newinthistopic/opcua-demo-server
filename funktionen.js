@@ -1,251 +1,114 @@
 //*****InitialStatus****/
 
-function initialstartrOpMax(i, nodeId, serverValues) {
-  var rOpMaxNodeIdInitial = [];
-  rOpMaxNodeIdInitial[i] = nodeId;
-  // console.log(`Derzeitige NodeId ${i}: ${rOpMaxNodeIdInitial[i]}`);
 
-  if (!(nodeId in serverValues)) {
-    serverValues[rOpMaxNodeIdInitial[0]] = 0
-    serverValues[rOpMaxNodeIdInitial[1]] = 100;
-    serverValues[rOpMaxNodeIdInitial[2]] = 300;
-    serverValues[rOpMaxNodeIdInitial[3]] = 305;
-    serverValues[rOpMaxNodeIdInitial[4]] = 310;
-    serverValues[rOpMaxNodeIdInitial[5]] = 320;
-    serverValues[rOpMaxNodeIdInitial[6]] = 330;
-    serverValues[rOpMaxNodeIdInitial[7]] = 340;
-    serverValues[rOpMaxNodeIdInitial[8]] = 350;
-    serverValues[rOpMaxNodeIdInitial[9]] = 360;
-    serverValues[rOpMaxNodeIdInitial[10]] = 370;
-    serverValues[rOpMaxNodeIdInitial[11]] = 380;
-    serverValues[rOpMaxNodeIdInitial[12]] = 390;
-    serverValues[rOpMaxNodeIdInitial[12]] = 391;
-    serverValues[rOpMaxNodeIdInitial[13]] = 392;
-    serverValues[nodeId] = serverValues[rOpMaxNodeIdInitial[i]];
-  }
-}
-  
 
-function initialstartrAct(i, nodeId, serverValues) {
-  var rActNodeIdInitial = [];
-  rActNodeIdInitial[i] = nodeId;
-  // console.log(`Derzeitige NodeId ${i}: ${rActNodeIdInitial[i]}`);
+function createInitialStatusFunction(functionName, initialValue, variableName, customValues = {}) {
+  return {
+    [functionName]: function (i, nodeId, serverValues) {
+      var nodeIdInitial = [];
+      nodeIdInitial[i] = nodeId;
 
-  if (!(nodeId in serverValues)) {
-    serverValues[rActNodeIdInitial[0]] = 0
-    serverValues[rActNodeIdInitial[1]] = 20;
-    serverValues[rActNodeIdInitial[2]] = 20;
-    serverValues[rActNodeIdInitial[3]] = 21;
-    serverValues[rActNodeIdInitial[4]] = 22;
-    serverValues[rActNodeIdInitial[5]] = 20;
-    serverValues[rActNodeIdInitial[6]] = 19;
-    serverValues[rActNodeIdInitial[7]] = 20;
-    serverValues[rActNodeIdInitial[8]] = 20;
-    serverValues[rActNodeIdInitial[9]] = 21;
-    serverValues[rActNodeIdInitial[10]] = 22;
-    serverValues[rActNodeIdInitial[11]] = 20;
-    serverValues[rActNodeIdInitial[12]] = 20;
-    serverValues[rActNodeIdInitial[12]] = 20;
-    serverValues[rActNodeIdInitial[13]] = 21;
-    serverValues[nodeId] = serverValues[rActNodeIdInitial[i]];
-  }
+      if (!(nodeId in serverValues)) {
+        for (let index = 0; index <= 13; index++) {
+          serverValues[nodeIdInitial[index]] = initialValue;
+        }
+
+        // Setze benutzerdefinierte Werte für bestimmte Indizes
+        for (const [index, value] of Object.entries(customValues)) {
+          serverValues[nodeIdInitial[index]] = value;
+        }
+
+        serverValues[nodeId] = serverValues[nodeIdInitial[i]];
+      }
+    },
+  };
 }
 
-function initialstartWarningH(i, nodeId, serverValues) {
-  var WarningHNodeIdInitial = [];
-  WarningHNodeIdInitial[i] = nodeId;
-  // console.log(`Derzeitige NodeId ${i}: ${WarningHNodeIdInitial[i]}`);
+const rOpMaxObjekt = createInitialStatusFunction("rOpMax", 300, "rOpMax", { 1: 100, 2: 305, 6: 306, 7: 355 });
 
-  if (!(nodeId in serverValues)) {
-    serverValues[WarningHNodeIdInitial[0]] = 0
-    serverValues[WarningHNodeIdInitial[1]] = 100;
-    serverValues[WarningHNodeIdInitial[2]] = 300;
-    serverValues[WarningHNodeIdInitial[3]] = 305;
-    serverValues[WarningHNodeIdInitial[4]] = 310;
-    serverValues[WarningHNodeIdInitial[5]] = 320;
-    serverValues[WarningHNodeIdInitial[6]] = 330;
-    serverValues[WarningHNodeIdInitial[7]] = 340;
-    serverValues[WarningHNodeIdInitial[8]] = 350;
-    serverValues[WarningHNodeIdInitial[9]] = 360;
-    serverValues[WarningHNodeIdInitial[10]] = 370;
-    serverValues[WarningHNodeIdInitial[11]] = 380;
-    serverValues[WarningHNodeIdInitial[12]] = 390;
-    serverValues[WarningHNodeIdInitial[12]] = 391;
-    serverValues[WarningHNodeIdInitial[13]] = 392;
-    serverValues[nodeId] = serverValues[WarningHNodeIdInitial[i]];
-  }
-}
+const rActObjekt = createInitialStatusFunction("rAct", 20, "rAct", { 1: 21, 2: 23, 6: 19 });
 
-function initialstartAlarmHH(i, nodeId, serverValues) {
-  var AlarmHHNodeIdInitial = [];
-  AlarmHHNodeIdInitial[i] = nodeId;
-  // console.log(`Derzeitige NodeId ${i}: ${AlarmHHNodeIdInitial[i]}`);
+const rTempHSetObjekt = createInitialStatusFunction("rTempHSet", 300, "rTempHSet", { 2: 305, 4: 356, 6: 366 });
 
-  if (!(nodeId in serverValues)) {
-    serverValues[AlarmHHNodeIdInitial[0]] = 0
-    serverValues[AlarmHHNodeIdInitial[1]] = 200;
-    serverValues[AlarmHHNodeIdInitial[2]] = 450;
-    serverValues[AlarmHHNodeIdInitial[3]] = 450;
-    serverValues[AlarmHHNodeIdInitial[4]] = 450;
-    serverValues[AlarmHHNodeIdInitial[5]] = 390;
-    serverValues[AlarmHHNodeIdInitial[6]] = 399;
-    serverValues[AlarmHHNodeIdInitial[7]] = 399;
-    serverValues[AlarmHHNodeIdInitial[8]] = 399;
-    serverValues[AlarmHHNodeIdInitial[9]] = 400;
-    serverValues[AlarmHHNodeIdInitial[10]] = 450;
-    serverValues[AlarmHHNodeIdInitial[11]] = 784;
-    serverValues[AlarmHHNodeIdInitial[12]] = 698;
-    serverValues[AlarmHHNodeIdInitial[12]] = 599;
-    serverValues[AlarmHHNodeIdInitial[13]] = 640;
-    serverValues[nodeId] = serverValues[AlarmHHNodeIdInitial[i]];
-  }
-}
+const TempHHSetObjekt = createInitialStatusFunction("TempHHSet", 450, "TempHSet", { 2: 305, 4: 399, 6: 370, 10: 450 });
 
-function initialstartrSetTolHNodeId(i, nodeId, serverValues) {
+const rSetTolHSetObjekt = createInitialStatusFunction("rSetTolHSet", 5, "TrSetTolHSet", { 2: 6, 4: 7, 6: 370, 10: 6, 11: 6 });
 
-  var rSetTolHNodeIdInitial = [];
-  rSetTolHNodeIdInitial[i] = nodeId;
-  //console.log(`Derzeitige NodeId ${i}: ${rSetTolHNodeIdInitial[i]}`);
+const rSetTolHMaxObjekt = createInitialStatusFunction("rSetTolHMax", 10, "TrSetTolHMax", { 2: 11, 4: 12, 6: 8, 10: 9, 11: 9 });
 
-  if (!(nodeId in serverValues)) {
+const rSetTolHMinObjekt = createInitialStatusFunction("rSetTolHMin", 5, "rSetTolHMin", { 2: 6, 4: 6, 6: 4, 10: 6, 11: 6 });
 
-    serverValues[rSetTolHNodeIdInitial[0]] = 0
-    serverValues[rSetTolHNodeIdInitial[1]] = 5
-    serverValues[rSetTolHNodeIdInitial[2]] = 6
-    serverValues[rSetTolHNodeIdInitial[3]] = 5
-    serverValues[rSetTolHNodeIdInitial[4]] = 6
-    serverValues[rSetTolHNodeIdInitial[5]] = 6
-    serverValues[rSetTolHNodeIdInitial[6]] = 5
-    serverValues[rSetTolHNodeIdInitial[7]] = 6
-    serverValues[rSetTolHNodeIdInitial[8]] = 7
-    serverValues[rSetTolHNodeIdInitial[9]] = 8
-    serverValues[rSetTolHNodeIdInitial[10]] = 7
-    serverValues[rSetTolHNodeIdInitial[11]] = 5
-    serverValues[rSetTolHNodeIdInitial[12]] = 5
-    serverValues[rSetTolHNodeIdInitial[13]] = 8
-    serverValues[nodeId] = serverValues[rSetTolHNodeIdInitial[i]];
+const rSetTolHHSetObjekt = createInitialStatusFunction("rSetTolHHSet", 10, "rSetTolHHSet", { 2: 11, 4: 12, 6: 13, 10: 14, 11: 15 });
 
-  }
-}
+const rSetTolHHMaxObjekt = createInitialStatusFunction("rSetTolHHMax", 20, "rSetTolHHMax", { 2: 21 });
 
+const rSetTolHHMinObjekt = createInitialStatusFunction("rSetTolHHMin", 5, "rSetTolHHMin", { 2: 6, 4: 6, 6: 4, 10: 6, 11: 6 });
 
+const rTempCooldownSetObjekt = createInitialStatusFunction("rTempCooldownSet", 10, "rTempCooldownSet", {});
 
+const rTempCooldownMaxObjekt = createInitialStatusFunction("rTempCooldownMax", 10, "rTempCooldownMax", {});
 
-function initialstartrSetTolHMaxNodeId(i, nodeId, serverValues) {
+const rTempCooldownMinObjekt = createInitialStatusFunction("rTempCooldownMin", 6, "rTempCooldownMin", {});
 
-  var rSetTolHMaxNodeIdInitial = [];
-  rSetTolHMaxNodeIdInitial[i] = nodeId;
-  //console.log(`Derzeitige NodeId ${i}: ${rSetTolHMaxNodeIdInitial[i]}`);
+const rTempRampFactorSetObjekt = createInitialStatusFunction("rTempRampFactorSet", 15, "rTempRampFactorSet", {});
 
-  
+const rTempRampFactorMaxObjekt = createInitialStatusFunction("rTempRampFactorMax", 90, "rTempRampFactorMax", {});
 
-    serverValues[rSetTolHMaxNodeIdInitial[0]] = 10
-    serverValues[rSetTolHMaxNodeIdInitial[1]] = 10
-    serverValues[rSetTolHMaxNodeIdInitial[2]] = 10
-    serverValues[rSetTolHMaxNodeIdInitial[3]] = 10
-    serverValues[rSetTolHMaxNodeIdInitial[4]] = 10
-    serverValues[rSetTolHMaxNodeIdInitial[5]] = 11
-    serverValues[rSetTolHMaxNodeIdInitial[6]] = 12
-    serverValues[rSetTolHMaxNodeIdInitial[7]] = 13
-    serverValues[rSetTolHMaxNodeIdInitial[8]] = 14
-    serverValues[rSetTolHMaxNodeIdInitial[9]] = 10
-    serverValues[rSetTolHMaxNodeIdInitial[10]] = 10
-    serverValues[rSetTolHMaxNodeIdInitial[11]] = 10
-    serverValues[rSetTolHMaxNodeIdInitial[12]] = 11
-    serverValues[rSetTolHMaxNodeIdInitial[13]] = 12
-    serverValues[nodeId] = serverValues[rSetTolHMaxNodeIdInitial[i]];
-  
-}
+const rTempRampFactorMinObjekt = createInitialStatusFunction("rTempRampFactorMin", 8, "rTempRampFactorMin", {});
 
-function initialstartrSetTolHHNodeId(i, nodeId, serverValues) {
+const rTempReleaseSetObjekt = createInitialStatusFunction("rTempReleaseSet", 152, "rTempReleaseSet", {});
 
-  var rSetTolHHNodeIdInitial = [];
-  rSetTolHHNodeIdInitial[i] = nodeId;
-  //console.log(`Derzeitige NodeId ${i}: ${rSetTolHNodeIdInitial[i]}`);
+const rTempReleaseMaxObjekt = createInitialStatusFunction("rTempReleaseMax", 300, "rTempReleaseMax", {});
 
-  if (!(nodeId in serverValues)) {
+const rTempReleaseMinObjekt = createInitialStatusFunction("rTempReleaseMin", 100, "rTempReleaseMax", {});
 
-    serverValues[rSetTolHHNodeIdInitial[0]] = 0
-    serverValues[rSetTolHHNodeIdInitial[1]] = 10
-    serverValues[rSetTolHHNodeIdInitial[2]] = 10
-    serverValues[rSetTolHHNodeIdInitial[3]] = 11
-    serverValues[rSetTolHHNodeIdInitial[4]] = 15
-    serverValues[rSetTolHHNodeIdInitial[5]] = 20
-    serverValues[rSetTolHHNodeIdInitial[6]] = 13
-    serverValues[rSetTolHHNodeIdInitial[7]] = 14
-    serverValues[rSetTolHHNodeIdInitial[8]] = 15
-    serverValues[rSetTolHHNodeIdInitial[9]] = 16
-    serverValues[rSetTolHHNodeIdInitial[10]] = 17
-    serverValues[rSetTolHHNodeIdInitial[11]] = 18
-    serverValues[rSetTolHHNodeIdInitial[12]] = 17
+const udTimeRelSetObjekt = createInitialStatusFunction("udTimeRelSet", 456, "udTimeRelSet", {});
 
-    serverValues[rSetTolHHNodeIdInitial[13]] = 17
-    serverValues[nodeId] = serverValues[rSetTolHHNodeIdInitial[i]];
+const udTimeRelMaxObjekt = createInitialStatusFunction("udTimeRelMax", 600, "udTimeRelMax", {});
 
-  }
-}
+const udTimeRelMinObjekt = createInitialStatusFunction("udTimeRelMin", 51, "udTimeRelMin", {});
 
-function initialstartrSetTolHMinNodeId(i, nodeId, serverValues) {
-  var rSetTolHMinNodeIdInitial = [];
-  rSetTolHMinNodeIdInitial[i] = nodeId;
-  //console.log(`Derzeitige NodeId ${i}: ${rSetTolHMinNodeIdInitial[i]}`);
+const rTempHeatupSetObjekt = createInitialStatusFunction("rTempHeatupSet", 200, "rTempHeatupSet", {});
 
-  //  if (!(nodeId in serverValues)) {
-  serverValues[rSetTolHMinNodeIdInitial[0]] = 0;
-  serverValues[rSetTolHMinNodeIdInitial[1]] = 5;
-  serverValues[rSetTolHMinNodeIdInitial[2]] = 5;
-  serverValues[rSetTolHMinNodeIdInitial[3]] = 5;
-  serverValues[rSetTolHMinNodeIdInitial[4]] = 6;
-  serverValues[rSetTolHMinNodeIdInitial[5]] = 6;
-  serverValues[rSetTolHMinNodeIdInitial[6]] = 6;
-  serverValues[rSetTolHMinNodeIdInitial[7]] = 6;
-  serverValues[rSetTolHMinNodeIdInitial[8]] = 4;
-  serverValues[rSetTolHMinNodeIdInitial[9]] = 4;
-  serverValues[rSetTolHMinNodeIdInitial[10]] = 4;
-  serverValues[rSetTolHMinNodeIdInitial[11]] = 3;
-  serverValues[rSetTolHMinNodeIdInitial[12]] = 4;
-  serverValues[rSetTolHMinNodeIdInitial[12]] = 7;
-  serverValues[rSetTolHMinNodeIdInitial[13]] = 6;
-
-  serverValues[nodeId] = serverValues[rSetTolHMinNodeIdInitial[i]];
-
-  //  }
-}
-
-function initialstartrSetTolHHMinNodeId(i, nodeId, serverValues) {
-  var rSetTolHHMinNodeIdInitial = [];
-  rSetTolHHMinNodeIdInitial[i] = nodeId;
-  //console.log(`Derzeitige NodeId ${i}: ${rSetTolHMinNodeIdInitial[i]}`);
-
-  if (!(nodeId in serverValues)) {
-    serverValues[rSetTolHHMinNodeIdInitial[0]] = 0;
-    serverValues[rSetTolHHMinNodeIdInitial[1]] = 5;
-    serverValues[rSetTolHHMinNodeIdInitial[2]] = 5;
-    serverValues[rSetTolHHMinNodeIdInitial[3]] = 6;
-    serverValues[rSetTolHHMinNodeIdInitial[4]] = 5;
-    serverValues[rSetTolHHMinNodeIdInitial[5]] = 5;
-    serverValues[rSetTolHHMinNodeIdInitial[6]] = 4;
-    serverValues[rSetTolHHMinNodeIdInitial[7]] = 5;
-    serverValues[rSetTolHHMinNodeIdInitial[8]] = 6;
-    serverValues[rSetTolHHMinNodeIdInitial[9]] = 6;
-    serverValues[rSetTolHHMinNodeIdInitial[10]] = 6;
-    serverValues[rSetTolHHMinNodeIdInitial[11]] = 6;
-    serverValues[rSetTolHHMinNodeIdInitial[12]] = 4;
-    serverValues[rSetTolHHMinNodeIdInitial[12]] = 2;
-    serverValues[rSetTolHHMinNodeIdInitial[13]] = 5;
-    serverValues[nodeId] = serverValues[rSetTolHHMinNodeIdInitial[i]];
-
-  }
-}
+const rTempHeatupMaxObjekt = createInitialStatusFunction("rTempHeatupMax", 300, "rTempHeatupMax", {});
 
 module.exports = {
-  initialstartWarningH: initialstartWarningH,
-  initialstartAlarmHH: initialstartAlarmHH,
-  initialstartrSetTolHMinNodeId: initialstartrSetTolHMinNodeId,
-  initialstartrSetTolHNodeId: initialstartrSetTolHNodeId,
-  initialstartrAct: initialstartrAct,
-  initialstartrSetTolHHMinNodeId: initialstartrSetTolHHMinNodeId,
-  initialstartrSetTolHHNodeId: initialstartrSetTolHHNodeId,
-  initialstartrOpMax: initialstartrOpMax,
-  initialstartrSetTolHMaxNodeId: initialstartrSetTolHMaxNodeId
+  rAct: rActObjekt.rAct,
+
+  rOpMax: rOpMaxObjekt.rOpMax,
+
+  rTempHSet: rTempHSetObjekt.rTempHSet,
+
+  rTempHHSet: TempHHSetObjekt.TempHHSet,
+  rSetTolHMin: rSetTolHMinObjekt.rSetTolHMin,
+
+  rSetTolHSet: rSetTolHSetObjekt.rSetTolHSet,
+  rSetTolHMax: rSetTolHMaxObjekt.rSetTolHMax,
+
+  rSetTolHHSet: rSetTolHHSetObjekt.rSetTolHHSet,
+  rSetTolHHMax: rSetTolHHMaxObjekt.rSetTolHHMax,
+  rSetTolHHMin: rSetTolHHMinObjekt.rSetTolHHMin,
+
+  rTempCooldownSet: rTempCooldownSetObjekt.rTempCooldownSet,
+  rTempCooldownMax: rTempCooldownMaxObjekt.rTempCooldownMax,
+  rTempCooldownMin: rTempCooldownMinObjekt.rTempCooldownMin,
+
+  rTempRampFactorSet: rTempRampFactorSetObjekt.rTempRampFactorSet,
+  rTempRampFactorMax: rTempRampFactorMaxObjekt.rTempRampFactorMax,
+  rTempRampFactorMin: rTempRampFactorMinObjekt.rTempRampFactorMin,
+
+  rTempReleaseSet: rTempReleaseSetObjekt.rTempReleaseSet,
+  rTempReleaseMax: rTempReleaseMaxObjekt.rTempReleaseMax,
+  rTempReleaseMin: rTempReleaseMinObjekt.rTempReleaseMin,
+
+  udTimeRelSet: udTimeRelSetObjekt.udTimeRelSet,
+  udTimeRelMax: udTimeRelMaxObjekt.udTimeRelMax,
+  udTimeRelMin: udTimeRelMinObjekt.udTimeRelMin,
+
+ 
+
+
+  rTempHeatupSet: rTempHeatupSetObjekt.rTempHeatupSet,
+  rTempHeatupMax: rTempHeatupMaxObjekt.rTempHeatupMax,
+
 }
