@@ -2,13 +2,14 @@
 
 
 
+
 function createInitialStatusFunction(functionName, initialValue, variableName, customValues = {}) {
   return {
-    [functionName]: function (i, nodeId, serverValues) {
+    [functionName]: function (i, nameNodeId, serverValues) {
       var nodeIdInitial = [];
-      nodeIdInitial[i] = nodeId;
+      nodeIdInitial[i] = nameNodeId[variableName + "NodeId"];
 
-      if (!(nodeId in serverValues)) {
+      if (!( nameNodeId[variableName + "NodeId"] in serverValues)) {
         for (let index = 0; index <= 13; index++) {
           serverValues[nodeIdInitial[index]] = initialValue;
         }
@@ -18,11 +19,50 @@ function createInitialStatusFunction(functionName, initialValue, variableName, c
           serverValues[nodeIdInitial[index]] = value;
         }
 
-        serverValues[nodeId] = serverValues[nodeIdInitial[i]];
+        serverValues[nameNodeId[variableName + "NodeId"]] = serverValues[nodeIdInitial[i]];
       }
     },
   };
 }
+
+
+
+/*
+Wenn du die Funktion createInitialStatusFunction manuell eingibst, ohne sie als separate Funktion zu definieren, würde der Code folgendermaßen aussehen:
+
+javascript
+Copy code
+const rOpMaxObjekt = {
+  rOpMax: function (i, nodeId, serverValues) {
+    var nodeIdInitial = [];
+    nodeIdInitial[i] = nodeId;
+
+    if (!(nodeId in serverValues)) {
+      for (let index = 0; index <= 13; index++) {
+        serverValues[nodeIdInitial[index]] = 300;
+      }
+
+      serverValues[nodeIdInitial[0]] = 100;
+      serverValues[nodeIdInitial[1]] = 305;
+      serverValues[nodeIdInitial[2]] = 306;
+      serverValues[nodeIdInitial[3]] = 307;
+      serverValues[nodeIdInitial[4]] = 308;
+      serverValues[nodeIdInitial[5]] = 309;
+      serverValues[nodeIdInitial[6]] = 310;
+      serverValues[nodeIdInitial[7]] = 311;
+      serverValues[nodeIdInitial[8]] = 312;
+      serverValues[nodeIdInitial[9]] = 313;
+      serverValues[nodeIdInitial[10]] = 314;
+      serverValues[nodeIdInitial[11]] = 315;
+      serverValues[nodeIdInitial[12]] = 316;
+      serverValues[nodeIdInitial[13]] = 317;
+      serverValues[nodeIdInitial[14]] = 318;
+
+      serverValues[nodeId] = serverValues[nodeIdInitial[i]];
+    }
+  },
+};*/
+
 
 const rOpMaxObjekt = createInitialStatusFunction("rOpMax", 300, "rOpMax", { 1: 100, 2: 305, 6: 306, 7: 355 });
 
