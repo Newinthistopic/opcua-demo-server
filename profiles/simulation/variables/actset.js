@@ -149,7 +149,7 @@ module.exports = {
                 value: {
                     get: function () {
                         const rOpMaxNodeId = this.nodeId.value;
-                        initial.rOpMax(i, rOpMaxNodeId, serverValues);
+                     
                         //  console.log(`Node-ID von rOpMax: ${rOpMaxNodeId}`);
                         return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rOpMaxNodeId] });
                     },

@@ -21,6 +21,7 @@ function createInitialStatusFunction(functionName, initialValue, variableName, c
 
         serverValues[nameNodeId[variableName + "NodeId"]] = serverValues[nodeIdInitial[i]];
       }
+      
     },
   };
 }
@@ -70,6 +71,8 @@ const rActObjekt = createInitialStatusFunction("rAct", 20, "rAct", { 1: 21, 2: 2
 
 const rTempHSetObjekt = createInitialStatusFunction("rTempHSet", 300, "rTempHSet", { 2: 305, 4: 356, 6: 366 });
 
+const rTempHMinObjekt = createInitialStatusFunction("rTempHMin", 150, "rTempHMin", { 2: 305, 4: 356, 6: 366 });
+
 const TempHHSetObjekt = createInitialStatusFunction("TempHHSet", 450, "TempHSet", { 2: 305, 4: 399, 6: 370, 10: 450 });
 
 const rSetTolHSetObjekt = createInitialStatusFunction("rSetTolHSet", 5, "TrSetTolHSet", { 2: 6, 4: 7, 6: 370, 10: 6, 11: 6 });
@@ -118,6 +121,7 @@ module.exports = {
   rOpMax: rOpMaxObjekt.rOpMax,
 
   rTempHSet: rTempHSetObjekt.rTempHSet,
+  rTempHMin: rTempHMinObjekt.rTempHMin,
 
   rTempHHSet: TempHHSetObjekt.TempHHSet,
   rSetTolHMin: rSetTolHMinObjekt.rSetTolHMin,
