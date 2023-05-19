@@ -1,4 +1,4 @@
-const initial = require('./../../../funktionen');
+const initial = require('../../../funktionen');
 
 
 module.exports = {
@@ -19,30 +19,24 @@ module.exports = {
         })
 
         // create DatablocksGlobal object
-        var dataBlocksGlobal = namespace3.addObject({
+        var datablocksGlobal = namespace3.addObject({
             organizedBy: ppC_Compound_V3,
-            browseName: "DataBlocksGlobal",
+            browseName: "DatablocksGlobal",
             nodeId: "s=DatablocksGlobal"
         });
 
 
 
         var ZEEX_3111_Hmi = namespace3.addObject({
-            organizedBy: dataBlocksGlobal,
+            organizedBy: datablocksGlobal,
             browseName: "ZEEX_3111_Hmi",
-            nodeId: "s=" + "\"ZEEX_3111_Hmi\""
+            nodeId: "ns=3;s=" + "\"ZEEX_3111_Hmi\"",
         });
 
+       
 
 
-
-
-
-        //   nodeId: "s=" + "\"ZEEX_3111_Hmi\""
-
-
-
-        // create udtEmPz variable undefined Datatype Equipment Module Process Zone
+    
         var udtEmPz = namespace3.addVariable({
             componentOf: ZEEX_3111_Hmi,
             browseName: "udtEmPz",
@@ -50,113 +44,96 @@ module.exports = {
             nodeId: "s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"",
         });
 
-        for (let i = 0; i < 14; i++) {
 
-            var nr = namespace3.addVariable({
-                componentOf: udtEmPz,
-                browseName: i.toString(),
-                dataType: opcua.DataType.Double,
-                nodeId: "s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]",
-            })
 
-            var rPzTemp = namespace3.addVariable({
-                componentOf: nr,
-                browseName: "rPzTemp",
+
+        function createCustomVariable(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5,  customGetLogic, customSetLogic) {
+            var nodeId = `"ns=3;s=\"${part1}\".\"${part2}\"[${i}]`;
+            // Nur hinzufügen, wenn part3 definiert ist
+            if (part3) {
+                nodeId += `.\"${part3}\"`;
+            }
+            // Nur hinzufügen, wenn part4 definiert ist
+            if (part4) {
+                nodeId += `.\"${part4}\"`;
+            }
+            if (part5) {
+                nodeId += `.\"${part5}\"`;
+            }
+
+
+            
+            var newVariable = {};
+            newVariable[variableName] = namespace3.addVariable({
+                componentOf: componentOf,
+                browseName: browseName,
                 dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\"",
-
-            })
-
-            var rAct = namespace3.addVariable({
-                componentOf: rPzTemp,
-                browseName: "rAct",
-                dataType: opcua.DataType.Float,
-                nodeId: "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\".\"rAct\"",
+                nodeId: nodeId,
                 value: {
                     get: function () {
-                        const rActNodeId = this.nodeId.value;
-                        initial.rAct(i, rActNodeId, serverValues);
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rActNodeId] });
+                        var nameNodeId = {};
+                        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
+                        // console.log("nameNodeId:", nameNodeId);
+
+                        if (customGetLogic) {
+                            customGetLogic(nameNodeId, serverValues);
+
+                         
+                          
+                        }
+
+                    
+                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nameNodeId[variableName + "NodeId"]] });
                     },
                     set: function (variant) {
+                        var nameNodeId = {};
+                        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
+                        serverValues[nameNodeId[variableName + "NodeId"]] = parseFloat(variant.value);
+                        if (customSetLogic) {
+                            customSetLogic(nameNodeId, serverValues);
+                            console.debug("customSetLogic wird aufgerufen...", nameNodeId);
+
+                        }
                         return opcua.StatusCodes.Good;
                     }
                 }
-            })
-
-
-
-
-
-            var rSet = namespace3.addVariable({
-                componentOf: rPzTemp,
-                browseName: "rSet",
-                dataType: opcua.DataType.Float,
-                nodeId: "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\".\"rSet\"",
-                value: {
-                    get: function () {
-                        const nodeIdValue = this.nodeId.value;
-
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nodeIdValue] });
-                    },
-                    set: function (variant) {
-
-                        const rSetNodeId = this.nodeId.value;
-                        serverValues[rSetNodeId] = parseFloat(variant.value);
-
-
-                        const rActNodeId = rSetNodeId.replace("rSet", "rAct");
-
-
-                        // serverValues[rActNodeId] = serverValues[rSetNodeId];
-                        console.log(`Setter-Funktion aufgerufen für rSet mit nodeId "${rSetNodeId}": ${serverValues[rSetNodeId]}`);
-                        console.log(`------------------------------------`);
-                        console.log(`rAct nodeId:${rActNodeId}\nrAct Wert: ${serverValues[rActNodeId]}\n`);
-                        console.log(`********************************************\n`);
-
-
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-
             });
 
-
-            var rOpMin = namespace3.addVariable({
-                componentOf: rPzTemp,
-                browseName: "rOpMin",
-                dataType: opcua.DataType.Float,
-                nodeId: "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\".\"rOpMin\"",
-                value: {
-                    get: function () {
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: 0 });
-                        // 
-
-                    },
-
-                    set: function (variant) {
-                        // do nothing
-                    }
-                }
-
-            })
-
-            var rOpMax = namespace3.addVariable({
-                componentOf: rPzTemp,
-                browseName: "rOpMax",
-                dataType: opcua.DataType.Float,
-                nodeId: "ns=3;s=" + "\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\".\"rOpMax\"",
-                value: {
-                    get: function () {
-                        const rOpMaxNodeId = this.nodeId.value;
-                     
-                        //  console.log(`Node-ID von rOpMax: ${rOpMaxNodeId}`);
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rOpMaxNodeId] });
-                    },
-                    set: function (variant) {
-                    }
-                }
-            })
+            return newVariable[variableName]; // Rückgabe der neu erstellten Variable
         }
+
+
+       
+
+
+
+        for (let i = 0; i < 14; i++) {
+
+            var nr = createCustomVariable(i, "nr", udtEmPz, i.toString(), undefined, undefined,undefined,undefined,undefined ,undefined, undefined,);
+
+            var rPzTemp = createCustomVariable(i, "rPzTemp", nr, "rPzTemp", "ZEEX_3111_Hmi","udtEmPz","rPzTemp",undefined ,undefined, undefined,);
+
+            var rAct = createCustomVariable(i, "rAct", rPzTemp, "rAct", "ZEEX_3111_Hmi","udtEmPz","rPzTemp","rAct" ,undefined, rActGet, rActSet);
+            function rActGet (nameNodeId, serverValues){
+                initial.rAct(i,nameNodeId, serverValues)
+            }
+            function rActSet (){}
+
+            var rSet = createCustomVariable(i, "rSet", rPzTemp, "rSet", "ZEEX_3111_Hmi","udtEmPz","rPzTemp","rSet" ,undefined, rSetGet,  rSetSet);
+            function rSetGet (){}
+            function rSetSet (){}
+
+
+            var rOpMin = createCustomVariable(i, "rOpMin", rPzTemp, "rOpMin", "ZEEX_3111_Hmi","udtEmPz","rPzTemp","rOpMin" ,undefined, rOpMinGet,  rOpMinSet);
+            function rOpMinGet (){}
+            function rOpMinSet(){}
+            
+            var rOpMax = createCustomVariable(i, "rOpMax", rPzTemp, "rOpMax", "ZEEX_3111_Hmi","udtEmPz","rPzTemp","rOpMax" ,undefined, rOpMaxGet,  rOpMaxSet);
+            function rOpMaxGet (){}
+            function rOpMaxSet(){}
+
+       
+            
+        } 
     }
 }

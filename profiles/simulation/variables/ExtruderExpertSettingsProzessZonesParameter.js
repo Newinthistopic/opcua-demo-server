@@ -13,7 +13,7 @@ module.exports = {
         });
 
 
-        function createCustomVariable(i, variableName, componentOf, browseName, part1, part2, part3, part4,  customGetLogic, customSetLogic) {
+        function createCustomVariable(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
             var nodeId = `"ns=3;s=\"${part1}\".\"${part2}\"[${i}]`;
             // Nur hinzufügen, wenn part3 definiert ist
             if (part3) {
@@ -23,9 +23,7 @@ module.exports = {
             if (part4) {
                 nodeId += `.\"${part4}\"`;
             }
-
-
-            
+           
             var newVariable = {};
             newVariable[variableName] = namespace3.addVariable({
                 componentOf: componentOf,
@@ -41,7 +39,7 @@ module.exports = {
                         if (customGetLogic) {
                             customGetLogic(nameNodeId, serverValues);
 
-                            console.log("customGetLogic wird aufgerufen...");
+                           
                             //return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nameNodeId[variableName + "NodeId"]] });
                         }
 
@@ -56,7 +54,7 @@ module.exports = {
                         serverValues[nameNodeId[variableName + "NodeId"]] = parseFloat(variant.value);
                         if (customSetLogic) {
                             customSetLogic(nameNodeId, serverValues);
-                            console.debug("customSetLogic wird aufgerufen...", nameNodeId);
+                           
 
                         }
                         return opcua.StatusCodes.Good;
@@ -91,7 +89,7 @@ module.exports = {
             //Extruder ==> Expert Settings ==> Prozess Zones/Parameter ==> Limits:"Warning H-Set" //
             var rTempHSet = createCustomVariable(i, "rTempHSet", rTempH, "Set", "ZEEX_3111_Parameter", "udtEmPz", "rTempH", "Set", rTempHSetGet, rTempHSetSet);
 
-            function rTempHSetGet(nameNodeId, serverValues) {
+            function rTempHSetGet(x,nameNodeId, serverValues) {
                 initial.rTempHSet(i, nameNodeId, serverValues);
             }
 
@@ -114,11 +112,7 @@ module.exports = {
             
             var rTempHMin = createCustomVariable(i, "rTempH", rTempH, "Min", "ZEEX_3111_Parameter", "udtEmPz", "rTempH", "Min", rTempHMinGet, undefined);
             function rTempHMinGet(nameNodeId, serverValues) {
-
                 initial.rTempHMin(i, nameNodeId, serverValues);
-
-
-
             }
 
             //***********************************************************************************************************/

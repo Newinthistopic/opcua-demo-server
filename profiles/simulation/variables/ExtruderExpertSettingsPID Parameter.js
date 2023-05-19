@@ -2,21 +2,22 @@ const initial = require('../../../funktionen');
 
 module.exports = {
 
-    run: function (addressSpace, device, opcua, verbose, serverValues,) {
+    run: function (addressSpace, device, opcua, verbose, serverValues) {
+
 
         var namespace3 = addressSpace.getNamespace('http://mynamespace-3/UA/');
         const ZEEX_3111_Hmi = addressSpace.findNode("ns=3;s=\"ZEEX_3111_Hmi\"");
-        const DataBlocksGlobal = addressSpace.findNode("ns=3;s=DatablocksGlobal");
-
-
+        const datablocksGlobal1 = addressSpace.findNode("ns=3;s=DatablocksGlobal");
+       
+        
 
         var ZEEX_3111_Parameter = namespace3.addObject({
-            organizedBy: DataBlocksGlobal,
+            organizedBy: datablocksGlobal1, 
             browseName: "ZEEX_3111_Parameter",
-            nodeId: "s=" + "\"ZEEX_3111_Parameter\""
+            nodeId: "ns=3;s=" + "\"ZEEX_3111_Parameter\"",
         });
 
-        var ZEEX_3111_Parameter = namespace3.addVariable({
+        var udtCmPzPid_Parameter = namespace3.addVariable({
             componentOf: ZEEX_3111_Parameter,
             browseName: "udtCmPzPid",
             dataType: opcua.DataType.Double,
@@ -33,14 +34,14 @@ module.exports = {
         });
 
         var ZEEX_3111_Config = namespace3.addObject({
-            componentOf: DataBlocksGlobal,
+            componentOf: datablocksGlobal1,
             browseName: "ZEEX_3111_Config",
             dataType: opcua.DataType.Double,
             nodeId: "s=" + "\"ZEEX_3111_Config\""
 
         });
 
-        var ZEEX_3111_Config = namespace3.addVariable({
+        var udtCmPzPid_Config = namespace3.addVariable({
             componentOf: ZEEX_3111_Config,
             browseName: "udtCmPzPid",
             dataType: opcua.DataType.Double,
@@ -77,10 +78,8 @@ module.exports = {
                         if (customGetLogic) {
                             customGetLogic(nameNodeId, serverValues);
 
-                            console.log("customGetLogic wird aufgerufen...");
-                            //return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nameNodeId[variableName + "NodeId"]] });
+                                                       //return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nameNodeId[variableName + "NodeId"]] });
                         }
-
 
                         //initial.rTempHSet1(i,  nameNodeId, serverValues);
 
@@ -92,7 +91,7 @@ module.exports = {
                         serverValues[nameNodeId[variableName + "NodeId"]] = parseFloat(variant.value);
                         if (customSetLogic) {
                             customSetLogic(nameNodeId, serverValues);
-                            console.debug("customSetLogic wird aufgerufen...", nameNodeId);
+                            
 
                         }
                         return opcua.StatusCodes.Good;
@@ -104,32 +103,21 @@ module.exports = {
         }
 
 
-
         for (let i = 0; i < 14; i++) {
 
-            var nr = createCustomVariable(i, "nr", ZEEX_3111_Parameter, i.toString(), "ZEEX_3111_Parameter", "udtCmPzPid", undefined, undefined, undefined, undefined, undefined);
+            var nr = createCustomVariable(i, "nr", udtCmPzPid_Parameter, i.toString(), "ZEEX_3111_Parameter", "udtCmPzPid", undefined, undefined, undefined, undefined, undefined);
 
-            var nr2 = createCustomVariable(i, "nr", ZEEX_3111_Config, i.toString(), "ZEEX_3111_Config", "udtCmPzPid", undefined, undefined, undefined, undefined, undefined);
+            var nr2 = createCustomVariable(i, "nr", udtCmPzPid_Config, i.toString(), "ZEEX_3111_Config", "udtCmPzPid", undefined, undefined, undefined, undefined, undefined);
 
             var nr3 = createCustomVariable(i, "nr", udtCmPzPid_HMI, i.toString(), "ZZEEX_3111_Hmi", "udtCmPzPid", undefined, undefined, undefined, undefined, undefined);
+        
 
-
-
-
-
-
-           
-
-
-            var udtCool = createCustomVariable(i, "udtCool", nr, "udtCool", "ZZEEX_3111_Hmi", "udtCmPzPid", "udtCool", undefined, undefined, undefined, undefined);
+            var udtCool = createCustomVariable(i, "udtCool", nr, "udtCool", "ZZEEX_3111_Parameter", "udtCmPzPid", "udtCool", undefined, undefined, undefined, undefined);
             var udtCoolPid = createCustomVariable(i, "udtCoolPid", udtCool, "udtPid", "ZEEX_3111_Config", "udtCool", "udtPid", undefined, undefined, undefined);
 
 
             var udtHeat = createCustomVariable(i, "udtHeat", nr, "udtHeat", "ZEEX_3111_Parameter", "udtHeat", undefined, undefined, undefined, undefined);
             var udtHeatPid = createCustomVariable(i, "udtHeatPid", udtHeat, "udtHeatPid", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "udtPid", undefined, undefined);
-
-
-
 
 
             //***********************************************************************************************************/
