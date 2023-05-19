@@ -13,8 +13,7 @@ module.exports = {
         });
 
 
-
-        function createCustomVariable(i, variableName, componentOf, browseName, part1, part2, part3, part4, customGetLogic, customSetLogic) {
+        function createCustomVariable(i, variableName, componentOf, browseName, part1, part2, part3, part4,  customGetLogic, customSetLogic) {
             var nodeId = `"ns=3;s=\"${part1}\".\"${part2}\"[${i}]`;
             // Nur hinzufügen, wenn part3 definiert ist
             if (part3) {
@@ -24,6 +23,9 @@ module.exports = {
             if (part4) {
                 nodeId += `.\"${part4}\"`;
             }
+
+
+            
             var newVariable = {};
             newVariable[variableName] = namespace3.addVariable({
                 componentOf: componentOf,
@@ -64,6 +66,7 @@ module.exports = {
 
             return newVariable[variableName]; // Rückgabe der neu erstellten Variable
         }
+
 
         for (let i = 0; i < 14; i++) {
 
@@ -110,15 +113,11 @@ module.exports = {
             function rTempHMaxGet() { }
             
             var rTempHMin = createCustomVariable(i, "rTempH", rTempH, "Min", "ZEEX_3111_Parameter", "udtEmPz", "rTempH", "Min", rTempHMinGet, undefined);
-            function rTempHMinGet(nameNodeId, loles) {
+            function rTempHMinGet(nameNodeId, serverValues) {
 
                 initial.rTempHMin(i, nameNodeId, serverValues);
 
-                function speichern(loles){
-loles.serverValues;s
 
-                }
-speichern(lole4s)
 
             }
 

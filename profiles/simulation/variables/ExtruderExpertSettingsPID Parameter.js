@@ -9,15 +9,15 @@ module.exports = {
         const DataBlocksGlobal = addressSpace.findNode("ns=3;s=DatablocksGlobal");
 
 
-       
+
         var ZEEX_3111_Parameter = namespace3.addObject({
-            organizedBy: DataBlocksGlobal, 
+            organizedBy: DataBlocksGlobal,
             browseName: "ZEEX_3111_Parameter",
             nodeId: "s=" + "\"ZEEX_3111_Parameter\""
         });
 
         var ZEEX_3111_Parameter = namespace3.addVariable({
-            componentOf: ZEEX_3111_Parameter, 
+            componentOf: ZEEX_3111_Parameter,
             browseName: "udtCmPzPid",
             dataType: opcua.DataType.Double,
             nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"",
@@ -25,7 +25,7 @@ module.exports = {
         });
 
         var udtCmPzPid_HMI = namespace3.addVariable({
-            componentOf: ZEEX_3111_Hmi, 
+            componentOf: ZEEX_3111_Hmi,
             browseName: "udtCmPzPid",
             dataType: opcua.DataType.Double,
             nodeId: "s=" + "\"ZEEX_3111_Hmi\".\"udtCmPzPid\"",
@@ -41,129 +41,92 @@ module.exports = {
         });
 
         var ZEEX_3111_Config = namespace3.addVariable({
-            componentOf: ZEEX_3111_Config, 
+            componentOf: ZEEX_3111_Config,
             browseName: "udtCmPzPid",
             dataType: opcua.DataType.Double,
             nodeId: "s=" + "\"ZEEX_3111_Config\".\"udtCmPzPid\"",
 
         });
 
+        function createCustomVariable(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
+            var nodeId = `"ns=3;s=\"${part1}\".\"${part2}\"[${i}]`;
+            // Nur hinzufügen, wenn part3 definiert ist
+            if (part3) {
+                nodeId += `.\"${part3}\"`;
+            }
+            // Nur hinzufügen, wenn part4 definiert ist
+            if (part4) {
+                nodeId += `.\"${part4}\"`;
+            }
+            if (part5) {
+                nodeId += `.\"${part5}\"`;
+            }
+
+            var newVariable = {};
+            newVariable[variableName] = namespace3.addVariable({
+                componentOf: componentOf,
+                browseName: browseName,
+                dataType: opcua.DataType.Float,
+                nodeId: nodeId,
+                value: {
+                    get: function () {
+                        var nameNodeId = {};
+                        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
+                        // console.log("nameNodeId:", nameNodeId);
+
+                        if (customGetLogic) {
+                            customGetLogic(nameNodeId, serverValues);
+
+                            console.log("customGetLogic wird aufgerufen...");
+                            //return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nameNodeId[variableName + "NodeId"]] });
+                        }
+
+
+                        //initial.rTempHSet1(i,  nameNodeId, serverValues);
+
+                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nameNodeId[variableName + "NodeId"]] });
+                    },
+                    set: function (variant) {
+                        var nameNodeId = {};
+                        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
+                        serverValues[nameNodeId[variableName + "NodeId"]] = parseFloat(variant.value);
+                        if (customSetLogic) {
+                            customSetLogic(nameNodeId, serverValues);
+                            console.debug("customSetLogic wird aufgerufen...", nameNodeId);
+
+                        }
+                        return opcua.StatusCodes.Good;
+                    }
+                }
+            });
+
+            return newVariable[variableName]; // Rückgabe der neu erstellten Variable
+        }
+
+
+
         for (let i = 0; i < 14; i++) {
 
-            var nr = namespace3.addVariable({
-                componentOf: ZEEX_3111_Parameter,
-                browseName: i.toString(),
-                dataType: opcua.DataType.Double,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]",
-            })
-            var nr2 = namespace3.addVariable({
-                componentOf: ZEEX_3111_Config,
-                browseName: i.toString(),
-                dataType: opcua.DataType.Double,
-                nodeId: "s=" + "\"ZEEX_3111_Config\".\"udtCmPzPid\"" + "[" + i + "]",
-            })
+            var nr = createCustomVariable(i, "nr", ZEEX_3111_Parameter, i.toString(), "ZEEX_3111_Parameter", "udtCmPzPid", undefined, undefined, undefined, undefined, undefined);
 
-            var nr3 = namespace3.addVariable({
-                componentOf: udtCmPzPid_HMI,
-                browseName: i.toString(),
-                dataType: opcua.DataType.Double,
-                nodeId: "s=" + "\"ZEEX_3111_Hmi\".\"udtCmPzPid\"" + "[" + i + "]",
-            })
+            var nr2 = createCustomVariable(i, "nr", ZEEX_3111_Config, i.toString(), "ZEEX_3111_Config", "udtCmPzPid", undefined, undefined, undefined, undefined, undefined);
 
-            var udtCool = namespace3.addVariable({
-                componentOf: nr,
-                browseName: "udtCool",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\"",
-            })
-
-            var udWindOfCoil = namespace3.addVariable({
-                componentOf: nr2,
-                browseName: "udWindOfCoil",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Config\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udWindOfCoil\"",
-
-            })
-
-            var udtHeat = namespace3.addVariable({
-                componentOf: nr,
-                browseName: "udtHeat",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\"",
-            })
-
-            var udtCoolPid = namespace3.addVariable({
-                componentOf: udtCool,
-                browseName: "udtPid",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"udtPid\"",
-
-            })
-
-            var rInjMinPauseTime = namespace3.addVariable({
-                componentOf: udtCool,
-                browseName: "rInjMinPauseTime",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"rInjMinPauseTime\"",
-
-            })
-
-            var rPwmMinOffTimeCool = namespace3.addVariable({
-                componentOf: udtCool,
-                browseName: "rPwmMinOffTime",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"rPwmMinOffTime\"",
-            })
-
-            var rPwmMinOnTimeCool = namespace3.addVariable({
-                componentOf: udtCool,
-                browseName: "rPwmMinOnTime",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"rPwmMinOnTime\"",
-            })
-
-            var rPwmMinOffTimeHeat = namespace3.addVariable({
-                componentOf: udtHeat,
-                browseName: "rPwmMinOffTime",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"rPwmMinOffTime\"",
-            })
-
-            var rPwmMinOnTimeHeat = namespace3.addVariable({
-                componentOf: udtHeat,
-                browseName: "rPwmMinOnTime",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"rPwmMinOnTime\"",
-            })
-
-            var rInjPulseTime = namespace3.addVariable({
-                componentOf: udtCool,
-                browseName: "rInjPulseTime",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"rInjPulseTime\"",
-            })
-
-            var rCurrSet = namespace3.addVariable({
-                componentOf: udtHeat,
-                browseName: "rCurrSet",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"rCurrSet\"",
-            })
-
-            var udtHeatPid = namespace3.addVariable({
-                componentOf: udtHeat,
-                browseName: "udtPid",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"udtPid\"",
-
-            })
+            var nr3 = createCustomVariable(i, "nr", udtCmPzPid_HMI, i.toString(), "ZZEEX_3111_Hmi", "udtCmPzPid", undefined, undefined, undefined, undefined, undefined);
 
 
 
 
 
 
+           
 
+
+            var udtCool = createCustomVariable(i, "udtCool", nr, "udtCool", "ZZEEX_3111_Hmi", "udtCmPzPid", "udtCool", undefined, undefined, undefined, undefined);
+            var udtCoolPid = createCustomVariable(i, "udtCoolPid", udtCool, "udtPid", "ZEEX_3111_Config", "udtCool", "udtPid", undefined, undefined, undefined);
+
+
+            var udtHeat = createCustomVariable(i, "udtHeat", nr, "udtHeat", "ZEEX_3111_Parameter", "udtHeat", undefined, undefined, undefined, undefined);
+            var udtHeatPid = createCustomVariable(i, "udtHeatPid", udtHeat, "udtHeatPid", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "udtPid", undefined, undefined);
 
 
 
@@ -173,809 +136,175 @@ module.exports = {
             //***********************************************************************************************************/
             //***********************************************************************************************************/
             //***********************************************************************************************************/
+            //Extruder ==> Expert Settings ==> PID Parameters : "Lenght" //
+            var rInjPulseTime = createCustomVariable(i, "rInjPulseTime ", udtCool, "rInjPulseTime ", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "rInjPulseTime", undefined, undefined, undefined);
             //Extruder ==> Expert Settings ==> PID Parameters : "Lenght-Set" //
-            var rInjPulseTimeSet = namespace3.addVariable({
-                componentOf: rInjPulseTime,
-                browseName: "Set",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"rInjPulseTime\".\"Set\"",
-                value: {
-                    get: function () {
-                        const InjPulseTimeSetNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[InjPulseTimeSetNodeId] = 11111 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rInjPulseTimeSet = createCustomVariable(i, "rInjPulseTimeSet", rInjPulseTime, "Set", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "rInjPulseTime", "Set", undefined, rInjPulseTimeSetGet, rInjPulseTimeSetSet);
+            function rInjPulseTimeSetGet() { }
+            function rInjPulseTimeSetSet() { }
             //Extruder ==> Expert Settings ==> PID Parameters : "Lenght-Max" //
-            var rInjPulseTimeMax = namespace3.addVariable({
-                componentOf: rInjPulseTime,
-                browseName: "Max",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"rInjPulseTime\".\"Max\"",
-                value: {
-                    get: function () {
-                        const InjPulseTimeSMaxNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[InjPulseTimeSMaxNodeId] = 22 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rInjPulseTimeMax = createCustomVariable(i, "rInjPulseTimeMax", rInjPulseTime, "Max", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "rInjPulseTime", "Max", undefined, rInjPulseTimeMaxGet, rInjPulseTimeMaxSet);
+            function rInjPulseTimeMaxGet() { }
+            function rInjPulseTimeMaxSet() { }
             //Extruder ==> Expert Settings ==> PID Parameters : "Lenght-Min" //
-            var rInjPulseTimeMin = namespace3.addVariable({
-                componentOf: rInjPulseTime,
-                browseName: "Min",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"rInjPulseTime\".\"Min\"",
-                value: {
-                    get: function () {
-                        const InjPulseTimeMinNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[InjPulseTimeMinNodeId] = 11 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rInjPulseTimeMin = createCustomVariable(i, "rInjPulseTimeMin", rInjPulseTime, "Min", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "rInjPulseTime", "Min", undefined, rInjPulseTimeMinGet, rInjPulseTimeMinSet);
+            function rInjPulseTimeMinGet() { }
+            function rInjPulseTimeMinSet() { }
             //***********************************************************************************************************/
+            //Extruder ==> Expert Settings ==> PID Parameters ==> Cooling Control : "Pause" //
+            var rInjMinPauseTime = createCustomVariable(i, "rInjMinPauseTime", udtCool, "rInjMinPauseTime", "ZEEX_3111_Parameter", "udtCmPzPid", "rInjMinPauseTime", undefined, undefined, undefined, undefined);
             //Extruder ==> Expert Settings ==> PID Parameters ==> Cooling Control : "Pause-Set" //
-            var rInjMinPauseTimeSet = namespace3.addVariable({
-                componentOf: rInjMinPauseTime,
-                browseName: "Set",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"rInjMinPauseTime\".\"Set\"",
-                value: {
-                    get: function () {
-                        const rInjMinPauseTimeSetNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rInjMinPauseTimeSetNodeId] = 222 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
-
-            //Extruder ==> Expert Settings ==> PID Parameters ==> Cooling Control : "Pause-max" //
-            var rInjMinPauseTimeMax = namespace3.addVariable({
-                componentOf: rInjMinPauseTime,
-                browseName: "Max",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"rInjMinPauseTime\".\"Max\"",
-                value: {
-                    get: function () {
-                        const rInjMinPauseTimeMaxNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rInjMinPauseTimeMaxNodeId] = 7878787 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
-
+            var rInjMinPauseTimeSet = createCustomVariable(i, "rInjMinPauseTimeSet", rInjMinPauseTime, "Set", "ZEEX_3111_Parameter", "udtCmPzPid", "rInjMinPauseTime", "Set", undefined, undefined, rInjMinPauseTimeSetGet, rInjMinPauseTimeSetSet);
+            function rInjMinPauseTimeSetGet() { }
+            function rInjMinPauseTimeSetSet() { }
+            //Extruder ==> Expert Settings ==> PID Parameters ==> Cooling Control : "Pause-Max" //
+            var rInjMinPauseTimeMax = createCustomVariable(i, "rInjMinPauseTimeMax", rInjMinPauseTime, "Max", "ZEEX_3111_Parameter", "udtCmPzPid", "rInjMinPauseTime", "Max", undefined, rInjMinPauseTimeMaxGet, rInjMinPauseTimeMaxSet);
+            function rInjMinPauseTimeMaxGet() { }
+            function rInjMinPauseTimeMaxSet() { }
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Cooling Control : "Pause-Min" //
-            var rInjMinPauseTimeMin = namespace3.addVariable({
-                componentOf: rInjMinPauseTime,
-                browseName: "Min",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"rInjMinPauseTime\".\"Min\"",
-                value: {
-                    get: function () {
-                        const rInjMinPauseTimeMinNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rInjMinPauseTimeMinNodeId] = 2323 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
-
+            var rInjMinPauseTimeMin = createCustomVariable(i, "rInjMinPauseTimeMin", rInjMinPauseTime, "Min", "ZEEX_3111_Parameter", "udtCmPzPid", "rInjMinPauseTime", "Min", undefined, rInjMinPauseTimeMinGet, rInjMinPauseTimeMinSet);
+            function rInjMinPauseTimeMinGet() { }
+            function rInjMinPauseTimeMinSet() { }
             //***********************************************************************************************************/
+            //Extruder ==> Expert Settings ==> PID Parameters ==> Cooling Control : "Min OnTime //
+            var rPwmMinOnTimeCool = createCustomVariable(i, "rPwmMinOnTimeCool", udtCool, "rPwmMinOnTime", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "rPwmMinOnTimeCool", undefined, undefined, undefined);
             //Extruder ==> Expert Settings ==> PID Parameters ==> Cooling Control : "Min OnTime-Set" //
-            var rPwmMinOnTimeSet = namespace3.addVariable({
-                componentOf: rPwmMinOnTimeCool,
-                browseName: "Set",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"rPwmMinOnTime\".\"Set\"",
-                value: {
-                    get: function () {
-                        const rPwmMinOnTimeSetNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rPwmMinOnTimeSetNodeId] = 3333 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rPwmMinOnTimeCoolSet = createCustomVariable(i, "rPwmMinOnTimeCoolSet", rPwmMinOnTimeCool, "Set", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "rPwmMinOnTimeCool", "Set", rPwmMinOnTimeCoolSetGet, rPwmMinOnTimeCoolSetSet);
+            function rPwmMinOnTimeCoolSetGet() { }
+            function rPwmMinOnTimeCoolSetSet() { }
             //Extruder ==> Expert Settings ==> PID Parameters ==> Cooling Control : "Min OnTime-Max" //
-            var rPwmMinOnTimeMax = namespace3.addVariable({
-                componentOf: rPwmMinOnTimeCool,
-                browseName: "Max",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"rPwmMinOnTime\".\"Max\"",
-                value: {
-                    get: function () {
-                        const rPwmMinOnTimeMaxNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rPwmMinOnTimeMaxNodeId] = 123 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rPwmMinOnTimeCoolMax = createCustomVariable(i, "rPwmMinOnTimeCoolMax", rPwmMinOnTimeCool, "Max", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "rPwmMinOnTimeCool", "Max", rPwmMinOnTimeCoolMaxGet, rPwmMinOnTimeCoolMaxSet);
+            function rPwmMinOnTimeCoolMaxGet() { }
+            function rPwmMinOnTimeCoolMaxSet() { }
             //Extruder ==> Expert Settings ==> PID Parameters ==> Cooling Control : "Min OnTime-Min" //
-            var rPwmMinOnTimeMin = namespace3.addVariable({
-                componentOf: rPwmMinOnTimeCool,
-                browseName: "Min",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"rPwmMinOnTime\".\"Min\"",
-                value: {
-                    get: function () {
-                        const rPwmMinOnTimeMinNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rPwmMinOnTimeMinNodeId] = 44 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rPwmMinOnTimeCoolMin = createCustomVariable(i, "rPwmMinOnTimeCoolMin", rPwmMinOnTimeCool, "Min", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "rPwmMinOnTimeCool", "Min", rPwmMinOnTimeCoolMinGet, rPwmMinOnTimeCoolMinSet);
+            function rPwmMinOnTimeCoolMinGet() { }
+            function rPwmMinOnTimeCoolMinSet() { }
             //***********************************************************************************************************/
+            //Extruder ==> Expert Settings ==> PID Parameters ==> Cooling Controll : "Min OffTime" //
+            var rPwmMinOffTimeCool = createCustomVariable(i, "rPwmMinOffTime", udtCool, "rPwmMinOffTime", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "rPwmMinOffTime", undefined, undefined, undefined);
             //Extruder ==> Expert Settings ==> PID Parameters ==> Cooling Controll : "Min OffTime-Set" //
-            var rPwmMinOffTimeSet = namespace3.addVariable({
-                componentOf: rPwmMinOffTimeCool,
-                browseName: "Set",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"rPwmMinOffTime\".\"Set\"",
-                value: {
-                    get: function () {
-                        const rPwmMinOffTimeSetNodeId = this.nodeId.value;
-
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rPwmMinOffTimeSetNodeId] = 65 });
-                    },
-                    set: function (variant) {
-
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rPwmMinOffTimeCoolSet = createCustomVariable(i, "rPwmMinOffTimeSet", rPwmMinOffTimeCool, "Set", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "rPwmMinOffTime", "Set", rPwmMinOffTimeCoolSetGet, rPwmMinOffTimeCoolSetSet);
+            function rPwmMinOffTimeCoolSetGet() { }
+            function rPwmMinOffTimeCoolSetSet() { }
             //Extruder ==> Expert Settings ==> PID Parameters ==> Cooling Control : "Min OffTime-Max" //
-            var rPwmMinOffTimeMax = namespace3.addVariable({
-                componentOf: rPwmMinOffTimeCool,
-                browseName: "Max",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"rPwmMinOffTime\".\"Max\"",
-                value: {
-                    get: function () {
-                        const rPwmMinOffTimeMaxNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rPwmMinOffTimeMaxNodeId] = 8888 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rPwmMinOffTimeCoolMax = createCustomVariable(i, "rPwmMinOffTimeMax", rPwmMinOffTimeCool, "Max", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "rPwmMinOffTime", "Max", rPwmMinOffTimeCoolMaxGet, rPwmMinOffTimeCoolMaxSet);
+            function rPwmMinOffTimeCoolMaxGet() { }
+            function rPwmMinOffTimeCoolMaxSet() { }
             //Extruder ==> Expert Settings ==> PID Parameters ==> Cooling Control : "Min OffTime-Min" //
-            var rPwmMinOffTimeMin = namespace3.addVariable({
-                componentOf: rPwmMinOffTimeCool,
-                browseName: "Min",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"rPwmMinOffTime\".\"Min\"",
-                value: {
-                    get: function () {
-                        const rPwmMinOffTimeMinNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rPwmMinOffTimeMinNodeId] = 12 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rPwmMinOffTimeCoolMin = createCustomVariable(i, "rPwmMinOffTimeMin", rPwmMinOffTimeCool, "Min", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "rPwmMinOffTime", "Min", rPwmMinOffTimeCoolMinGet, rPwmMinOffTimeCoolMinSet);
+            function rPwmMinOffTimeCoolMinGet() { }
+            function rPwmMinOffTimeCoolMinSet() { }
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Cool : "rGain-Set" //
-            var udtCoolPidrGain = namespace3.addVariable({
-                componentOf: udtCoolPid,
-                browseName: "rGain",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"udtPid\".\"rGain\"",
-                value: {
-                    get: function () {
-                        const udtCoolPidrGainNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtCoolPidrGainNodeId] = 111111 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rGainCool = createCustomVariable(i, "rGainCool", udtCoolPid, "rGain", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "udtPid", "rGain", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Cool : "rTi-Set" //
-            var udtCoolPidrTi = namespace3.addVariable({
-                componentOf: udtCoolPid,
-                browseName: "rTi",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"udtPid\".\"rTi\"",
-                value: {
-                    get: function () {
-                        const udtCoolPidrTiNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtCoolPidrTiNodeId] = 1222222222 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rTiCool = createCustomVariable(i, "rTiCool", udtCoolPid, "rTi", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "udtPid", "rTi", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Cool : "rTd-Set" //
-            var udtCoolPidrTd = namespace3.addVariable({
-                componentOf: udtCoolPid,
-                browseName: "rTd",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"udtPid\".\"rTd\"",
-                value: {
-                    get: function () {
-                        const udtCoolPidrTdNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtCoolPidrTdNodeId] = 1444444 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rTdCool = createCustomVariable(i, "rTdCool", udtCoolPid, "rTd", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "udtPid", "rTd", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Cool : "rTdFiltRatio-Set" //
-            var udtCoolPidrTdFiltRatio = namespace3.addVariable({
-                componentOf: udtCoolPid,
-                browseName: "rTdFiltRatio",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"udtPid\".\"rTdFiltRatio\"",
-                value: {
-                    get: function () {
-                        const udtCoolPidrTdFiltRatioNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtCoolPidrTdFiltRatioNodeId] = 1555 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rTdFiltRatioCool = createCustomVariable(i, "rTdFiltRatioCool", udtCoolPid, "rTdFiltRatio", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "udtPid", "rTdFiltRatio", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Cool : "rPWeighting-Set" //
-            var udtCoolPidrPWeighting = namespace3.addVariable({
-                componentOf: udtCoolPid,
-                browseName: "rPWeightingrTdFiltRatio",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"udtPid\".\"rPWeighting\"",
-                value: {
-                    get: function () {
-                        const udtCoolPidrPWeightingNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtCoolPidrPWeightingNodeId] = 1666 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rPWeightingCool = createCustomVariable(i, "rPWeightingCool", udtCoolPid, "rPWeighting", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "udtPid", "rPWeighting", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Cool : "rDWeighting-Set" //
-            var udtCoolPidrDWeighting = namespace3.addVariable({
-                componentOf: udtCoolPid,
-                browseName: "rDWeighting",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"udtPid\".\"rDWeighting\"",
-                value: {
-                    get: function () {
-                        const udtCoolPidrDWeightingNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtCoolPidrDWeightingNodeId] = 17777 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rDWeightingCool = createCustomVariable(i, "rDWeightingCool", udtCoolPid, "rDWeighting", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "udtPid", "rDWeighting", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Cool : "rCycle-Set" //
-            var udtCoolPidrCycle = namespace3.addVariable({
-                componentOf: udtCoolPid,
-                browseName: "rCycle",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"udtPid\".\"rCycle\"",
-                value: {
-                    get: function () {
-                        const udtCoolPidrCycleNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtCoolPidrCycleNodeId] = 18888 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rCycleCool = createCustomVariable(i, "rCycleCool", udtCoolPid, "rCycle", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "udtPid", "rCycle", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Cool : "rControllZone-Set" //
-            var udtCoolPidrControlZone = namespace3.addVariable({
-                componentOf: udtCoolPid,
-                browseName: "rControlZone",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"udtPid\".\"rControlZone\"",
-                value: {
-                    get: function () {
-                        const udtCoolPidrControlZoneNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtCoolPidrControlZoneNodeId] = 199999 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rControlZone = createCustomVariable(i, "rControlZone", udtCoolPid, "rControlZone", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "udtPid", "rControlZone", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Cool : "rDeadZone-Set" //
-            var udtCoolPidrDeadZone = namespace3.addVariable({
-                componentOf: udtCoolPid,
-                browseName: "rDeadZone",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtCool\".\"udtPid\".\"rDeadZone\"",
-                value: {
-                    get: function () {
-                        const udtCoolPidrDeadZoneNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtCoolPidrDeadZoneNodeId] = 21111 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rDeadZone = createCustomVariable(i, "rDeadZone", udtCoolPid, "rDeadZone", "ZEEX_3111_Parameter", "udtCmPzPid", "udtCool", "udtPid", "rDeadZone", undefined, undefined);
             //***********************************************************************************************************/
+            //Extruder ==> Expert Settings ==> PID Parameters ==> Heating Control : "Min OnTime" //
+            var rPwmMinOnTimeHeat = createCustomVariable(i, "rPwmMinOnTimeHeat", udtHeat, "rPwmMinOnTimeHeat", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "rPwmMinOnTime", undefined, undefined);
             //Extruder ==> Expert Settings ==> PID Parameters ==> Heating Control : "Min OnTime-Set" //
-            var rPwmMinOnTimeSet_heat = namespace3.addVariable({
-                componentOf: rPwmMinOnTimeHeat,
-                browseName: "Set",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"rPwmMinOnTime\".\"Set\"",
-                value: {
-                    get: function () {
-                        const rPwmMinOnTimeSet_heatNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rPwmMinOnTimeSet_heatNodeId] = 1234 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rPwmMinOnTimeHeatSet = createCustomVariable(i, "rPwmMinOnTimeHeatSet", rPwmMinOnTimeHeat, "Set", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat","rPwmMinOnTime", "Set", undefined, rPwmMinOnTimeHeatSetGet, rPwmMinOnTimeHeatSetSet);
+            function rPwmMinOnTimeHeatSetGet() { }
+            function rPwmMinOnTimeHeatSetSet() { }
             //Extruder ==> Expert Settings ==> PID Parameters ==> Heating Control : "Min OnTime-Max" //
-            var rPwmMinOnTimeMax_heat = namespace3.addVariable({
-                componentOf: rPwmMinOnTimeHeat,
-                browseName: "Max",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"rPwmMinOnTime\".\"Max\"",
-                value: {
-                    get: function () {
-                        const rPwmMinOnTimeMax_heatNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rPwmMinOnTimeMax_heatNodeId] = 898989 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rPwmMinOnTimeHeatMax = createCustomVariable(i, "rPwmMinOnTimeHeatMax", rPwmMinOnTimeHeat, "Max", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat","rPwmMinOnTime", "Max", undefined, rPwmMinOnTimeHeatMaxGet, rPwmMinOnTimeHeatMaxSet);
+            function rPwmMinOnTimeHeatMaxGet() { }
+            function rPwmMinOnTimeHeatMaxSet() { }
             //Extruder ==> Expert Settings ==> PID Parameters ==> Heating Control : "Min OnTime-Min" //
-            var rPwmMinOnTimeMin_heat = namespace3.addVariable({
-                componentOf: rPwmMinOnTimeHeat,
-                browseName: "Min",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"rPwmMinOnTime\".\"Min\"",
-                value: {
-                    get: function () {
-                        const rPwmMinOnTimeMin_heatNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rPwmMinOnTimeMin_heatNodeId] = 3 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rPwmMinOnTimeHeatMin = createCustomVariable(i, "rPwmMinOnTimeHeatMin", rPwmMinOnTimeHeat, "Max", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat","rPwmMinOnTime", "Min", undefined, rPwmMinOnTimeHeatMinGet, rPwmMinOnTimeHeatMinSet);
+            function rPwmMinOnTimeHeatMinGet() { }
+            function rPwmMinOnTimeHeatMinSet() { }
             //***********************************************************************************************************/
+            //Extruder ==> Expert Settings ==> PID Parameters ==> Heating Control : "Min OffTime" //
+            var rPwmMinOffTimeHeat = createCustomVariable(i, "rPwmMinOffTimeHeat", udtHeat, "rPwmMinOffTimeHeat", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "rPwmMinOffTime", undefined, undefined, undefined)
             //Extruder ==> Expert Settings ==> PID Parameters ==> Heating Control : "Min OffTime-Set" //
-            var rPwmMinOffTimeSet_heat = namespace3.addVariable({
-                componentOf: rPwmMinOffTimeHeat,
-                browseName: "Set",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"rPwmMinOffTime\".\"Set\"",
-                value: {
-                    get: function () {
-                        const rPwmMinOffTimeSet_heatNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rPwmMinOffTimeSet_heatNodeId] = 31111 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rPwmMinOffTimeHeatSet = createCustomVariable(i, "rPwmMinOffTimeHeatSet", rPwmMinOffTimeHeat, "Set", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "rPwmMinOffTime", "Set", rPwmMinOffTimeHeatSetGet, rPwmMinOffTimeHeatSetSet)
+            function rPwmMinOffTimeHeatSetGet() { };
+            function rPwmMinOffTimeHeatSetSet() { };
             //Extruder ==> Expert Settings ==> PID Parameters ==> Heating Control : "Min OffTime-Max" //
-            var rPwmMinOffTimeMax_heat = namespace3.addVariable({
-                componentOf: rPwmMinOffTimeHeat,
-                browseName: "Max",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"rPwmMinOffTime\".\"Max\"",
-                value: {
-                    get: function () {
-                        const rPwmMinOffTimeMax_heatNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rPwmMinOffTimeMax_heatNodeId] = 7777777 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rPwmMinOffTimeHeatMax = createCustomVariable(i, "rPwmMinOffTimeHeatMax", rPwmMinOffTimeHeat, "Max", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "rPwmMinOffTime", "Max", rPwmMinOffTimeHeatMaxGet, rPwmMinOffTimeHeatMaxSet)
+            function rPwmMinOffTimeHeatMaxGet() { };
+            function rPwmMinOffTimeHeatMaxSet() { };
             //Extruder ==> Expert Settings ==> PID Parameters ==> Heating Control : "Min OffTime-Min" //
-            var rPwmMinOffTimeMin_heat = namespace3.addVariable({
-                componentOf: rPwmMinOffTimeHeat,
-                browseName: "Min",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"rPwmMinOffTime\".\"Min\"",
-                value: {
-                    get: function () {
-                        const rPwmMinOffTimeMin_heatNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rPwmMinOffTimeMin_heatNodeId] = 456 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rPwmMinOffTimeHeatMin = createCustomVariable(i, "rPwmMinOffTimeHeatMin", rPwmMinOffTimeHeat, "Min", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "rPwmMinOffTime", "Min", rPwmMinOffTimeHeatMinGet, rPwmMinOffTimeHeatMinSet)
+            function rPwmMinOffTimeHeatMinGet() { };
+            function rPwmMinOffTimeHeatMinSet() { };
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Heat : "rGain-Set" //
-            var udtHeatPidrGain = namespace3.addVariable({
-                componentOf: udtHeatPid,
-                browseName: "rGain",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"udtPid\".\"rGain\"",
-                value: {
-                    get: function () {
-                        const udtHeatPidrGainNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtHeatPidrGainNodeId] = 456456456456 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rGainHeat = createCustomVariable(i, "rGainHeat", udtHeatPid, "rGain", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "udtPid", "rGain", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Heat : "rTi-Set" //
-            var udtHeatPidrTi = namespace3.addVariable({
-                componentOf: udtHeatPid,
-                browseName: "rTi",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"udtPid\".\"rTi\"",
-                value: {
-                    get: function () {
-                        const udtHeatPidrTiNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtHeatPidrTiNodeId] = 6666 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rTiHeat = createCustomVariable(i, "rGainHeat", udtHeatPid, "rTi", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "udtPid", "rTi", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Heat : "rTd-Set" //
-            var udtHeatPidrTd = namespace3.addVariable({
-                componentOf: udtHeatPid,
-                browseName: "rTd",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"udtPid\".\"rTd\"",
-                value: {
-                    get: function () {
-                        const udtHeatPidrTdNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtHeatPidrTdNodeId] = 9777 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rTdHeat = createCustomVariable(i, "rTdHeat", udtHeatPid, "rTd", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "udtPid", "rTd", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Heat : "rTdFiltRatio-Set" //
-            var udtHeatPidrTdFiltRatio = namespace3.addVariable({
-                componentOf: udtHeatPid,
-                browseName: "rTdFiltRatio",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"udtPid\".\"rTdFiltRatio\"",
-                value: {
-                    get: function () {
-                        const udtHeatPidrTdFiltRatioNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtHeatPidrTdFiltRatioNodeId] = 3333333 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rTdFiltRatioHeat = createCustomVariable(i, "rTdFiltRatio", udtHeatPid, "rTdFiltRatio", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "udtPid", "rTdFiltRatio", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Heat : "rPWeighting-Set" //
-            var udtHeatPidrPWeighting = namespace3.addVariable({
-                componentOf: udtHeatPid,
-                browseName: "rPWeighting",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"udtPid\".\"rPWeighting\"",
-                value: {
-                    get: function () {
-                        const udtHeatPidrPWeightingNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtHeatPidrPWeightingNodeId] = 45454545 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rPWeightingHeat = createCustomVariable(i, "rPWeighting", udtHeatPid, "rPWeighting", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "udtPid", "rPWeighting", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Heat : "rDWeighting-Set" //
-            var udtHeatPidrDWeighting = namespace3.addVariable({
-                componentOf: udtHeatPid,
-                browseName: "rDWeighting",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"udtPid\".\"rDWeighting\"",
-                value: {
-                    get: function () {
-                        const udtHeatPidrDWeightingNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtHeatPidrDWeightingNodeId] = 66663 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rDWeightingHeat = createCustomVariable(i, "rDWeighting", udtHeatPid, "rDWeighting", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "udtPid", "rDWeighting", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Heat : "rCycle-Set" //
-            var udtHeatPidrCycle = namespace3.addVariable({
-                componentOf: udtHeatPid,
-                browseName: "rCycle",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"udtPid\".\"rCycle\"",
-                value: {
-                    get: function () {
-                        const udtHeatPidrCycleNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtHeatPidrCycleNodeId] = 454875487 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rCycleHeat = createCustomVariable(i, "rCycleHeat", udtHeatPid, "rCycle", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "udtPid", "rCycle", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Heat : "rControlZone-Set" //
-            var udtHeatPidrControlZone = namespace3.addVariable({
-                componentOf: udtHeatPid,
-                browseName: "rControlZone",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"udtPid\".\"rControlZone\"",
-                value: {
-                    get: function () {
-                        const udtHeatPidrControlZoneNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtHeatPidrControlZoneNodeId] = 44444777 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rControlZoneHeat = createCustomVariable(i, "rControlZoneHeat", udtHeatPid, "rControlZone", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "udtPid", "rControlZone", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Parameter Heat : "rDeadZone-Set" //
-            var udtHeatPidrDeadZone = namespace3.addVariable({
-                componentOf: udtHeatPid,
-                browseName: "rDeadZone",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"udtPid\".\"rDeadZone\"",
-                value: {
-                    get: function () {
-                        const udtHeatPidrDeadZoneNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udtHeatPidrDeadZoneNodeId] = 555555556 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rDeadZoneHeat = createCustomVariable(i, "rDeadZoneHeat", udtHeatPid, "rDeadZone", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "udtPid", "rDeadZone", undefined, undefined);
             //***********************************************************************************************************/
             //Extruder ==> Expert Settings ==> PID Parameters ==> Curent Heat : "Windings-Set" //
-            var udWindOfCoilSet = namespace3.addVariable({
-                componentOf: udWindOfCoil,
-                browseName: "Set",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Config\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udWindOfCoil\".\"Set\"",
-                value: {
-                    get: function () {
-                        const udWindOfCoilSetNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udWindOfCoilSetNodeId] = 2 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var udWindOfCoilSet = createCustomVariable(i, "udWindOfCoilSet", nr2, "Set", "ZEEX_3111_Config", "udWindOfCoil", "Set", undefined, undefined, undefined);
             //Extruder ==> Expert Settings ==> PID Parameters ==> Curent Heat : "Windings-Max" //
-            var udWindOfCoilMax = namespace3.addVariable({
-                componentOf: udWindOfCoil,
-                browseName: "Max",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Config\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udWindOfCoil\".\"Max\"",
-                value: {
-                    get: function () {
-                        const udWindOfCoilMaxNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udWindOfCoilMaxNodeId] = 10 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var udWindOfCoilMax = createCustomVariable(i, "udWindOfCoilMax", nr2, "Max", "ZEEX_3111_Config", "udWindOfCoil", "Max", undefined, undefined, undefined);
             //Extruder ==> Expert Settings ==> PID Parameters ==> Curent Heat : "Windings-Min" //
-            var udWindOfCoilMin = namespace3.addVariable({
-                componentOf: udWindOfCoil,
-                browseName: "Min",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Config\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udWindOfCoil\".\"Min\"",
-                value: {
-                    get: function () {
-                        const udWindOfCoilMinNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[udWindOfCoilMinNodeId] = 1 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var udWindOfCoilMin = createCustomVariable(i, "udWindOfCoilMin", nr2, "Min", "ZEEX_3111_Config", "udWindOfCoil", "Min", undefined, undefined, undefined);
             //***********************************************************************************************************/
-            //Extruder ==> Expert Settings ==> PID Parameters ==> Curent Heat : "Act" //
-            var rActHeatCurrent = namespace3.addVariable({
-                componentOf: nr3,
-                browseName: "rActHeatCurrent",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Hmi\".\"udtCmPzPid\"" + "[" + i + "]." + "\"rActHeatCurrent\"",
-                value: {
-                    get: function () {
-                        const rActCurrentNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rActCurrentNodeId] = 1.5 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
-            //***********************************************************************************************************/
-            //Extruder ==> Expert Settings ==> PID Parameters ==> Curent Heat : "Min" //
-            var rMinCurrent = namespace3.addVariable({
-                componentOf: nr3,
-                browseName: "rActMaxHeatCurrent",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Hmi\".\"udtCmPzPid\"" + "[" + i + "]." + "\"rMinHeatCurrent\"",
-                value: {
-                    get: function () {
-                        const rMinCurrentNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rMinCurrentNodeId] = 1 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
-            //***********************************************************************************************************/
-            //Extruder ==> Expert Settings ==> PID Parameters ==> Curent Heat : "Max" //
-            var rMaxCurrent = namespace3.addVariable({
-                componentOf: nr3,
-                browseName: "rActMaxHeatCurrent",
-                dataType: opcua.DataType.Float,
-                nodeId: "s=" + "\"ZEEX_3111_Hmi\".\"udtCmPzPid\"" + "[" + i + "]." + "\"rMaxHeatCurrent\"",
-                value: {
-                    get: function () {
-                        const rMaxCurrentNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[rMaxCurrentNodeId] = 2 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
-            //***********************************************************************************************************/
+            //Extruder ==> Expert Settings ==> PID Parameters ==> Current Heat: "Nominal" //
+            var rCurr = createCustomVariable(i, "rCurrSet", udtHeat, "rCurrSet (Nominal)", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "rCurrSet", undefined,undefined, undefined);
             //Extruder ==> Expert Settings ==> PID Parameters ==> Current Heat: "Nominal-Set" //
-            var rCurrSetSet = namespace3.addVariable({
-                componentOf: rCurrSet,
-                browseName: "Set",
-                dataType: opcua.DataType.Double,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"rCurrSet\".\"Set\"",
-                value: {
-                    get: function () {
-                        const rCurrSetSetNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Double, value: serverValues[rCurrSetSetNodeId] = 1.2 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rCurrSet = createCustomVariable(i, "rCurrSet", rCurr, "Set", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "rCurrSet", "Set", undefined);
             //Extruder ==> Expert Settings ==> PID Parameters ==> Current Heat: "Nominal-Max" //
-            var rCurrSetSetMax = namespace3.addVariable({
-                componentOf: rCurrSet,
-                browseName: "Max",
-                dataType: opcua.DataType.Double,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"rCurrSet\".\"Max\"",
-                value: {
-                    get: function () {
-                        const rCurrSetSetMaxNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Double, value: serverValues[rCurrSetSetMaxNodeId] = 1.2 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rCurrMax = createCustomVariable(i, "rCurrMax", rCurr, "Max", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "rCurrSet", "Max", undefined, undefined);
             //Extruder ==> Expert Settings ==> PID Parameters ==> Current Heat: "Nominal-Min" //
-            var rCurrSetSetMin = namespace3.addVariable({
-                componentOf: rCurrSet,
-                browseName: "Min",
-                dataType: opcua.DataType.Double,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"rCurrSet\".\"Min\"",
-                value: {
-                    get: function () {
-                        const rCurrSetSetMinNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Double, value: serverValues[rCurrSetSetMinNodeId] = 1.2 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rCurrMin = createCustomVariable(i, "rCurrMin", rCurr, "Min", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "rCurrSet", "Min", undefined, undefined);
             //***********************************************************************************************************/
+
+            var rCurrTol = createCustomVariable(i, "rCurrSet", udtHeat, "rCurrTolSet (Tolerance)", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "rCurrTol",  undefined, undefined);
             //Extruder ==> Expert Settings ==> PID Parameters ==> Current Heat: "Tolerance-Set" //
-            var rCurrTolSet = namespace3.addVariable({
-                componentOf: rCurrSet,
-                browseName: "Set",
-                dataType: opcua.DataType.Double,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"rCurrTol\".\"Set\"",
-                value: {
-                    get: function () {
-                        const rCurrTolSetNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Double, value: serverValues[rCurrTolSetNodeId] = 1.2 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rCurrTolSet = createCustomVariable(i, "rCurrSet", rCurrTol, "Set", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "rCurrTol", "Set", undefined, undefined);
             //Extruder ==> Expert Settings ==> PID Parameters ==> Current Heat: "Tolerance-Max" //
-            var rCurrTolSetMax = namespace3.addVariable({
-                componentOf: rCurrSet,
-                browseName: "Max",
-                dataType: opcua.DataType.Double,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"rCurrTol\".\"Max\"",
-                value: {
-                    get: function () {
-                        const rCurrSetSetMaxNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Double, value: serverValues[rCurrSetSetMaxNodeId] = 1.2 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rCurrTolMax = createCustomVariable(i, "rCurrSet", rCurrTol, "Max", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "rCurrTol", "Max", undefined, undefined);
             //Extruder ==> Expert Settings ==> PID Parameters ==> Current Heat: "Tolerance-Min" //
-            var rCurrTolSetMin = namespace3.addVariable({
-                componentOf: rCurrSet,
-                browseName: "Min",
-                dataType: opcua.DataType.Double,
-                nodeId: "s=" + "\"ZEEX_3111_Parameter\".\"udtCmPzPid\"" + "[" + i + "]." + "\"udtHeat\".\"rCurrTol\".\"Min\"",
-                value: {
-                    get: function () {
-                        const rCurrTolSetMinNodeId = this.nodeId.value;
-                        return new opcua.Variant({ dataType: opcua.DataType.Double, value: serverValues[rCurrTolSetMinNodeId] = 1.2 });
-                    },
-                    set: function (variant) {
-                        return opcua.StatusCodes.Good;
-                    }
-                }
-            })
+            var rCurrTolMin = createCustomVariable(i, "rCurrSet", rCurrTol, "Min", "ZEEX_3111_Parameter", "udtCmPzPid", "udtHeat", "rCurrTol", "Min", undefined, undefined);
             //***********************************************************************************************************/
             //***********************************************************************************************************/
             //***********************************************************************************************************/
