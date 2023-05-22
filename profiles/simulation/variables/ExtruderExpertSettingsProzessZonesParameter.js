@@ -1,7 +1,7 @@
 const initial = require('./../../../funktionen');
 module.exports = {
 
-    run: function (addressSpace, device, opcua, verbose, serverValues,) {
+    run1: function (addressSpace, device, opcua, verbose, serverValues,) {
         var namespace3 = addressSpace.getNamespace('http://mynamespace-3/UA/');
         const ZEEX_3111_Parameter = addressSpace.findNode("ns=3;s=\"ZEEX_3111_Parameter\"");
 
@@ -71,8 +71,6 @@ module.exports = {
 
             var nr = createCustomVariable(i, "nr", udtEmPz, i.toString(), "ZEEX_3111_Parameter", "udtEmPz", undefined, undefined, undefined, undefined);
 
-
-
             //***********************************************************************************************************/
             //***********************************************************************************************************/
             //***********************************************************************************************************/
@@ -81,20 +79,18 @@ module.exports = {
             const rPzTemp = addressSpace.findNode("ns=3;s=\"ZEEX_3111_Hmi\".\"udtEmPz\"" + "[" + i + "]." + "\"rPzTemp\"");
 
 
-
             //Extruder ==> Expert Settings ==> Prozess Zones/Parameter ==> Limits:"Warning H" //
             var rTempH = createCustomVariable(i, "rTempH", nr, "rTempH (Warning H)", "ZEEX_3111_Parameter", "udtEmPz", "rTempH", undefined, undefined, undefined);
-
 
             //Extruder ==> Expert Settings ==> Prozess Zones/Parameter ==> Limits:"Warning H-Set" //
             var rTempHSet = createCustomVariable(i, "rTempHSet", rTempH, "Set", "ZEEX_3111_Parameter", "udtEmPz", "rTempH", "Set", rTempHSetGet, rTempHSetSet);
 
-            function rTempHSetGet(x,nameNodeId, serverValues) {
+            function rTempHSetGet(nameNodeId, serverValues) {
                 initial.rTempHSet(i, nameNodeId, serverValues);
             }
 
             function rTempHSetSet(nameNodeId, serverValues) {
-                const rTempHHMinNodeId = nameNodeId["rTempHSetNodeId"].replace("rTempH", "rTempHH").replace("Set", "Min");
+           /*     const rTempHHMinNodeId = nameNodeId["rTempHSetNodeId"].replace("rTempH", "rTempHH").replace("Set", "Min");
                 serverValues[rTempHHMinNodeId] = serverValues[nameNodeId["rTempHSetNodeId"]];
 
                 const rTempHMinNodeId = nameNodeId["rTempHSetNodeId"].replace("Set", "Min");
@@ -102,7 +98,7 @@ module.exports = {
 
                 const rOpMaxNodeId = nameNodeId["rTempHSetNodeId"].replace("rTempH", "rPzTemp").replace("Set", "rOpMax").replace("ZEEX_3111_Parameter", "ZEEX_3111_Hmi")
                 serverValues[rOpMaxNodeId] = serverValues[nameNodeId["rTempHSetNodeId"]];
-                return opcua.StatusCodes.Good;
+                return opcua.StatusCodes.Good;*/
             }
 
             //Extruder ==> Expert Settings ==> Prozess Zones/Parameter ==> Limits:"Warning H-Max" //

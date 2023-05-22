@@ -1,6 +1,7 @@
-//*****InitialStatus****/
-
-
+function rActGet(nameNodeId, serverValues){
+  
+//rActObjekt.rAct(i,nameNodeId, serverValues)
+}
 
 
 function createInitialStatusFunction(functionName, initialValue, variableName, customValues = {}) {
@@ -9,7 +10,7 @@ function createInitialStatusFunction(functionName, initialValue, variableName, c
       var nodeIdInitial = [];
       nodeIdInitial[i] = nameNodeId[variableName + "NodeId"];
 
-      if (!( nameNodeId[variableName + "NodeId"] in serverValues)) {
+      if (!(nameNodeId[variableName + "NodeId"] in serverValues)) {
         for (let index = 0; index <= 13; index++) {
           serverValues[nodeIdInitial[index]] = initialValue;
         }
@@ -21,61 +22,23 @@ function createInitialStatusFunction(functionName, initialValue, variableName, c
 
         serverValues[nameNodeId[variableName + "NodeId"]] = serverValues[nodeIdInitial[i]];
       }
-      
+
     },
   };
 }
 
 
-
-/*
-Wenn du die Funktion createInitialStatusFunction manuell eingibst, ohne sie als separate Funktion zu definieren, würde der Code folgendermaßen aussehen:
-
-javascript
-Copy code
-const rOpMaxObjekt = {
-  rOpMax: function (i, nodeId, serverValues) {
-    var nodeIdInitial = [];
-    nodeIdInitial[i] = nodeId;
-
-    if (!(nodeId in serverValues)) {
-      for (let index = 0; index <= 13; index++) {
-        serverValues[nodeIdInitial[index]] = 300;
-      }
-
-      serverValues[nodeIdInitial[0]] = 100;
-      serverValues[nodeIdInitial[1]] = 305;
-      serverValues[nodeIdInitial[2]] = 306;
-      serverValues[nodeIdInitial[3]] = 307;
-      serverValues[nodeIdInitial[4]] = 308;
-      serverValues[nodeIdInitial[5]] = 309;
-      serverValues[nodeIdInitial[6]] = 310;
-      serverValues[nodeIdInitial[7]] = 311;
-      serverValues[nodeIdInitial[8]] = 312;
-      serverValues[nodeIdInitial[9]] = 313;
-      serverValues[nodeIdInitial[10]] = 314;
-      serverValues[nodeIdInitial[11]] = 315;
-      serverValues[nodeIdInitial[12]] = 316;
-      serverValues[nodeIdInitial[13]] = 317;
-      serverValues[nodeIdInitial[14]] = 318;
-
-      serverValues[nodeId] = serverValues[nodeIdInitial[i]];
-    }
-  },
-};*/
-
-
 const rOpMaxObjekt = createInitialStatusFunction("rOpMax", 300, "rOpMax", { 1: 100, 2: 305, 6: 306, 7: 355 });
 
-const rActObjekt = createInitialStatusFunction("rAct", 20, "rAct", { 1: 21, 2: 23, 6: 19 });
+var rActObjekt = createInitialStatusFunction("rAct", 20, "rAct", { 1: 21, 2: 23, 6: 19 });
 
 const rTempHSetObjekt = createInitialStatusFunction("rTempHSet", 300, "rTempHSet", { 2: 305, 4: 356, 6: 366 });
 
 const rTempHMinObjekt = createInitialStatusFunction("rTempHMin", 150, "rTempHMin", { 2: 305, 4: 356, 6: 366 });
 
-const TempHHSetObjekt = createInitialStatusFunction("TempHHSet", 450, "TempHSet", { 2: 305, 4: 399, 6: 370, 10: 450 });
+const TempHHSetObjekt = createInitialStatusFunction("TempHHSet", 450, "rTempHSet", { 2: 305, 4: 399, 6: 370, 10: 450 });
 
-const rSetTolHSetObjekt = createInitialStatusFunction("rSetTolHSet", 5, "TrSetTolHSet", { 2: 6, 4: 7, 6: 370, 10: 6, 11: 6 });
+const rSetTolHSetObjekt = createInitialStatusFunction("rSetTolHSet", 5, "rSetTolHSet", { 2: 6, 4: 7, 6: 370, 10: 6, 11: 6 });
 
 const rSetTolHMaxObjekt = createInitialStatusFunction("rSetTolHMax", 10, "TrSetTolHMax", { 2: 11, 4: 12, 6: 8, 10: 9, 11: 9 });
 
@@ -115,8 +78,41 @@ const rTempHeatupSetObjekt = createInitialStatusFunction("rTempHeatupSet", 200, 
 
 const rTempHeatupMaxObjekt = createInitialStatusFunction("rTempHeatupMax", 300, "rTempHeatupMax", {});
 
+
+const rGainHeatSetObjekt = createInitialStatusFunction("rGainHeatSet", 1.5, "rGainHeatSet", { 1: 2, 2: 2, 5: 3, 6: 0, 7: 2 });
+
+const rTiHeatSetObjekt = createInitialStatusFunction("rTiHeatSet", 1.6, "rTiHeatSet", {});
+
+const rTdHeatSetObjekt = createInitialStatusFunction("rTdHeatSet", 1.7, "rTdHeatSet", {});
+
+const rTdFiltRatioHeatSetObjekt = createInitialStatusFunction("rTdFiltRatioHeatSet", 1.8, "rTdFiltRatioHeatSet", {});
+
+const rPWeightingHeatSetObjekt = createInitialStatusFunction("rPWeightingHeatSet", 1.9, "rPWeightingHeatSet", {});
+
+const rDWeightingHeatSetObjekt = createInitialStatusFunction("rDWeightingHeatSet", 2.0, "rDWeightingHeatSet", {});
+
+const rCycleHeatSetObjekt = createInitialStatusFunction("rCycleHeatSet", 2.1, "rCycleHeatSet", {});
+
+const rControlZoneHeatSetObjekt = createInitialStatusFunction("rControlZoneHeatSet", 2.2, "rControlZoneHeatSet", {});
+
+const rDeadZoneHeatSetObjekt = createInitialStatusFunction("rDeadZoneHeatSet", 88, "rDeadZoneHeatSet", {});
+
+function rSetSet(nameNodeId, serverValues, i) {
+  setTimeout(function () {
+      console.log("rSetSet");
+
+      const rActNodeId = nameNodeId["rSetNodeId"].replace("rSet", "rAct");
+      serverValues[rActNodeId] = serverValues[nameNodeId["rSetNodeId"]];
+
+      console.log("rActNodeId: ", serverValues[rActNodeId]);
+      console.log("rAct value: ", serverValues[rActNodeId]);
+
+      console.log("rActSet wurde aufgerufen...", rActNodeId);
+  }, 0);
+}
+
 module.exports = {
-  rAct: rActObjekt.rAct,
+  //rAct: rActObjekt.rAct,
 
   rOpMax: rOpMaxObjekt.rOpMax,
 
@@ -149,10 +145,32 @@ module.exports = {
   udTimeRelMax: udTimeRelMaxObjekt.udTimeRelMax,
   udTimeRelMin: udTimeRelMinObjekt.udTimeRelMin,
 
- 
-
-
   rTempHeatupSet: rTempHeatupSetObjekt.rTempHeatupSet,
   rTempHeatupMax: rTempHeatupMaxObjekt.rTempHeatupMax,
 
+  rGainHeatSet: rGainHeatSetObjekt.rGainHeatSet,
+  rTiHeatSet: rTiHeatSetObjekt.rTiHeatSet,
+
+
+  rTdHeatSet: rTdHeatSetObjekt.rTdHeatSet,
+
+  rTdFiltRatioHeatSet: rTdFiltRatioHeatSetObjekt.rTdFiltRatioHeatSet,
+
+  rPWeightingHeatSet: rPWeightingHeatSetObjekt.rPWeightingHeatSet,
+
+  rDWeightingHeatSet: rDWeightingHeatSetObjekt.rDWeightingHeatSet,
+
+  rCycleHeatSet: rCycleHeatSetObjekt.rCycleHeatSet,
+
+  rControlZoneHeatSet: rControlZoneHeatSetObjekt.rControlZoneHeatSet,
+
+  rDeadZoneHeatSet: rDeadZoneHeatSetObjekt.rDeadZoneHeatSet,
+
+  rSetSet:rSetSet,
+ 
+  
+  rActGet:rActGet
+
 }
+  
+

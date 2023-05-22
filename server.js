@@ -39,7 +39,7 @@ var batchVars = null;
 
 // Settings / vars
 var verbose             = config.verbose;
-var serverValues        = {}; // Holds all server values except MQTT values
+var serverValues        = {}; // Holds all server values
 const methodConfigDir   = profileDir + '/methods';
 const varConfigDir      = profileDir + '/variables';
 
@@ -63,10 +63,7 @@ if (fs.existsSync(varConfigDir)) {
         }
     });
 }
-
-
-
-        
+       
 
 
 (async () => {
@@ -88,13 +85,11 @@ if (fs.existsSync(varConfigDir)) {
                 serverCertificateManager: certificateManager
             }
         );
-
-        
+       
         
         await server.initialize();
         if (verbose) console.log("[OK] OPC UA: Server created");
-
-        
+       
 
         const addressSpace = server.engine.addressSpace;
         const namespace = addressSpace?.getOwnNamespace()
@@ -109,17 +104,7 @@ if (fs.existsSync(varConfigDir)) {
         const namespace3 = addressSpace.registerNamespace(namespaceUri3);
         const namespaceIndex4 = addressSpace.getNamespaceIndex(namespaceUri3);
 
-        module.exports = {
-
-             namespaceUri2: namespaceUri2 ,
-             namespace2: namespace2 ,
-             namespaceIndex3: namespaceIndex3 ,
-    
-            namespaceUri3: namespaceUri3,
-             namespace3: namespace3  ,
-             namespaceIndex4 : namespaceIndex4
-    
-        };
+        
         const deviceNodeId = "ns=2;s=5001"
     
         const device = namespace2.addObject(
@@ -129,11 +114,21 @@ if (fs.existsSync(varConfigDir)) {
                 nodeId: deviceNodeId
             }
         );
-          
-        
-        
+        module.exports = {
 
-        
+            namespaceUri2: namespaceUri2 ,
+            namespace2: namespace2 ,
+            namespaceIndex3: namespaceIndex3 ,
+   
+           namespaceUri3: namespaceUri3,
+            namespace3: namespace3  ,
+            namespaceIndex4 : namespaceIndex4,
+
+            addressSpace: addressSpace,
+            opcua:opcua,
+            device:device
+   
+       };              
 
         /*****************/
         /*** VARIABLES ***/
@@ -145,7 +140,7 @@ if (fs.existsSync(varConfigDir)) {
             varFiles.forEach(function (file) {
                 var module = require(profileDir + '/variables/' + file);
                 var varName = file.replace(/\.js$/);
-                serverValues[varName] = module.run(addressSpace, device, opcua, verbose, serverValues);
+                serverValues[varName] = module.run1(addressSpace, device, opcua, verbose, serverValues);
             });
             if (verbose) console.log("[OK] OPC UA: Variables created");
         }
@@ -171,5 +166,6 @@ if (fs.existsSync(varConfigDir)) {
         console.log(err);
     }
   
-
+    
 })();
+
