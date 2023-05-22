@@ -1,7 +1,13 @@
-function rActGet(nameNodeId, serverValues){
-  
-//rActObjekt.rAct(i,nameNodeId, serverValues)
+var nameNodeId = {};
+var serverValues = {};
+var variableName={}
+
+
+function rActGet( i,nameNodeId, serverValues) {
+// rActObjekt.rAct(i,nameNodeId,serverValues)
 }
+
+
 
 
 function createInitialStatusFunction(functionName, initialValue, variableName, customValues = {}) {
@@ -10,7 +16,7 @@ function createInitialStatusFunction(functionName, initialValue, variableName, c
       var nodeIdInitial = [];
       nodeIdInitial[i] = nameNodeId[variableName + "NodeId"];
 
-      if (!(nameNodeId[variableName + "NodeId"] in serverValues)) {
+     // if (!(nameNodeId[variableName + "NodeId"] in serverValues)) {
         for (let index = 0; index <= 13; index++) {
           serverValues[nodeIdInitial[index]] = initialValue;
         }
@@ -23,14 +29,14 @@ function createInitialStatusFunction(functionName, initialValue, variableName, c
         serverValues[nameNodeId[variableName + "NodeId"]] = serverValues[nodeIdInitial[i]];
       }
 
-    },
+    //},
   };
 }
 
 
 const rOpMaxObjekt = createInitialStatusFunction("rOpMax", 300, "rOpMax", { 1: 100, 2: 305, 6: 306, 7: 355 });
 
-var rActObjekt = createInitialStatusFunction("rAct", 20, "rAct", { 1: 21, 2: 23, 6: 19 });
+var rActObjekt = createInitialStatusFunction("rAct", 22, "rAct", { 1: 21, 2: 23, 6: 19 });
 
 const rTempHSetObjekt = createInitialStatusFunction("rTempHSet", 300, "rTempHSet", { 2: 305, 4: 356, 6: 366 });
 
@@ -112,7 +118,7 @@ function rSetSet(nameNodeId, serverValues, i) {
 }
 
 module.exports = {
-  //rAct: rActObjekt.rAct,
+  rAct: rActObjekt.rAct,
 
   rOpMax: rOpMaxObjekt.rOpMax,
 
