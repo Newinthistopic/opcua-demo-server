@@ -1,182 +1,299 @@
-var nameNodeId = {};
-var serverValues = {};
-var variableName={}
-
-
-function rActGet( i,nameNodeId, serverValues) {
-// rActObjekt.rAct(i,nameNodeId,serverValues)
-}
 
 
 
 
-function createInitialStatusFunction(functionName, initialValue, variableName, customValues = {}) {
-  return {
-    [functionName]: function (i, nameNodeId, serverValues) {
-      var nodeIdInitial = [];
-      nodeIdInitial[i] = nameNodeId[variableName + "NodeId"];
 
-     // if (!(nameNodeId[variableName + "NodeId"] in serverValues)) {
-        for (let index = 0; index <= 13; index++) {
-          serverValues[nodeIdInitial[index]] = initialValue;
-        }
 
-        // Setze benutzerdefinierte Werte für bestimmte Indizes
-        for (const [index, value] of Object.entries(customValues)) {
-          serverValues[nodeIdInitial[index]] = value;
-        }
+var initial = function (variableName, initialValue, customValues, i, nameNodeId, serverValues) {
+  
 
-        serverValues[nameNodeId[variableName + "NodeId"]] = serverValues[nodeIdInitial[i]];
+  var nodeIdInitial = [];
+  
+  if (nameNodeId[variableName + "NodeId"] !== undefined) {
+    nodeIdInitial[i] = nameNodeId[variableName + "NodeId"];
+  } else {
+    console.error(`Die nameNodeId[${variableName}NodeId] ist nicht definiert.`);
+    return; // Beenden Sie die Ausführung der Funktion
+  }
+
+  if (!(nameNodeId[variableName + "NodeId"] in serverValues)) {
+    
+    for (let index = 0; index <= 13; index++) {
+      if (nodeIdInitial[index] !== undefined) {
+        serverValues[nodeIdInitial[index]] = initialValue;
       }
+    }
 
-    //},
-  };
+    // Setze benutzerdefinierte Werte für bestimmte Indizes
+    for (const [index, value] of Object.entries(customValues)) {
+      if (nodeIdInitial[index] !== undefined && value !== undefined) { // Prevent setting undefined keys in serverValues
+        serverValues[nodeIdInitial[index]] = value;
+      }
+    }
+  }
+};
+
+
+
+function rSetSet(nameNodeId, serverValues) {
+ 
+  console.log("rSetSet");
+
+  const rActNodeId = nameNodeId["rSetNodeId"].replace("rSet", "rAct");
+  serverValues[rActNodeId] = serverValues[nameNodeId["rSetNodeId"]];
+
+  
+  console.log("rAct value: ", serverValues[rActNodeId]);
+
+  console.log("rActSet wurde aufgerufen...", rActNodeId);
+  
 }
 
 
-const rOpMaxObjekt = createInitialStatusFunction("rOpMax", 300, "rOpMax", { 1: 100, 2: 305, 6: 306, 7: 355 });
-
-var rActObjekt = createInitialStatusFunction("rAct", 22, "rAct", { 1: 21, 2: 23, 6: 19 });
-
-const rTempHSetObjekt = createInitialStatusFunction("rTempHSet", 300, "rTempHSet", { 2: 305, 4: 356, 6: 366 });
-
-const rTempHMinObjekt = createInitialStatusFunction("rTempHMin", 150, "rTempHMin", { 2: 305, 4: 356, 6: 366 });
-
-const TempHHSetObjekt = createInitialStatusFunction("TempHHSet", 450, "rTempHSet", { 2: 305, 4: 399, 6: 370, 10: 450 });
-
-const rSetTolHSetObjekt = createInitialStatusFunction("rSetTolHSet", 5, "rSetTolHSet", { 2: 6, 4: 7, 6: 370, 10: 6, 11: 6 });
-
-const rSetTolHMaxObjekt = createInitialStatusFunction("rSetTolHMax", 10, "TrSetTolHMax", { 2: 11, 4: 12, 6: 8, 10: 9, 11: 9 });
-
-const rSetTolHMinObjekt = createInitialStatusFunction("rSetTolHMin", 5, "rSetTolHMin", { 2: 6, 4: 6, 6: 4, 10: 6, 11: 6 });
-
-const rSetTolHHSetObjekt = createInitialStatusFunction("rSetTolHHSet", 10, "rSetTolHHSet", { 2: 11, 4: 12, 6: 13, 10: 14, 11: 15 });
-
-const rSetTolHHMaxObjekt = createInitialStatusFunction("rSetTolHHMax", 20, "rSetTolHHMax", { 2: 21 });
-
-const rSetTolHHMinObjekt = createInitialStatusFunction("rSetTolHHMin", 5, "rSetTolHHMin", { 2: 6, 4: 6, 6: 4, 10: 6, 11: 6 });
-
-const rTempCooldownSetObjekt = createInitialStatusFunction("rTempCooldownSet", 10, "rTempCooldownSet", {});
-
-const rTempCooldownMaxObjekt = createInitialStatusFunction("rTempCooldownMax", 10, "rTempCooldownMax", {});
-
-const rTempCooldownMinObjekt = createInitialStatusFunction("rTempCooldownMin", 6, "rTempCooldownMin", {});
-
-const rTempRampFactorSetObjekt = createInitialStatusFunction("rTempRampFactorSet", 15, "rTempRampFactorSet", {});
-
-const rTempRampFactorMaxObjekt = createInitialStatusFunction("rTempRampFactorMax", 90, "rTempRampFactorMax", {});
-
-const rTempRampFactorMinObjekt = createInitialStatusFunction("rTempRampFactorMin", 8, "rTempRampFactorMin", {});
-
-const rTempReleaseSetObjekt = createInitialStatusFunction("rTempReleaseSet", 152, "rTempReleaseSet", {});
-
-const rTempReleaseMaxObjekt = createInitialStatusFunction("rTempReleaseMax", 300, "rTempReleaseMax", {});
-
-const rTempReleaseMinObjekt = createInitialStatusFunction("rTempReleaseMin", 100, "rTempReleaseMax", {});
-
-const udTimeRelSetObjekt = createInitialStatusFunction("udTimeRelSet", 456, "udTimeRelSet", {});
-
-const udTimeRelMaxObjekt = createInitialStatusFunction("udTimeRelMax", 600, "udTimeRelMax", {});
-
-const udTimeRelMinObjekt = createInitialStatusFunction("udTimeRelMin", 51, "udTimeRelMin", {});
-
-const rTempHeatupSetObjekt = createInitialStatusFunction("rTempHeatupSet", 200, "rTempHeatupSet", {});
-
-const rTempHeatupMaxObjekt = createInitialStatusFunction("rTempHeatupMax", 300, "rTempHeatupMax", {});
+  
 
 
-const rGainHeatSetObjekt = createInitialStatusFunction("rGainHeatSet", 1.5, "rGainHeatSet", { 1: 2, 2: 2, 5: 3, 6: 0, 7: 2 });
 
-const rTiHeatSetObjekt = createInitialStatusFunction("rTiHeatSet", 1.6, "rTiHeatSet", {});
-
-const rTdHeatSetObjekt = createInitialStatusFunction("rTdHeatSet", 1.7, "rTdHeatSet", {});
-
-const rTdFiltRatioHeatSetObjekt = createInitialStatusFunction("rTdFiltRatioHeatSet", 1.8, "rTdFiltRatioHeatSet", {});
-
-const rPWeightingHeatSetObjekt = createInitialStatusFunction("rPWeightingHeatSet", 1.9, "rPWeightingHeatSet", {});
-
-const rDWeightingHeatSetObjekt = createInitialStatusFunction("rDWeightingHeatSet", 2.0, "rDWeightingHeatSet", {});
-
-const rCycleHeatSetObjekt = createInitialStatusFunction("rCycleHeatSet", 2.1, "rCycleHeatSet", {});
-
-const rControlZoneHeatSetObjekt = createInitialStatusFunction("rControlZoneHeatSet", 2.2, "rControlZoneHeatSet", {});
-
-const rDeadZoneHeatSetObjekt = createInitialStatusFunction("rDeadZoneHeatSet", 88, "rDeadZoneHeatSet", {});
-
-function rSetSet(nameNodeId, serverValues, i) {
-  setTimeout(function () {
-      console.log("rSetSet");
-
-      const rActNodeId = nameNodeId["rSetNodeId"].replace("rSet", "rAct");
-      serverValues[rActNodeId] = serverValues[nameNodeId["rSetNodeId"]];
-
-      console.log("rActNodeId: ", serverValues[rActNodeId]);
-      console.log("rAct value: ", serverValues[rActNodeId]);
-
-      console.log("rActSet wurde aufgerufen...", rActNodeId);
-  }, 0);
-}
-
-module.exports = {
-  rAct: rActObjekt.rAct,
-
-  rOpMax: rOpMaxObjekt.rOpMax,
-
-  rTempHSet: rTempHSetObjekt.rTempHSet,
-  rTempHMin: rTempHMinObjekt.rTempHMin,
-
-  rTempHHSet: TempHHSetObjekt.TempHHSet,
-  rSetTolHMin: rSetTolHMinObjekt.rSetTolHMin,
-
-  rSetTolHSet: rSetTolHSetObjekt.rSetTolHSet,
-  rSetTolHMax: rSetTolHMaxObjekt.rSetTolHMax,
-
-  rSetTolHHSet: rSetTolHHSetObjekt.rSetTolHHSet,
-  rSetTolHHMax: rSetTolHHMaxObjekt.rSetTolHHMax,
-  rSetTolHHMin: rSetTolHHMinObjekt.rSetTolHHMin,
-
-  rTempCooldownSet: rTempCooldownSetObjekt.rTempCooldownSet,
-  rTempCooldownMax: rTempCooldownMaxObjekt.rTempCooldownMax,
-  rTempCooldownMin: rTempCooldownMinObjekt.rTempCooldownMin,
-
-  rTempRampFactorSet: rTempRampFactorSetObjekt.rTempRampFactorSet,
-  rTempRampFactorMax: rTempRampFactorMaxObjekt.rTempRampFactorMax,
-  rTempRampFactorMin: rTempRampFactorMinObjekt.rTempRampFactorMin,
-
-  rTempReleaseSet: rTempReleaseSetObjekt.rTempReleaseSet,
-  rTempReleaseMax: rTempReleaseMaxObjekt.rTempReleaseMax,
-  rTempReleaseMin: rTempReleaseMinObjekt.rTempReleaseMin,
-
-  udTimeRelSet: udTimeRelSetObjekt.udTimeRelSet,
-  udTimeRelMax: udTimeRelMaxObjekt.udTimeRelMax,
-  udTimeRelMin: udTimeRelMinObjekt.udTimeRelMin,
-
-  rTempHeatupSet: rTempHeatupSetObjekt.rTempHeatupSet,
-  rTempHeatupMax: rTempHeatupMaxObjekt.rTempHeatupMax,
-
-  rGainHeatSet: rGainHeatSetObjekt.rGainHeatSet,
-  rTiHeatSet: rTiHeatSetObjekt.rTiHeatSet,
-
-
-  rTdHeatSet: rTdHeatSetObjekt.rTdHeatSet,
-
-  rTdFiltRatioHeatSet: rTdFiltRatioHeatSetObjekt.rTdFiltRatioHeatSet,
-
-  rPWeightingHeatSet: rPWeightingHeatSetObjekt.rPWeightingHeatSet,
-
-  rDWeightingHeatSet: rDWeightingHeatSetObjekt.rDWeightingHeatSet,
-
-  rCycleHeatSet: rCycleHeatSetObjekt.rCycleHeatSet,
-
-  rControlZoneHeatSet: rControlZoneHeatSetObjekt.rControlZoneHeatSet,
-
-  rDeadZoneHeatSet: rDeadZoneHeatSetObjekt.rDeadZoneHeatSet,
-
-  rSetSet:rSetSet,
  
   
-  rActGet:rActGet
 
+for (var i = 0; i < 14; i++) {
+  function rGainHeatSetGet (i, nameNodeId, serverValues) {
+    initial("rGainHeatSet", 1.5, { 1: 2, 2: 2, 5: 3, 6: 0, 7: 2 }, i, nameNodeId, serverValues);
+  }
 }
-  
+
+
+for (var i = 0; i < 14; i++) {
+  function rOpMinGet (i, nameNodeId, serverValues) {
+       initial("rOpMin", 13, { 1: 10, 2: 3, 6: 6, 7: 4}, i, nameNodeId, serverValues);
+       
+       
+   }
+ }
+
+for (var i = 0; i < 14; i++) {
+ function rOpMaxGet (i, nameNodeId, serverValues) {
+      initial("rOpMax", 111, { 1: 100, 2: 305, 6: 306, 7: 355 }, i, nameNodeId, serverValues);
+    
+  }
+}
+
+
+
+  function rActGet(i, nameNodeId,serverValues) {
+    
+    
+    initial("rAct", 22222, { 1: 21, 2: 23, 6: 19 }, i, nameNodeId, serverValues);
+  }
+
+
+function rTempHSetGet(nameNodeId, serverValues) {
+  for (var i = 0; i < 14; i++) {
+    initial("rTempHSet", 300, { 2: 305, 4: 356, 6: 366 }, i, nameNodeId, serverValues);
+  }
+}
+
+function rTempHMinGet(nameNodeId, serverValues) {
+  for (var i = 0; i < 14; i++) {
+    initial("rTempHMin", 150, { 2: 305, 4: 356, 6: 366 }, i, nameNodeId, serverValues);
+  }
+}
+
+function TempHHSetGet(nameNodeId, serverValues) {
+  for (var i = 0; i < 14; i++) {
+    initial("TempHHSet", 450, { 2: 305, 4: 399, 6: 370, 10: 450 }, i, nameNodeId, serverValues);
+  }
+}
+
+function rSetTolHSetGet(nameNodeId, serverValues) {
+  for (var i = 0; i < 14; i++) {
+    initial("rSetTolHSet", 5, { 2: 6, 4: 7, 6: 370, 10: 6, 11: 6 }, i, nameNodeId, serverValues);
+  }
+}
+
+function rSetTolHMaxGet(nameNodeId, serverValues) {
+  for (var i = 0; i < 14; i++) {
+    initial("rSetTolHMax", 10, { 2: 11, 4: 12, 6: 8, 10: 9, 11: 9 }, i, nameNodeId, serverValues);
+  }
+}
+
+function rSetTolHMinGet(nameNodeId, serverValues) {
+  for (var i = 0; i < 14; i++) {
+    initial("rSetTolHMin", 5, { 2: 6, 4: 6, 6: 4, 10: 6, 11: 6 }, i, nameNodeId, serverValues);
+  }
+}
+
+function rSetTolHHSetGet(nameNodeId, serverValues) {
+  for (var i = 0; i < 14; i++) {
+    initial("rSetTolHHSet", 10, { 2: 11, 4: 12, 6: 13, 10: 14, 11: 15 }, i, nameNodeId, serverValues);
+  }
+}
+
+function rSetTolHHMaxGet(nameNodeId, serverValues) {
+  for (var i = 0; i < 14; i++) {
+    initial("rSetTolHHMax", 20, { 2: 21 }, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rSetTolHHMinGet(nameNodeId, serverValues) {
+    initial("rSetTolHHMin", 5, { 2: 6, 4: 6, 6: 4, 10: 6, 11: 6 }, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rTempCooldownSetGet(nameNodeId, serverValues) {
+    initial("rTempCooldownSet", 10, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rTempCooldownMaxGet(nameNodeId, serverValues) {
+    initial("rTempCooldownMax", 10, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rTempCooldownMinGet(nameNodeId, serverValues) {
+    initial("rTempCooldownMin", 6, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rTempRampFactorSetGet(nameNodeId, serverValues) {
+    initial("rTempRampFactorSet", 15, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rTempRampFactorMaxGet(nameNodeId, serverValues) {
+    initial("rTempRampFactorMax", 90, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rTempRampFactorMinGet(nameNodeId, serverValues) {
+    initial("rTempRampFactorMin", 8, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rTempReleaseSetGet(nameNodeId, serverValues) {
+    initial("rTempReleaseSet", 152, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rTempReleaseMaxGet(nameNodeId, serverValues) {
+    initial("rTempReleaseMax", 300, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rTempReleaseMinGet(nameNodeId, serverValues) {
+    initial("rTempReleaseMin", 100, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function udTimeRelSetGet(nameNodeId, serverValues) {
+    initial("udTimeRelSet", 456, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function udTimeRelMaxGet(nameNodeId, serverValues) {
+    initial("udTimeRelMax", 600, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function udTimeRelMinGet(nameNodeId, serverValues) {
+    initial("udTimeRelMin", 51, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rTempHeatupSetGet(nameNodeId, serverValues) {
+    initial("rTempHeatupSet", 200, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rTempHeatupMaxGet(nameNodeId, serverValues) {
+    initial("rTempHeatupMax", 300, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rGainHeatSetGet(nameNodeId, serverValues) {
+    initial("rGainHeatSet", 1.5, { 1: 2, 2: 2, 5: 3, 6: 0, 7: 2 }, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rTiHeatSetGet(nameNodeId, serverValues) {
+    initial("rTiHeatSet", 1.6, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rTdHeatSetGet(nameNodeId, serverValues) {
+    initial("rTdHeatSet", 1.7, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rTdFiltRatioHeatSetGet(nameNodeId, serverValues) {
+    initial("rTdFiltRatioHeatSet", 1.8, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rPWeightingHeatSetGet(nameNodeId, serverValues) {
+    initial("rPWeightingHeatSet", 1.9, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rDWeightingHeatSetGet(nameNodeId, serverValues) {
+    initial("rDWeightingHeatSet", 2.0, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rCycleHeatSetGet(nameNodeId, serverValues) {
+    initial("rCycleHeatSet", 2.1, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rControlZoneHeatSetGet(nameNodeId, serverValues) {
+    initial("rControlZoneHeatSet", 2.2, {}, i, nameNodeId, serverValues);
+  }
+}
+
+for (var i = 0; i < 14; i++) {
+  function rDeadZoneHeatSetGet(nameNodeId, serverValues) {
+    initial("rDeadZoneHeatSet", 88, {}, i, nameNodeId, serverValues);
+  }
+}
+
+
+
+
+  module.exports={
+    rOpMinGet:rOpMinGet,
+    rActGet:rActGet,
+    rSetSet:rSetSet,
+    rOpMaxGet:rOpMaxGet
+  }
+
+
+
+
+
+
+
 

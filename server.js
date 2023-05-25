@@ -14,7 +14,7 @@ const certificateManager = new OPCUACertificateManager({
                                                            automaticallyAcceptUnknownCertificate: true,
                                                            rootFolder                           : "./certs",
                                                        });
-
+                                                      
 // Select profile
 var profile = 'default';
 if (process.argv.length > 2) {
@@ -89,7 +89,7 @@ if (fs.existsSync(varConfigDir)) {
         
         await server.initialize();
         if (verbose) console.log("[OK] OPC UA: Server created");
-       
+        
 
         const addressSpace = server.engine.addressSpace;
         const namespace = addressSpace?.getOwnNamespace()
@@ -126,10 +126,12 @@ if (fs.existsSync(varConfigDir)) {
 
             addressSpace: addressSpace,
             opcua:opcua,
-            device:device
+            device:device,
+            
    
        };              
 
+     
         /*****************/
         /*** VARIABLES ***/
         /*****************/
@@ -145,7 +147,7 @@ if (fs.existsSync(varConfigDir)) {
             if (verbose) console.log("[OK] OPC UA: Variables created");
         }
         
-
+      
            
         /********************/
         /*** START SERVER ***/
@@ -165,7 +167,7 @@ if (fs.existsSync(varConfigDir)) {
         console.log("[ERROR]");
         console.log(err);
     }
-  
+   
     
 })();
 
