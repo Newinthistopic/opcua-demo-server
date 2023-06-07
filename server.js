@@ -6,14 +6,14 @@ console.log('Starting... please wait!');
 const fs = require('fs');
 
 const {
-          OPCUAServer,
-          OPCUACertificateManager
-      } = require("node-opcua");
+    OPCUAServer,
+    OPCUACertificateManager
+} = require("node-opcua");
 
 const certificateManager = new OPCUACertificateManager({
-                                                           automaticallyAcceptUnknownCertificate: true,
-                                                           rootFolder                           : "./certs",
-                                                       });
+    automaticallyAcceptUnknownCertificate: true,
+    rootFolder: "./certs",
+});
 
 // Select profile
 var profile = 'default';
@@ -30,22 +30,22 @@ if (!fs.existsSync(profileDir)) {
 console.log('Using profile "' + profile + '"');
 
 // Functions
-const opcua   = require("node-opcua");
-var config    = require(profileDir + '/config.json');
-const jp      = require('jsonpath');
+const opcua = require("node-opcua");
+var config = require(profileDir + '/config.json');
+const jp = require('jsonpath');
 var batchVars = null;
 
 //console.log(batchVars);
 
 // Settings / vars
-var verbose             = config.verbose;
-var serverValues        = {}; // Holds all server values except MQTT values
-const methodConfigDir   = profileDir + '/methods';
-const varConfigDir      = profileDir + '/variables';
+var verbose = config.verbose;
+var serverValues = {}; // Holds all server values
+const methodConfigDir = profileDir + '/methods';
+const varConfigDir = profileDir + '/variables';
 
 // Parse config files (JS)
 let methodFiles = [];
-let varFiles    = [];
+let varFiles = [];
 if (fs.existsSync(methodConfigDir)) {
     var files = fs.readdirSync(methodConfigDir);
     files.forEach(file => {
@@ -66,8 +66,6 @@ if (fs.existsSync(varConfigDir)) {
 
 
 
-
-
 (async () => {
 
     try {
@@ -76,28 +74,27 @@ if (fs.existsSync(varConfigDir)) {
         /*******************/
         const server = new opcua.OPCUAServer(
             {
-                alternateHostname       : config.opcua.serverHostname,
-                port                    : config.opcua.serverPort,
-                resourcePath            : config.opcua.resourcePath,
-                buildInfo               : {
+                alternateHostname: config.opcua.serverHostname,
+                port: config.opcua.serverPort,
+                resourcePath: config.opcua.resourcePath,
+                buildInfo: {
                     productName: config.opcua.productName,
                     buildNumber: config.opcua.buildNumber,
-                    buildDate  : new Date(config.opcua.buildDate)
+                    buildDate: new Date(config.opcua.buildDate)
                 },
                 serverCertificateManager: certificateManager
             }
         );
 
-        
+
         await server.initialize();
         if (verbose) console.log("[OK] OPC UA: Server created");
 
-        
 
         const addressSpace = server.engine.addressSpace;
         const namespace = addressSpace?.getOwnNamespace()
 
-      
+
         const namespaceUri2 = "http://mynamespace-2/UA/";
         const namespace2 = addressSpace.registerNamespace(namespaceUri2);
         const namespaceIndex3 = addressSpace.getNamespaceIndex(namespaceUri2);
@@ -107,56 +104,60 @@ if (fs.existsSync(varConfigDir)) {
         const namespace3 = addressSpace.registerNamespace(namespaceUri3);
         const namespaceIndex4 = addressSpace.getNamespaceIndex(namespaceUri3);
 
-        module.exports = {
 
-             namespaceUri2 ,
-             namespace2 ,
-             namespaceIndex3 ,
-    
-            namespaceUri3 ,
-             namespace3 ,
-             namespaceIndex4 ,
-    
-        };
-        
-    
-        const device = namespace.addObject(
+        const deviceNodeId = "ns=2;s=5001"
+
+        const device = namespace2.addObject(
             {
                 organizedBy: addressSpace.rootFolder.objects,
-                browseName : config.opcua.browseName
+                browseName: config.opcua.browseName,
+                nodeId: deviceNodeId
             }
         );
-            var testObject = namespace3.addObject({
-            organizedBy: device,
-            browseName: "TestObject",
-            dataType   : opcua.DataType.Double,
-            nodeID: "ns=3;s=PLC"
-            });  
-        
-            /*var testtest = namespace2.addVariable({
-            organizedBy: device,
-            browseName: "DatablocksGlobal34343",
-            dataType   : opcua.DataType.Double,
-            //nodeId: "ns=2;s=DatablocksGlobalsdsfsfs"
-        });*/
 
-        
+        module.exports = {
+
+            namespaceUri2: namespaceUri2,
+            namespace2: namespace2,
+            namespaceIndex3: namespaceIndex3,
+
+            namespaceUri3: namespaceUri3,
+            namespace3: namespace3,
+            namespaceIndex4: namespaceIndex4,
+
+            addressSpace: addressSpace,
+            opcua: opcua,
+            device: device,
+            serverValues: serverValues,
+            verbose: verbose
+
+
+
+        };
 
         /*****************/
         /*** VARIABLES ***/
         /*****************/
-        if (varFiles.length) {
-            if (verbose) console.log("[..] OPC UA: Creating variables from " + varFiles.length + ' external files');
-            varFiles.forEach(function (file) {
-                var module            = require(profileDir + '/variables/' + file);
-                var varName           = file.replace(/\.js$/);
-                serverValues[varName] = module.run(addressSpace, device, opcua, verbose, serverValues);
-            });
-            if (verbose) console.log("[OK] OPC UA: Variables created");
-        }
-        
-        
-           
+
+        var myModule = require('./profiles/simulation/variables/Variabeln')
+
+
+       
+
+        myModule.run1(addressSpace, device, opcua, verbose, serverValues)
+            
+        /* if (varFiles.length) {
+                     if (verbose) console.log("[..] OPC UA: Creating variables from " + varFiles.length + ' external files');
+                     varFiles.forEach(function (file) {
+                         var module = require(profileDir + '/variables/' + file);
+                         var varName = file.replace(/\.js$/);
+                         serverValues[varName] = module.run1(addressSpace, device, opcua, verbose, serverValues);
+                     });
+                     if (verbose) console.log("[OK] OPC UA: Variables created");
+                 }
+                 */
+
+
         /********************/
         /*** START SERVER ***/
         /********************/
@@ -175,6 +176,7 @@ if (fs.existsSync(varConfigDir)) {
         console.log("[ERROR]");
         console.log(err);
     }
-  
+
 
 })();
+
