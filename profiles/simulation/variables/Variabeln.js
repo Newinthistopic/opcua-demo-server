@@ -126,7 +126,7 @@ function run1(addressSpace, device, opcua, verbose, serverValues,) {
 
 
     //Extruder ==> Expert Settings ==> Parameter==>Extruder==> Spec.rate : "Min-Set" //
-    var specRaterOpMin = functions.createCustomVariable(undefined, "specRaterOpMinSet", udtEmExtruderDriveCtrl_Parameter, "rSpecThroughputMin", "SU3111_ZeExtruder.Parameter", "udtEmExtruderDriveCtrl", "rSpecThroughputMin", undefined, undefined, undefined, undefined);
+    var specRaterOpMin = functions.createCustomVariable(undefined, "specRaterOpMin", udtEmExtruderDriveCtrl_Parameter, "rSpecThroughputMin", "SU3111_ZeExtruder.Parameter", "udtEmExtruderDriveCtrl", "rSpecThroughputMin", undefined, undefined, undefined, undefined);
     //Extruder ==> Expert Settings ==> Parameter==> Spec.rate : "Min-Set" //
     var specRaterOpMinSet = functions.createCustomVariable(undefined, "specRaterOpMinSet", specRaterOpMin, "Set", "SU3111_ZeExtruder.Parameter", "udtEmExtruderDriveCtrl", "rSpecThroughputMin", "Set", undefined, undefined, undefined);
     //Extruder ==> Expert Settings ==> Parameter==> Spec.rate : "Min-Max" //
@@ -135,7 +135,7 @@ function run1(addressSpace, device, opcua, verbose, serverValues,) {
     var specRaterOpMinMin = functions.createCustomVariable(undefined, "specRaterOpMinMin", specRaterOpMin, "Min", "SU3111_ZeExtruder.Parameter", "udtEmExtruderDriveCtrl", "rSpecThroughputMin", "Min", undefined, undefined, undefined);
     //***********************************************************************************************************/
     //Extruder ==> Expert Settings ==> Parameter==>Extruder==> Spec.rate : "Max-Set" //
-    var specRaterOpMax = functions.createCustomVariable(undefined, "specRaterOpMaxSet", udtEmExtruderDriveCtrl_Parameter, "rSpecThroughputMax", "SU3111_ZeExtruder.Parameter", "udtEmExtruderDriveCtrl", "rSpecThroughMax", undefined, undefined, undefined, undefined);
+    var specRaterOpMax = functions.createCustomVariable(undefined, "specRaterOpMax", udtEmExtruderDriveCtrl_Parameter, "rSpecThroughputMax", "SU3111_ZeExtruder.Parameter", "udtEmExtruderDriveCtrl", "rSpecThroughMax", undefined, undefined, undefined, undefined);
     //Extruder ==> Expert Settings ==> Parameter==>Extruder==> Spec.rate : "Max-Set" //
     var specRaterOpMaxSet = functions.createCustomVariable(undefined, "specRaterOpMaxSet", specRaterOpMax, "Set", "SU3111_ZeExtruder.Parameter", "udtEmExtruderDriveCtrl", "rSpecThroughputMax", "Set", undefined, undefined, undefined);
     //Extruder ==> Expert Settings ==> Parameter==>Extruder==> Spec.rate : "Max-Max" //
