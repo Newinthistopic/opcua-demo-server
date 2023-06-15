@@ -125,10 +125,31 @@ var initial = function (variableName, initialValue, customValues, i, nameNodeId,
   }
 };
 
+var initialSingleValue = function(variableName, initialValue, nameNodeId, serverValues) {
+  var nodeIdInitial;
+
+  // Überprüfe, ob die Node-ID für den gegebenen Variablennamen existiert.
+  if (nameNodeId[variableName + "NodeId"] !== undefined) {
+    nodeIdInitial = nameNodeId[variableName + "NodeId"];
+  } else {
+    // Beende die Ausführung der Funktion, wenn die Node-ID nicht existiert
+    return;
+  }
+
+  // Setze den initialen Wert, wenn die Node-ID noch nicht in serverValues vorhanden ist
+  if (!(nodeIdInitial in serverValues)) {
+    serverValues[nodeIdInitial] = initialValue;
+  }
+};
+
+
+
+
 module.exports = {
   createCustomVariable: createCustomVariable,
   initial: initial,
-  Uint32createCustomVariable:Uint32createCustomVariable
+  Uint32createCustomVariable:Uint32createCustomVariable,
+  initialSingleValue:initialSingleValue
 }
 
 

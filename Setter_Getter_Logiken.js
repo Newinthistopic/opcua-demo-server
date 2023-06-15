@@ -1,12 +1,30 @@
 var { initial } = require('./../opcua-demo-server/funktionen');
-
+var { initialSingleValue } = require('./../opcua-demo-server/funktionen');
 var serverModule = require('./server');
 var serverValues = serverModule.serverValues;
 
 const SetGetLogic = {
 
-  rSetGet: function rSetGet(i, nameNodeId, serverValues) {
-    initial("rSet", 1, {}, i, nameNodeId, serverValues);
+  rPressSetGet: function (i, nameNodeId, serverValues) {
+    initialSingleValue(" rPressSet", 123,  nameNodeId, serverValues);
+  },
+
+
+  
+  OilTempHHSetGet: function (i, nameNodeId, serverValues) {
+    initialSingleValue("OilTempHHSet", 80,  nameNodeId, serverValues);
+  },
+  OilTempHHMaxGet: function (i, nameNodeId, serverValues) {
+    initialSingleValue("OilTempHHMax", 70,  nameNodeId, serverValues);
+  },
+  OilTempHHMinGet: function (i, nameNodeId, serverValues) {
+    initialSingleValue("OilTempHHMin", 90, nameNodeId, serverValues);
+  },
+
+
+
+  rSetGet: function(i, nameNodeId, serverValues) {
+    initial("rSet", 1, {2:2}, i, nameNodeId, serverValues);
   },
   rSetSet: function rSetSet(i, nameNodeId, serverValues) {
     console.log("rSetSet");
