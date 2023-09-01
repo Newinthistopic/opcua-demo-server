@@ -9,8 +9,10 @@
   },
   "dependencies": {
     "jsonpath": "1.0.2",
+    "mathjs": "^11.8.2",
     "mqtt": "3.0.0",
-    "node-opcua": "^2.4.4"
+    "node-opcua": "^2.4.4",
+    "xlsx": "^0.18.5"
   },
   "author": "Smart HMI GmbH",
   "license": "SEE LICENSE IN license.txt"
