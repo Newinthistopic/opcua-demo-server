@@ -14,7 +14,7 @@ const SetGetlogic = {
 
   SU3111_ZeExtruder_Hmi_udtUmGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtUmSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm", undefined, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Hmi_udtUm_dwStatGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_dwStat", 1605645, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtUm_dwStatGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_dwStat", 1048589, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtUm_dwStatSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_dwStat", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtUm_dwCtrlGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_dwCtrl", 0,  nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtUm_dwCtrlSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
@@ -51,7 +51,7 @@ const SetGetlogic = {
   },
   SU3111_ZeExtruder_Hmi_udtUm_udtModState_dwStatusSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_udtModState_dwStatus", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtUm_udtModState_dwUnitNavigationStatusGet: function (i, nameNodeId, serverValues) {
-     initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_udtModState_dwUnitNavigationStatus", 3,  nameNodeId, serverValues);
+     initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_udtModState_dwUnitNavigationStatus", 4,  nameNodeId, serverValues);
     
     },
   SU3111_ZeExtruder_Hmi_udtUm_udtModState_dwUnitNavigationStatusSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_udtModState_dwUnitNavigationStatus", undefined,  nameNodeId, serverValues); },
@@ -3204,7 +3204,7 @@ funktionen.updatedwstat(i,"SU3111_ZeExtruder_Hmi_udtCmMeltTemp_rMeltTemp",undefi
 
   },
   SU2110_Feeding_Hmi_udtUm_udtModSate_dwStatusSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_udtModSate_dwStatus", undefined, nameNodeId, serverValues); },
-  SU2110_Feeding_Hmi_udtUm_udtModSate_dwUnitNavigationStatusGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_udtModSate_dwUnitNavigationStatus", 3, nameNodeId, serverValues); },
+  SU2110_Feeding_Hmi_udtUm_udtModSate_dwUnitNavigationStatusGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_udtModSate_dwUnitNavigationStatus", 4, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtUm_udtModSate_dwUnitNavigationStatusSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_udtModSate_dwUnitNavigationStatus", undefined, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtUm_udtModSate_uiActOpModeGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_udtModSate_uiActOpMode", undefined, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtUm_udtModSate_uiActOpModeSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_udtModSate_uiActOpMode", undefined, {}, i, nameNodeId, serverValues); },
@@ -4532,7 +4532,7 @@ machine.setState('SU3100_Plastification_Hmi_udtPc_udtModState_dwStatus', 'PREHEA
 
   },
   SU3141_DiverterValve_Hmi_udtUm_udtModState_dwStatusSet: function (i, nameNodeId, serverValues) { initial("SU3141_DiverterValve_Hmi_udtUm_udtModState_dwStatus", undefined, nameNodeId, serverValues); },
-  SU3141_DiverterValve_Hmi_udtUm_udtModState_dwUnitNavigationStatusGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3141_DiverterValve_Hmi_udtUm_udtModState_dwUnitNavigationStatus", 3, nameNodeId, serverValues); },
+  SU3141_DiverterValve_Hmi_udtUm_udtModState_dwUnitNavigationStatusGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3141_DiverterValve_Hmi_udtUm_udtModState_dwUnitNavigationStatus", 4, nameNodeId, serverValues); },
   SU3141_DiverterValve_Hmi_udtUm_udtModState_dwUnitNavigationStatusSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3141_DiverterValve_Hmi_udtUm_udtModState_dwUnitNavigationStatus", undefined, nameNodeId, serverValues); },
   SU3141_DiverterValve_Hmi_udtUm_udtModState_uiActOpModeGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3141_DiverterValve_Hmi_udtUm_udtModState_uiActOpMode", undefined, {}, i, nameNodeId, serverValues); },
   SU3141_DiverterValve_Hmi_udtUm_udtModState_uiActOpModeSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3141_DiverterValve_Hmi_udtUm_udtModState_uiActOpMode", undefined, {}, i, nameNodeId, serverValues); },
@@ -5382,7 +5382,7 @@ machine.setState('SU3100_Plastification_Hmi_udtPc_udtModState_dwStatus', 'PREHEA
 
 
   },
-  SU3131_Zsa_Hmi_udtUm_dwStatGet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_dwStat", undefined, {}, i, nameNodeId, serverValues); },
+  SU3131_Zsa_Hmi_udtUm_dwStatGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3131_Zsa_Hmi_udtUm_dwStat", 13,  nameNodeId, serverValues); },
   SU3131_Zsa_Hmi_udtUm_dwStatSet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_dwStat", undefined, {}, i, nameNodeId, serverValues); },
   SU3131_Zsa_Hmi_udtUm_rScrewPowerGet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_rScrewPower", undefined, {}, i, nameNodeId, serverValues); },
   SU3131_Zsa_Hmi_udtUm_rScrewPowerSet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_rScrewPower", undefined, {}, i, nameNodeId, serverValues); },
@@ -5506,7 +5506,7 @@ machine.setState('SU3100_Plastification_Hmi_udtPc_udtModState_dwStatus', 'PREHEA
 
 
   },
-  SU3131_Zsa_Hmi_udtUm_udtButtonStartStop_dwStatGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3131_Zsa_Hmi_udtUm_udtButtonStartStop_dwStat", 1545, nameNodeId, serverValues); },
+  SU3131_Zsa_Hmi_udtUm_udtButtonStartStop_dwStatGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3131_Zsa_Hmi_udtUm_udtButtonStartStop_dwStat", 1605645, nameNodeId, serverValues); },
   SU3131_Zsa_Hmi_udtUm_udtButtonStartStop_dwStatSet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_udtButtonStartStop_dwStat", undefined, {}, i, nameNodeId, serverValues); },
   SU3131_Zsa_Hmi_udtUm_udtIntLockSwitchGet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_udtIntLockSwitch", undefined, {}, i, nameNodeId, serverValues); },
   SU3131_Zsa_Hmi_udtUm_udtIntLockSwitchSet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_udtIntLockSwitch", undefined, {}, i, nameNodeId, serverValues); },
@@ -5516,10 +5516,10 @@ machine.setState('SU3100_Plastification_Hmi_udtPc_udtModState_dwStatus', 'PREHEA
   SU3131_Zsa_Hmi_udtUm_udtIntLockSwitch_strTagSet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_udtIntLockSwitch_strTag", undefined, {}, i, nameNodeId, serverValues); },
   SU3131_Zsa_Hmi_udtUm_udtModStateGet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_udtModState", undefined, {}, i, nameNodeId, serverValues); },
   SU3131_Zsa_Hmi_udtUm_udtModStateSet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_udtModState", undefined, {}, i, nameNodeId, serverValues); },
-  SU3131_Zsa_Hmi_udtUm_udtModState_dwStatusGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3131_Zsa_Hmi_udtUm_udtModState_dwStatus", 16, nameNodeId, serverValues); },
+  SU3131_Zsa_Hmi_udtUm_udtModState_dwStatusGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3131_Zsa_Hmi_udtUm_udtModState_dwStatus", 4, nameNodeId, serverValues); },
   SU3131_Zsa_Hmi_udtUm_udtModState_dwStatusSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3131_Zsa_Hmi_udtUm_udtModState_dwStatus", undefined, nameNodeId, serverValues); },
-  SU3131_Zsa_Hmi_udtUm_udtModState_dwUnitNavigationStatusGet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_udtModState_dwUnitNavigationStatus", undefined, {}, i, nameNodeId, serverValues); },
-  SU3131_Zsa_Hmi_udtUm_udtModState_dwUnitNavigationStatusSet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_udtModState_dwUnitNavigationStatus", undefined, {}, i, nameNodeId, serverValues); },
+  SU3131_Zsa_Hmi_udtUm_udtModState_dwUnitNavigationStatusGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3131_Zsa_Hmi_udtUm_udtModState_dwUnitNavigationStatus", 4,  nameNodeId, serverValues); },
+  SU3131_Zsa_Hmi_udtUm_udtModState_dwUnitNavigationStatusSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3131_Zsa_Hmi_udtUm_udtModState_dwUnitNavigationStatus", undefined, {}, i, nameNodeId, serverValues); },
   SU3131_Zsa_Hmi_udtUm_udtModState_uiActOpModeGet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_udtModState_uiActOpMode", undefined, {}, i, nameNodeId, serverValues); },
   SU3131_Zsa_Hmi_udtUm_udtModState_uiActOpModeSet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_udtModState_uiActOpMode", undefined, {}, i, nameNodeId, serverValues); },
   SU3131_Zsa_Hmi_udtUm_wMessageGet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_wMessage", undefined, {}, i, nameNodeId, serverValues); },
