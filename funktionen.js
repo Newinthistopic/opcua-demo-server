@@ -431,26 +431,186 @@ var initialSingleValue = function (variableName, initialValue, nameNodeId, serve
 };
 
 
+var wasBelow100 = Array(13).fill(true);  // Am Anfang, außerhalb der Funktion
+var timerWasOn = Array(13).fill(false);
+
+const checkedItemsReady = Array(13).fill(false); // Alle Prozesszonen sind auf Ready
+const checkedItemsOff = Array(13).fill(false); // Alle Prozesszonen sind auf Off
+function dwStatStartWizzard(i, nameNodeId, serverValues) {
+  var werte = require('./profiles/simulation/variables/Variabeln');
+  let rSetTolMax = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSetTolMax.nodeId.value];
+  let rSetTolMaxMax = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSetTolMaxMax.nodeId.value];
+  let rTempRel = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempRel_Set.nodeId.value];
+  let rAct = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
+  let rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value];
+  let rTempCooldown = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempCooldown_Set.nodeId.value];
+  let rTempRelease = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempRel_Set.nodeId.value];
+  let diActRemainTime
+  const EierUhrEinstellZeit = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_udTimeRel.nodeId.value];
+  let EierUhrStartWert = EierUhrEinstellZeit
+  const machine = new StateMachine();
+  
+
+  //********************************************************************************************************************************** */
+  //********************************************************************************************************************************** */
+  //********************************************************************************************************************************** */
+  //********************************************************************************************************************************** */
+  if (sharedState.HeatingisOn) {
+    
+    sharedState.ProzesszonesAreOff = false;
+    if (rAct < rTempRelease) {
+      wasBelow100[i] = true;
+    }
+    if (rAct > rTempRelease && !wasBelow100[i]) {
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 6) // BIT 6 stellt auf Ready
+     
+    }
+
+        if (rAct < rSet && rAct < (rSet - rSetTolMaxMax) && wasBelow100[i]) {
+      
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 9) // BIT 9 stellt auf Active
+    }
+    // geht nur rein, wenn es true ist, also rAct < 100
+    if (rAct > (rSet - rSetTolMaxMax) && wasBelow100[i] && !hasEierUhrFinished[i]) {
+
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 15)  // BIT 15 Show remain time on hmi
+      startEierUhr(i, function (index) {
+        serverValues[werte.data[index].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 6)  // Bit 6 stellt Icon auf Ready
+      });
+    }
+    for (let i = 1; i < 14; i++) {
+      if (serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] === 77) {
+        checkedItemsReady[i] = true;
+      }
+    }
+    if (checkedItemsReady.slice(1, 14).every(Boolean)) {
+      sharedState.ProzesszonesAreReady = true
+    }
+  }
+ 
+  //********************************************************************************************************************************** */
+  //********************************************************************************************************************************** */
+  // Shut Down Down Button Shut Down Down Button Shut Down Down Button Shut Down Down Button Shut Down Down Button Shut Down Down Button
+  if (sharedState.ShutdownisOn) {
+    for (let i = 1; i < 14; i++) {
+      if (serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] === 13) {
+        checkedItemsOff[i] = true;
+      }
+    }
+    if (checkedItemsOff.slice(1, 14).every(Boolean)) {
+      sharedState.ProzesszonesAreOff = true;
+    }
+    sharedState.ProzesszonesAreReady = false;
+    if (rAct < rTempRelease) {
+      wasBelow100[i] = true;
+      hasEierUhrFinished = false
+      checkedItemsReady[i] = false;
+     
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) // Icon ist auf off
+    }
+
+    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] &= ~(1 << 15); // Temperature Monitoring not active
+
+    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTime.nodeId.value] = EierUhrEinstellZeit;
+    EierUhrStartWert = EierUhrEinstellZeit;
+
+    if (isEierUhrRunning[i]) {
+      clearInterval(intervalEieruhrIds[i]);
+      isEierUhrRunning[i] = false;  // Setzen Sie den Status für den spezifischen Index zurück
+    }
+  }
+  //********************************************************************************************************************************** */
+  //********************************************************************************************************************************** */
+  // Cool Down Button ist gedrückt // Cool Down Button ist gedrückt // Cool Down Button ist gedrückt // Cool Down Button ist gedrückt // Cool Down Button ist gedrückt
+  if (sharedState.CoolingisOn) {
+    for (let i = 1; i < 14; i++) {
+      if (serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] === 13) {
+        checkedItemsOff[i] = true;
+      }
+    }
+    if (checkedItemsOff.slice(1, 14).every(Boolean)) {
+      sharedState.ProzesszonesAreOff = true;
+    }
+    sharedState.ProzesszonesAreReady = false;
+    if (rAct < rTempRelease) {
+      wasBelow100[i] = true;
+      hasEierUhrFinished = false
+      checkedItemsReady[i] = false;
+     
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 7);
+    }
+
+    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] &= ~(1 << 15);
+    if (rAct > rTempRelease) {
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 6) | (1 << 7); // Bit 7 Cool Down is running
+    }
+    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTime.nodeId.value] = EierUhrEinstellZeit;
+    EierUhrStartWert = EierUhrEinstellZeit;
+
+
+    if (isEierUhrRunning[i]) {
+      clearInterval(intervalEieruhrIds[i]);
+      isEierUhrRunning[i] = false;  // Setzen Sie den Status für den spezifischen Index zurück
+    }
+    if (rAct < rTempCooldown) {
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) // Icon ist auf off
+      //machine.setState('SU1000_Line_Hmi_udtLm_udtHeader_dwLineStatus', 'STOPPED')
+    }
+
+  }
+}
+
+
+let intervalEieruhrIds = [];
+let isEierUhrRunning = Array(14).fill(false);  // Neue Variable als Array
+let hasEierUhrFinished = Array(14).fill(false);  // Array, um den abgeschlossenen Status der Eieruhr für jeden Index zu verfolgen
+
+function startEierUhr(i, callback) {
+  var werte = require('./profiles/simulation/variables/Variabeln');
+
+  // Überprüfen, ob bereits ein Intervall für den gegebenen Index i läuft
+  // oder die Eieruhr für den Index i bereits abgelaufen ist
+  if (isEierUhrRunning[i] || hasEierUhrFinished[i]) {
+    return; // Wenn ja, brechen Sie die Funktion sofort ab
+  }
+
+  let EierUhrStartWert = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_udTimeRel.nodeId.value];
+  let intervalEieruhr = setInterval(function () {
+    if (EierUhrStartWert > 0) {
+      isEierUhrRunning[i] = true;
+      EierUhrStartWert -= 1;
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTime.nodeId.value] = EierUhrStartWert;
+    } else {
+      clearInterval(intervalEieruhr);
+      isEierUhrRunning[i] = false;
+      hasEierUhrFinished[i] = true;  // Setzen Sie den "abgeschlossen" Status für den spezifischen Index
+      intervalEieruhr = null;
+      wasBelow100[i] = false
+      if (callback) {
+        callback(i);
+      }
+    }
+  }, 500);
+}
+
 
 
 let pidTimerIddown = []
 let pidTimerIdup = []
+let pidTimerIdshutdown=[]
 function PIDUP(i, nameNodeId, serverValues, source) {
   var werte = require('./profiles/simulation/variables/Variabeln');
-  if (pidTimerIddown[i]) clearTimeout(pidTimerIddown[i]);
-
+  if (pidTimerIddown[i]) clearTimeout(pidTimerIddown[i]); // löscht alle Timer von pidDown, falls ein Timer noch läuft
+  if (pidTimerIdshutdown[i]) clearTimeout(pidTimerIdshutdown[i]); // löscht alle Timer von shutDown fals ein Timer noch läuft
   var rGain = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGain.nodeId.value]; //2.250 
   var rTi = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value]; //47.94
   var rTd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value]; //4.32
   var dt = 0.000041;
-  var T1 = 4//20;
+  var T1 = 5//20;
   var T2 = 2//5;
   var K = 1.5;
   var rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   var rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
-
-
-
 
   var rSet;
   if (source === "A") {
@@ -464,8 +624,7 @@ function PIDUP(i, nameNodeId, serverValues, source) {
   var samplingTime = 0.1 // serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rCycle.nodeId.value];
   var errorSum = 0;
   var lastError = 0;
-  var intervalId = 0;
-
+  
   function calculateNextValue() {
     if (Math.abs(rAct2 - rSet) > 0.1) {
       var error = rSet - rAct2;
@@ -500,147 +659,11 @@ function PIDUP(i, nameNodeId, serverValues, source) {
 
 
 
-
-var wasBelow100 = Array(13).fill(true);  // Am Anfang, außerhalb der Funktion
-var timerWasOn = Array(13).fill(false);
-
-const checkedItems = Array(13).fill(false);
-function dwStatStartWizzard(i, nameNodeId, serverValues) {
-  var werte = require('./profiles/simulation/variables/Variabeln');
-  let rSetTolMax = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSetTolMax.nodeId.value];
-  let rSetTolMaxMax = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSetTolMaxMax.nodeId.value];
-  let rTempRel = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempRel_Set.nodeId.value];
-  let rAct = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
-  let rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value];
-  let rTempCooldown = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempCooldown_Set.nodeId.value]
-
-  let diActRemainTime
-  const EierUhrEinstellZeit = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_udTimeRel.nodeId.value];
-  let EierUhrStartWert = EierUhrEinstellZeit
- 
-
-  //********************************************************************************************************************************** */
-  //********************************************************************************************************************************** */
-  //********************************************************************************************************************************** */
-  //********************************************************************************************************************************** */
-  if (sharedState.HeatingisOn) {
-
-    if (rAct < 100) {
-      wasBelow100[i] = true;
-    }
-
-    if (rAct > 100 && !wasBelow100[i]) {
-
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 6) // BIT 6 stellt auf
-    }
-
-    if (rAct < rSet && rAct < (rSet - rSetTolMaxMax) && wasBelow100[i]) {
-
-     
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 9) // BIT 9 stellt auf Active
-
-    }
-
-    // geht nur rein, wenn es true ist, also rAct < 100
-    if (rAct > (rSet - rSetTolMaxMax) && wasBelow100[i] && !hasEierUhrFinished[i]  ) {
-
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 15)  // BIT 15 Show remain time on hmi
-      startEierUhr(i, function (index) {
-        serverValues[werte.data[index].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 6)  // Bit 6 stellt Icon auf Ready
-      });
-    }
-  }
-
-   for (let i = 1; i < 14; i++) {
-     // console.log(`Überprüfung für Index ${i}`);
-     if (serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] === 77) {
-       //   console.log(`Bedingung erfüllt für Index ${i}`);
-       checkedItems[i] = true;
-    
-     } else {
-        //console.log(`Bedingung NICHT erfüllt für Index ${i}`);
-     }
-   }
-   if (checkedItems.slice(1, 14).every(Boolean)) {
-   // console.log('Alle Werte in checkedItems von Index 1 bis 13 sind true.');
-    sharedState.ProzesszonesAreReady = true;
-}
-
-  
-  //********************************************************************************************************************************** */
-  //********************************************************************************************************************************** */
-
-  if (sharedState.CoolingisOn) { // Cool Down Button ist gedrückt
-    if (rAct < 100) {
-      wasBelow100[i] = true;
-      hasEierUhrFinished=false
-      checkedItems[i] = false;
-      console.log("Index:", i, "Wert:", checkedItems[i]);
-
-    }
-   
-
-    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] &= ~(1 << 15);
-
-    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 7); // Bit 7 Cool Down is running
-    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTime.nodeId.value] = EierUhrEinstellZeit;
-    EierUhrStartWert = EierUhrEinstellZeit;
- 
-  
-    if (isEierUhrRunning[i]) {
-      clearInterval(intervalEieruhrIds[i]);
-      isEierUhrRunning[i] = false;  // Setzen Sie den Status für den spezifischen Index zurück
-    }
-    if (rAct < rTempCooldown) {
-      //   serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) // Icon ist auf off
-      //machine.setState('SU1000_Line_Hmi_udtLm_udtHeader_dwLineStatus', 'STOPPED')
-    }
-
-  }
-}
-
-let intervalEieruhrIds = [];
-let isEierUhrRunning = Array(14).fill(false);  // Neue Variable als Array
-let hasEierUhrFinished = Array(14).fill(false);  // Array, um den abgeschlossenen Status der Eieruhr für jeden Index zu verfolgen
-
-function startEierUhr(i, callback) {
-  var werte = require('./profiles/simulation/variables/Variabeln');
-
-  // Überprüfen, ob bereits ein Intervall für den gegebenen Index i läuft
-  // oder die Eieruhr für den Index i bereits abgelaufen ist
-  if (isEierUhrRunning[i] || hasEierUhrFinished[i]) {
-       return; // Wenn ja, brechen Sie die Funktion sofort ab
-  }
-  
-  let EierUhrStartWert = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_udTimeRel.nodeId.value];
-  let intervalEieruhr = setInterval(function () {
-    if (EierUhrStartWert > 0) {
-      isEierUhrRunning[i] = true;
-      EierUhrStartWert -= 1;
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTime.nodeId.value] = EierUhrStartWert;
-    } else {
-      clearInterval(intervalEieruhr);
-      isEierUhrRunning[i] = false;
-      hasEierUhrFinished[i] = true;  // Setzen Sie den "abgeschlossen" Status für den spezifischen Index
-      intervalEieruhr = null;
-      wasBelow100[i]=false
-      if (callback) {
-        callback(i);
-      }
-    }
-  }, 500);
-}
-
-
-
-
-
 function PIDCOOLDOWN(i, nameNodeId, serverValues, source) {
   var werte = require('./profiles/simulation/variables/Variabeln');
-  if (pidTimerIdup[i]) clearTimeout(pidTimerIdup[i]);
-
+  if (pidTimerIdup[i]) clearTimeout(pidTimerIdup[i]); // löscht alle Timer von pidUp
+  if (pidTimerIdshutdown[i]) clearTimeout(pidTimerIdshutdown[i]); //löscht alle Timer von shutDown
   intervalEieruhrIds.forEach(intervalEieruhr => clearInterval(intervalEieruhr));
-  //pidTimerIds = []; // Timer-Array zurücksetzen
 
   var rGain = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtCool_udtPid_rGain.nodeId.value]; //2.250 
   var rTi = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtCool_udtPid_rTi.nodeId.value]; //47.94
@@ -656,7 +679,7 @@ function PIDCOOLDOWN(i, nameNodeId, serverValues, source) {
 
   var rSet;
   if (source === "A") {
-    var rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempCooldown_Set.nodeId.value]
+    var rSet = 20
     // Hängt mit der Funktion dwstatupdate zusammen. Für die Toleranzgrenzen braucht man einen Set Wert. Endung _rSet, rTempHeatup_Set geht nicht !
     // serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value]=serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value]
   } else if (source === "B") {
@@ -689,7 +712,6 @@ function PIDCOOLDOWN(i, nameNodeId, serverValues, source) {
       } else {
         serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = value
       }
-
       var dy1 = (K * u - rAct1) / T1 * dt;
       rAct1 += dy1;
 
@@ -710,19 +732,22 @@ function PIDCOOLDOWN(i, nameNodeId, serverValues, source) {
 
 function PIDSHUTDOWN(i, nameNodeId, serverValues) {
   var werte = require('./profiles/simulation/variables/Variabeln');
-  console.log("Ich bin in der PID DOWN Funktion drin");
-  pidTimerIdup.forEach(timerup => clearTimeout(timerup)); // Alle Timer löschen
+  if (pidTimerIdup[i]) clearTimeout(pidTimerIdup[i]); //löscht alle Timer von PidUp
+  if (pidTimerIddown[i]) clearTimeout(pidTimerIddown[i]); //löscht alle Timer von PidDown
+   
   intervalEieruhrIds.forEach(intervalEieruhr => clearInterval(intervalEieruhr));
-  //  pidTimerIds = []; // Timer-Array zurücksetzen
-
+  
   var rGain = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtCool_udtPid_rGain.nodeId.value]; //2.250 
   var rTi = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtCool_udtPid_rTi.nodeId.value]; //47.94
   var rTd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtCool_udtPid_rTd.nodeId.value]; //4.32
 
+ 
+
   var dt = 0.00041;
-  var T1 = 15;
+  var T1 = 8;
   var T2 = 5;
 
+  
   var K = 1.5;
   var rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   var rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
@@ -734,7 +759,6 @@ function PIDSHUTDOWN(i, nameNodeId, serverValues) {
   var lastError = 0;
 
   var intervalId = 0;
-
 
   function calculateNextValue() {
 
@@ -761,21 +785,14 @@ function PIDSHUTDOWN(i, nameNodeId, serverValues) {
       } else {
         serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value] = rAct2;
       }
+     
 
-      if (Math.abs(rAct2 - rSet) > 0.1) {
 
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = value2;
-      }
-      if (Math.abs(rAct2 - rSet) < 0.1) {
-
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = value;
-      }
       const timerdown = setTimeout(calculateNextValue, samplingTime);
-      pidTimerIddown.push(timerdown); // Timer-ID zum Array hinzufügen
-
+      pidTimerIdshutdown[i] = timerdown; // Timer-ID am spezifischen Index setzen
+      
     }
   }
-
   // Start der Berechnung
   calculateNextValue();
 }
@@ -857,14 +874,6 @@ function simulateScrewSpeed(i, nameNodeId, serverValues) {
 }
 
 
-
-
-
-
-
-
-
-
 //FEEDER//////////////
 let feederIntervalIds = [];
 
@@ -906,8 +915,6 @@ function startFeeder(i, nameNodeId, serverValues, funktionstoppen = false) {
   let intervalId = setInterval(simulateFeeder, 200);
   feederIntervalIds[i] = intervalId;
 }
-
-
 
 //feeder Line Modus
 
@@ -962,15 +969,12 @@ function simulateLineMode(i, nameNodeId, serverValues) {
   let intervalId = setInterval(simulateThroughputRamp, 100);
 }
 
-
-
 function simulateFeederWeight(i, nameNodeId, serverValues) {
   console.log("ich bin drinnsfsfsfs")
   var werte = require('./profiles/simulation/variables/Variabeln');
   let intervalId;
 
   if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] |= (1 << 11)) {
-
 
     intervalId = setInterval(function () {
       const ratePerInterval = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
@@ -979,11 +983,8 @@ function simulateFeederWeight(i, nameNodeId, serverValues) {
 
       currentLevel -= ratePerInterval;
 
-
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value] = currentLevel;
-
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rAct.nodeId.value] += ratePerInterval;
-
       //   console.log(`Neues Level: ${currentLevel}kg, Total: ${serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rAct.nodeId.value]}kg`);
 
       if (currentLevel <= 0 || serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] === 521) {
@@ -1049,9 +1050,26 @@ function simulateFeederThroughputLineRamp(i, nameNodeId, serverValues, IsRunning
 }
 
 
+function OilLubUhrFollowUp(i, nameNodeId, serverValues) {
+  // Werte-Modul einbinden
+  var werte = require('./profiles/simulation/variables/Variabeln');
 
+  // Intervall starten
+  var interval = setInterval(function () {
+    // Wert um 1 verringern
+    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value]--;
+    // Überprüfen, ob der Wert 0 oder kleiner ist
+    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value] <= 0) {
+      // Wert auf 0 setzen, um sicherzustellen, dass er nicht negativ wird
+      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value] = 0;
+      // Intervall stoppen, da der Wert 0 erreicht ist
+            clearInterval(interval);
+            sharedState.GearOilRemainTimeFollowUpExpired=true;
+            
+    }
+  }, 500); 
+}
 
-// Eieruhr der Ölschmierung //
 
 function OilLubUhr(i, nameNodeId, serverValues) {
   // Werte-Modul einbinden
@@ -1061,19 +1079,17 @@ function OilLubUhr(i, nameNodeId, serverValues) {
   var interval = setInterval(function () {
     // Wert um 1 verringern
     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime.nodeId.value]--;
-
     // Überprüfen, ob der Wert 0 oder kleiner ist
     if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime.nodeId.value] <= 0) {
       // Wert auf 0 setzen, um sicherzustellen, dass er nicht negativ wird
       serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime.nodeId.value] = 0;
       // Intervall stoppen, da der Wert 0 erreicht ist
-      clearInterval(interval);
+           clearInterval(interval);
+      sharedState.GearOilRemainPreRunTimeExpired=true;
+      
     }
-
-
   }, 500); // Hier kann die "Geschwindkeit des Intervalls eingestellt werden !!"
 }
-
 
 
 
@@ -1218,7 +1234,7 @@ function updatedwstat(i, NameVariabel) {
 
   // Am Ende der Logik speichern wir den aktuellen Wert von rAct
   previousRAct[rActKey] = rAct;
-  serverValues[data[NameVariabel + "_dwStat"].nodeId.value] = dwStat;
+  serverValues[data[NameVariabel + "_dwStat"].nodeId.value] = dwStat
 };
 
 class StateMachine {
@@ -1300,6 +1316,7 @@ module.exports = {
   startFeeder: startFeeder,
   simulateFeederWeight: simulateFeederWeight,
   OilLubUhr: OilLubUhr,
+  OilLubUhrFollowUp:OilLubUhrFollowUp,
   updateRThroughputPercSetGesamt: updateRThroughputPercSetGesamt,
   simulateLineMode: simulateLineMode,
   updatedwstat: updatedwstat,

@@ -1,7 +1,10 @@
 
+let InitialValueRemainTimeFollowUp=null;
+
 module.exports = {
     HeatingisOn: false,
     CoolingisOn: false,
+    CoolingisOff:true,
     ShutdownisOn: false,
 
     ExtruderisOn: false,
@@ -9,6 +12,17 @@ module.exports = {
 
     FeedingisOn: false,
 
-    ProzesszonesAreReady: false
+    ProzesszonesAreReady: false,
+    ProzesszonesAreOff:false,
+
+    
+    GearOilLubricationOn:false,
+    GearOilLubricationOff:true,
+    GearOilRemainPreRunTimeExpired:false,
+    GearOilRemainTimeFollowUpExpired:false,
+
+    InitialValueRemainTimeFollowUp:InitialValueRemainTimeFollowUp
+
+    
 };
 
