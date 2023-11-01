@@ -598,21 +598,34 @@ function startEierUhr(i, callback) {
 let pidTimerIddown = []
 let pidTimerIdup = []
 let pidTimerIdshutdown=[]
+
+const MIN_TEMP = 20;
+const MAX_TEMP = 460;
+const MAX_INDEX = 13;  // Index von 1 bis 13
+
+const savedValues = {};  // Objekt zur Speicherung von rAct1 und integral
+
+function getSaveKey(rAct2, index) {
+  return `${Math.round(rAct2)}-${index}`;
+}
+
 function PIDUP(i, nameNodeId, serverValues, source) {
   var werte = require('./profiles/simulation/variables/Variabeln');
   if (pidTimerIddown[i]) clearTimeout(pidTimerIddown[i]); // löscht alle Timer von pidDown, falls ein Timer noch läuft
   if (pidTimerIdshutdown[i]) clearTimeout(pidTimerIdshutdown[i]); // löscht alle Timer von shutDown fals ein Timer noch läuft
-  var rGain = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGain.nodeId.value]; //2.250 
-  var rTi = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value]; //47.94
-  var rTd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value]; //4.32
-  var dt = 0.000041;
-  var T1 = 5//20;
-  var T2 = 2//5;
-  var K = 1.5;
-  var rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
-  var rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
 
-  var rSet;
+  const Kp = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGain.nodeId.value]; 
+  const Ki = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value]; 
+  const Kd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value]; 
+  const dt = 0.01
+  const T1 = 60
+  const T2 = 40
+  const K1 = 1
+  const K2 = 1
+  let rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
+  let rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
+
+  let rSet;
   if (source === "A") {
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value];
     // Hängt mit der Funktion dwstatupdate zusammen. Für die Toleranzgrenzen braucht man einen Set Wert. Endung _rSet, rTempHeatup_Set geht nicht !
@@ -621,35 +634,73 @@ function PIDUP(i, nameNodeId, serverValues, source) {
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value];
   }
 
-  var samplingTime = 0.1 // serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rCycle.nodeId.value];
-  var errorSum = 0;
-  var lastError = 0;
-  
-  function calculateNextValue() {
-    if (Math.abs(rAct2 - rSet) > 0.1) {
-      var error = rSet - rAct2;
-      var proportional = rGain * error;
-      errorSum += error;
-      var integral = rGain / rTi * errorSum;
-      var derivative = rGain * rTd * (error - lastError) / dt;
-      lastError = error;
-      var u = proportional + integral + derivative;
-      value = Math.abs(u / 100).toFixed(2);
-      if (value > 100) {
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = 100
-      } else {
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = value
-      }
+  let integral 
+  let key = getSaveKey(rAct2);
 
-      var dy1 = (K * u - rAct1) / T1 * dt;
+  if (savedValues.hasOwnProperty(key)) {
+    rAct1 = savedValues[key].rAct1;
+    integral = savedValues[key].integral;
+  } else {
+    integral = 0;
+  }
+
+  let lastError = 0;
+
+
+  console.log("rAct1   " + rAct1);
+  console.log("Integral  " + integral)
+
+  function calculateNextValue() {
+    var werte = require('./profiles/simulation/variables/Variabeln');
+    if (rSet - rAct2 > 0.1) {
+
+    
+
+      let error = rSet - rAct2;
+
+      integral += error;
+
+      let derivative = error - lastError;
+
+      let pTerm = Kp * error;  // Proportional-Anteil
+      let iTerm = Ki * integral;  // Integral-Anteil
+      let dTerm = Kd * derivative;  // Derivative-Anteil
+
+      let u = pTerm + iTerm + dTerm;
+
+      lastError = error;
+
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = u
+
+      // 1.Glied PT1 der Reglestrecke
+      let dy1 = (K1 * u - rAct1) / T1 * dt;
       rAct1 += dy1;
-      var dy2 = (K * rAct1 - rAct2) / T2 * dt;
+
+      // 2.Glied PT1 der Regelstrecke
+      let dy2 = (K2 * rAct1 - rAct2) / T2 * dt;
       rAct2 += dy2;
+
+      //Ausgabe des Act Wertes in der HMI 
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value] = rAct2;
 
-      const timerup = setTimeout(calculateNextValue, samplingTime);
-      pidTimerIdup[i] = timerup; // Timer-ID am spezifischen Index setzen
+      let streckenAusgang = Math.round(serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value]);
 
+      if (streckenAusgang >= MIN_TEMP && streckenAusgang <= MAX_TEMP) {
+        for (let idx = 1; idx <= MAX_INDEX; idx++) {
+          const key = getSaveKey(streckenAusgang, idx);
+          if (!savedValues.hasOwnProperty(key)) {
+            savedValues[key] = { rAct1: rAct1, integral: integral };
+            console.log(`Gespeicherte Werte für ${key}: rAct1 = ${rAct1}, integral = ${integral}, rAct2 = ${streckenAusgang}`);
+
+            break;  // Sobald wir einen Schlüssel gefunden haben, der nicht existiert und gespeichert wurde, brechen wir aus der Schleife aus.
+          }
+        }
+      }
+    //  console.log(`Gespeicherte Werte für ${key}: rAct1 = ${rAct1}, rAct2 = ${streckenAusgang}, error = ${error}, lastError = ${lastError}, rSet = ${rSet}, u = ${u}, integral = ${integral}`);
+
+
+      const timerup = setTimeout(calculateNextValue, 10);
+      pidTimerIdup[i] = timerup; // Timer-ID am spezifischen Index setzen
     }
   }
   // Start der Berechnung
@@ -665,18 +716,16 @@ function PIDCOOLDOWN(i, nameNodeId, serverValues, source) {
   if (pidTimerIdshutdown[i]) clearTimeout(pidTimerIdshutdown[i]); //löscht alle Timer von shutDown
   intervalEieruhrIds.forEach(intervalEieruhr => clearInterval(intervalEieruhr));
 
-  var rGain = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtCool_udtPid_rGain.nodeId.value]; //2.250 
-  var rTi = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtCool_udtPid_rTi.nodeId.value]; //47.94
-  var rTd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtCool_udtPid_rTd.nodeId.value]; //4.32
-
-  var dt = 0.00041;
-  var T1 = 8;
-  var T2 = 5;
-
-  var K = 1.5;
-  var rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
-  var rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
-
+  const Kp = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGain.nodeId.value]; 
+  const Ki = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value]; 
+  const Kd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value]; 
+  const dt = 0.01
+  const T1 = 60
+  const T2 = 40
+  const K1 = 1
+  const K2 = 1
+  let rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
+  let rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   var rSet;
   if (source === "A") {
     var rSet = 20
@@ -694,36 +743,38 @@ function PIDCOOLDOWN(i, nameNodeId, serverValues, source) {
   var intervalId = 0;
 
   function calculateNextValue() {
-    if (Math.abs(rAct2 - rSet) > 0.1) {
-      var error = rSet - rAct2;
-      var proportional = rGain * error;
-      errorSum += error;
-      var integral = rGain / rTi * errorSum;
-      var derivative = rGain * rTd * (error - lastError) / dt;
-      lastError = error;
-      var u = proportional + integral + derivative;
+  
+    let error = rSet - rAct2;
 
-      value = (u / 100).toFixed(2);
+    integral += error;
 
-      if (value < -100) {
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = -100;
-      } else if (value > 0) {
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = 0;
-      } else {
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = value
-      }
-      var dy1 = (K * u - rAct1) / T1 * dt;
-      rAct1 += dy1;
+    let derivative = error - lastError;
 
-      var dy2 = (K * rAct1 - rAct2) / T2 * dt;
-      rAct2 += dy2;
+    let pTerm = Kp * error;  // Proportional-Anteil
+    let iTerm = Ki * integral;  // Integral-Anteil
+    let dTerm = Kd * derivative;  // Derivative-Anteil
 
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value] = rAct2;
+    let u = pTerm + iTerm + dTerm;
+
+    lastError = error;
+
+    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = u
+
+    // 1.Glied PT1 der Reglestrecke
+    let dy1 = (K1 * u - rAct1) / T1 * dt;
+    rAct1 += dy1;
+
+    // 2.Glied PT1 der Regelstrecke
+    let dy2 = (K2 * rAct1 - rAct2) / T2 * dt;
+    rAct2 += dy2;
+
+    //Ausgabe des Act Wertes in der HMI 
+    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value] = rAct2;
 
       const timerdown = setTimeout(calculateNextValue, samplingTime);
       pidTimerIddown[i] = timerdown; // Timer-ID am spezifischen Index setzen
 
-    }
+    
   }
   // Start der Berechnung
   calculateNextValue();
