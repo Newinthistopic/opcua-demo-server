@@ -1,28 +1,61 @@
 
-let InitialValueRemainTimeFollowUp=null;
+let InitialValueRemainTimeFollowUp = null;
 
 module.exports = {
     HeatingisOn: false,
     CoolingisOn: false,
-    CoolingisOff:true,
+    CoolingisOff: true,
     ShutdownisOn: false,
 
     ExtruderisOn: false,
     ExtruderisOff: true,
 
-    FeedingisOn: false,
+    FeedingisOn: false, // bezieht sich auf alle Feder, sobald ein Feeder an ist, egal welchen Modus
+
+    SideFeederisOn: false,
+    SideFeederisOff: true,
+    minimumOneFeederLineMode: false,
+    FeederRampModeisRunning: true,
+
+    feeders: [
+        null,  // Platzhalter für Index 0
+        { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true },  // Zustand für Feeder 1
+        { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true },  // Zustand für Feeder 2
+        { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true },  // Zustand für Feeder 3
+        { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true }   // Zustand für Feeder 4
+    ],
+    
+
+    feedingautostartButtons: {
+
+        autoStop: true,
+        autoStart: false,
+        autoStartFeeder: false,  // false für "X", true für "✔"
+        stopFeeding:false
+
+    },
+
+
+    SpeedCalculationDirectisOn: true,
+    SpeedCalculationSpecRateisOn: false,
+
+
+    AutoStartSideFeederisOn: false,
+    AutoStartSideFeederisOff: true,
+
+
 
     ProzesszonesAreReady: false,
-    ProzesszonesAreOff:false,
+    ProzesszonesAreOff: false,
 
-    
-    GearOilLubricationOn:false,
-    GearOilLubricationOff:true,
-    GearOilRemainPreRunTimeExpired:false,
-    GearOilRemainTimeFollowUpExpired:false,
 
-    InitialValueRemainTimeFollowUp:InitialValueRemainTimeFollowUp
+    GearOilLubricationOn: false,
+    GearOilLubricationOff: true,
+    GearOilRemainPreRunTimeExpired: false,
+    GearOilRemainTimeFollowUpExpired: false,
 
-    
+    InitialValueRemainTimeFollowUp: InitialValueRemainTimeFollowUp
+
+
 };
 

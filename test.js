@@ -137,5 +137,15 @@ bit[11]:SU3111_ZeExtruder.Hmi.udtEmGearOilLubExt.udtButtonStartStop.dwStat
 SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Set
 
 SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp
-
+SU3111_ZeExtruder
 serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value]
+
+SU3111_ZeExtruder_Hmi_udtPc_udtModState_dwUnitNavigationStatus
+
+const machine = new StateMachineNavigationBar();
+setTimeout(function () {
+  var werte = require('./profiles/simulation/variables/Variabeln');
+  if (sharedState.HeatingisOn && sharedState.ExtruderisOn) {
+    machine.setState('SU3111_ZeExtruder_Hmi_udtPc_udtModState_dwUnitNavigationStatu', 'RUNNING');
+  }
+}, 1); 
