@@ -932,13 +932,13 @@ function startFeeder(i, nameNodeId, serverValues, funktionstoppen = false) {
 
     if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl.nodeId.value] === 64) {
       clearInterval(feederIntervalIds[i]);
-      console.log("Test ob ich rin binS")
+     
       currentThroughput = 0
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput
     } else if ((direction === 1 && currentThroughput >= setThroughput) || (direction === -1 && currentThroughput <= setThroughput)) {
       currentThroughput = setThroughput;
       clearInterval(feederIntervalIds[i]);
-      console.log("saaaataaan")
+      
     }
 
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput;

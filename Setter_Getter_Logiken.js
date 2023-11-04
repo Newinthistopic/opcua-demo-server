@@ -2853,8 +2853,18 @@ const SetGetlogic = {
   SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrlGet: function (i, nameNodeId, serverValues) {
     initial("SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl", undefined, {}, i, nameNodeId, serverValues);
 
+    console.log("sharedState.feeders[1].FeederisRunning    " + sharedState.feeders[1].FeederisRunning)
+    console.log("sharedState.feeders[2].FeederisRunning    " + sharedState.feeders[2].FeederisRunning)
+    console.log("sharedState.feeders[3].FeederisRunning    " + sharedState.feeders[3].FeederisRunning)
+    console.log("sharedState.feeders[4].FeederisRunning    " + sharedState.feeders[4].FeederisRunning)
+
+    console.log("sharedState.feeders[1].FeederisOff    " + sharedState.feeders[1].FeederisOff)
+    console.log("sharedState.feeders[2].FeederisOff    " + sharedState.feeders[2].FeederisOff)
+    console.log("sharedState.feeders[3].FeederisOff    " + sharedState.feeders[3].FeederisOff)
+    console.log("sharedState.feeders[4].FeederisOff    " + sharedState.feeders[4].FeederisOff)
+
     setTimeout(function () {
-      console.log("sharedState.FeedingisOn    " + sharedState.FeedingisOn)
+    
       var werte = require('./profiles/simulation/variables/Variabeln');
 
       // sobald ein Bit auf On gesetzt ist, wird der Status FeedingisOn auf true gesetzt
@@ -2873,19 +2883,12 @@ const SetGetlogic = {
       ) {
         sharedState.FeedingisOn = false;
       }
-      // WEnn ein FeederisRunning auf true steht, so wird der on Button schwarz
-      for (let i = 1; i <= 4; i++) {
-        if (sharedState.feeders[i].FeederisRunning) {
-            serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] |= (1 << 11); // Setzt Status feeder auf "on"
-           }
-  }
-  for (let i = 1; i <= 4; i++) {
-  if(sharedState.feeders[i].FeederisOff){
-    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << 11); // Setzt Status feeder auf "off"
-  }
-}
+
+   
+
     
-    }, 10);
+    
+    }, 1);
 
   },
   SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrlSet: function (i, nameNodeId, serverValues) {
@@ -2915,7 +2918,7 @@ const SetGetlogic = {
     }
       //Wenn FeederSingleModus an ist, dann wir die entsprechende Funktion gestartet
       if (sharedState.feeders[i].FeederSingleMode) { // Prüfen ob FeederLineMode true ist
-        console.log("sfsfsdfsdfssfsd + test test")
+       
         funktionen.startFeeder(i, nameNodeId, serverValues);
     }
     }
@@ -2932,7 +2935,7 @@ SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStatGet: function (i, nameNo
       }
 
       if(sharedState.feedingautostartButtons.stopFeeding){
-        serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << 11); // Status feeder is off
+       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << 11); // Status feeder is off
       }   
         
     }
@@ -2942,6 +2945,22 @@ SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStatGet: function (i, nameNo
 
       }
     }
+
+  // WEnn ein FeederisRunning auf true steht, so wird der on Button schwarz
+  for (let i = 1; i <= 4; i++) {
+    if (sharedState.feeders[i].FeederisRunning && !sharedState.feeders[i].FeederisOff ) {
+        serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] |= (1 << 11); // Setzt Status feeder auf "on"
+       }
+}
+for (let i = 1; i <= 4; i++) {
+if(sharedState.feeders[i].FeederisOff && !sharedState.feeders[i].FeederisRunning ){
+serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << 11); // Setzt Status feeder auf "off"
+serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = 0;// Wenn der Button auf Off gedrückt, wird so fährt der Feeder runter auf Null
+serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = 0;// Wenn der Button auf Off gedrückt, wird so fährt der Feeder runter auf Null
+}
+}
+
+
   }, 1);
 
 
@@ -2997,12 +3016,29 @@ sharedState.feedingautostartButtons.autoStartFeeder=true
     serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] === 256 ||
     serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] === 264){
          sharedState.feedingautostartButtons.stopFeeding=true; 
-        consolelog("sharedState.feedingautostartButtons.stopFeeding     " +sharedState.feedingautostartButtons.stopFeeding )
+        console.log("sharedState.feedingautostartButtons.stopFeeding     " +sharedState.feedingautostartButtons.stopFeeding )
          sharedState.feeders[1].FeederisOff=true;
          sharedState.feeders[2].FeederisOff=true;
          sharedState.feeders[3].FeederisOff=true;
          sharedState.feeders[4].FeederisOff=true;
          
+         sharedState.feeders[1].FeederisRunning=false;
+         sharedState.feeders[2].FeederisRunning=false;
+         sharedState.feeders[3].FeederisRunning=false;
+         sharedState.feeders[4].FeederisRunning=false;
+
+         console.log("sharedState.feeders[1].FeederisRunning    " + sharedState.feeders[1].FeederisRunning)
+         console.log("sharedState.feeders[2].FeederisRunning    " + sharedState.feeders[2].FeederisRunning)
+         console.log("sharedState.feeders[3].FeederisRunning    " + sharedState.feeders[3].FeederisRunning)
+         console.log("sharedState.feeders[4].FeederisRunning    " + sharedState.feeders[4].FeederisRunning)
+
+         console.log("sharedState.feeders[1].FeederisOff    " + sharedState.feeders[1].FeederisOff)
+         console.log("sharedState.feeders[2].FeederisOff    " + sharedState.feeders[2].FeederisOff)
+         console.log("sharedState.feeders[3].FeederisOff    " + sharedState.feeders[3].FeederisOff)
+         console.log("sharedState.feeders[4].FeederisOff    " + sharedState.feeders[4].FeederisOff)
+
+         console.log("ab hier neue states wo andrs loaloalalallala")
+
      }
   
 
