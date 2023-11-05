@@ -16,6 +16,7 @@ module.exports = {
     SideFeederisOff: true,
     minimumOneFeederLineMode: false,
     FeederRampModeisRunning: true,
+    stopStartFeeder:false,
 
     feeders: [
         null,  // Platzhalter für Index 0
@@ -34,6 +35,17 @@ module.exports = {
         stopFeeding:false
 
     },
+
+
+    intervalIds: {
+        stopSimulateFeeder: false,
+        stopSimulateFeederWeight: false,
+        stopSimulateFeederThroughputLineRamp: false,
+        stopAdjustThroughput: false,
+        stopSimulateLineMode: false,
+        stopSimulateThroughputRamp: false,
+        
+      },
 
 
     SpeedCalculationDirectisOn: true,

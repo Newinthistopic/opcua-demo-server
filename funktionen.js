@@ -906,24 +906,33 @@ function simulateScrewSpeed(i, nameNodeId, serverValues) {
   let intervalId = setInterval(simulateScrewRamp, 100);
 }
 
-
 //FEEDER//////////////
-let feederIntervalIds = [];
+let intervalIds = {
+  simulateFeeder: [],
+  simulateThroughputRamp: [],
+  simulateFeederWeight: [],
+  adjustThroughput: [],
+  updateFeederWeight:[]
+};
 
-function startFeeder(i, nameNodeId, serverValues, funktionstoppen = false) {
+function startFeeder(i, nameNodeId, serverValues) { // Single Mode
+ 
   var werte = require('./profiles/simulation/variables/Variabeln');
-
-  // Wenn funktionstoppen true ist, löschen Sie alle Intervalle
-  if (funktionstoppen) {
-    for (let id of feederIntervalIds) {
-      clearInterval(id);
-    }
-    return;  // Beenden Sie die Funktion frühzeitig
-  }
 
   let currentThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
 
   function simulateFeeder() {
+
+   // Abbruchbedingung
+   if (sharedState.intervalIds.stopSimulateFeeder) {
+    
+    console.log("stopen der Fuktion start Feeder");
+    for (let id of intervalIds.simulateFeeder) {
+      clearInterval(id);
+    }
+    intervalIds.simulateFeeder = [];  // Leeren des Arrays
+    return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
+  }
     let setThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value];
     let direction = (setThroughput > currentThroughput) ? 1 : -1;
 
@@ -931,22 +940,22 @@ function startFeeder(i, nameNodeId, serverValues, funktionstoppen = false) {
     currentThroughput += inkrement;
 
     if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl.nodeId.value] === 64) {
-      clearInterval(feederIntervalIds[i]);
+      clearInterval(intervalIds.simulateFeeder[i]);
      
       currentThroughput = 0
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput
     } else if ((direction === 1 && currentThroughput >= setThroughput) || (direction === -1 && currentThroughput <= setThroughput)) {
       currentThroughput = setThroughput;
-      clearInterval(feederIntervalIds[i]);
+      clearInterval(intervalIds.simulateFeeder[i]);
+
       
     }
-
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput;
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = currentThroughput;
   }
 
   let intervalId = setInterval(simulateFeeder, 200);
-  feederIntervalIds[i] = intervalId;
+  intervalIds.simulateFeeder[i] = intervalId;
 }
 
 //feeder Line Modus
@@ -961,81 +970,94 @@ function simulateLineMode(i, nameNodeId, serverValues) {
   let currentFeederThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value];
 
   function simulateThroughputRamp() {
+   
+       // Abbruchbedingung
+   if (sharedState.intervalIds.stopSimulateThroughputRamp) {
+    console.log("Abbruchbedingung stopSimulateThroughputRamp")
+    for (let id of intervalIds.simulateThroughputRamp) {
+      clearInterval(id);
+    }
+    intervalIds.simulateThroughputRamp = [];  // Leeren des Arrays
+    return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
+  }
 
-    // console.log("Total Target Throughput:", totalTargetThroughput);
-    // console.log("Ramp Rate (kg/h/s):", rampRate);
-
-    // console.log("CurrentFeederThroughputPercentage:", currentFeederThroughput);
     // Errechne den Ziel-Durchsatz für diesen Feeder basierend auf dem gewünschten prozentualen Anteil
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value]
     let targetThroughputForFeeder = totalTargetThroughput * (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] / 100);
 
-    // console.log("Target Throughput for Feeder:", targetThroughputForFeeder);
-
-
+   
     let direction = (targetThroughputForFeeder > currentFeederThroughput) ? 1 : -1;
-    // console.log(" let direction :", direction);
-    // Adjust throughput based on the ramp rate
+   
     let inkrement = 1.0 * direction;
     currentFeederThroughput += inkrement;
 
-    // console.log("Current Throughput for Feeder:", currentFeederThroughput);
-
-
+   
     // Stop Bedingung
     if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl.nodeId.value] === 64) {
       currentFeederThroughput = 0;
-      clearInterval(intervalId);
+      clearInterval(intervalIds.simulateThroughputRamp[i]);
+
     } else if ((direction === 1 && currentFeederThroughput >= targetThroughputForFeeder) ||
       (direction === -1 && currentFeederThroughput <= targetThroughputForFeeder)) {
       currentFeederThroughput = targetThroughputForFeeder;
-      clearInterval(intervalId);
+      clearInterval(intervalIds.simulateThroughputRamp[i]);
+
     }
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value] = (currentFeederThroughput / totalTargetThroughput) * 100
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value]
-    // Update the actual throughput for this feeder
+   
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentFeederThroughput;
-    // console.log("serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value]:", serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value]);
-    // console.log("serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value]:", serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value]);
+   
+  }
+  let intervalId = setInterval(simulateThroughputRamp, 100);
+  intervalIds.simulateThroughputRamp[i] = intervalId;
   }
 
-  let intervalId = setInterval(simulateThroughputRamp, 100);
-}
 
-function simulateFeederWeight(i, nameNodeId, serverValues) {
-  console.log("ich bin drinnsfsfsfs")
-  var werte = require('./profiles/simulation/variables/Variabeln');
-  let intervalId;
+  function simulateFeederWeight(i, nameNodeId, serverValues) {
+    console.log("ich bin drinnsfsfsfs");
+    var werte = require('./profiles/simulation/variables/Variabeln');
+  
+    function updateFeederWeight() {
 
-  if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] |= (1 << 11)) {
+     // Abbruchbedingung
+     if (sharedState.intervalIds.stopupdateFeederWeight) {
+      console.log("Abbruchbedingung stopSimulateThroughputRamp")
+      for (let id of intervalIds.updateFeederWeight) {
+        clearInterval(id);
+      }
+      intervalIds.updateFeederWeight = [];  // Leeren des Arrays
+      return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
+    }
 
-    intervalId = setInterval(function () {
       const ratePerInterval = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
-      // console.log("rate per intervall    " +ratePerInterval)
       let currentLevel = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value];
-
+  
       currentLevel -= ratePerInterval;
-
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value] = currentLevel;
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rAct.nodeId.value] += ratePerInterval;
-      //   console.log(`Neues Level: ${currentLevel}kg, Total: ${serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rAct.nodeId.value]}kg`);
-
+  
       if (currentLevel <= 0 || serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] === 521) {
-        clearInterval(intervalId);
-        currentLevel = 0
+        clearInterval( intervalIds.updateFeederWeight[i]); // Stopp das Interval
+        currentLevel = 0;
         console.log('Simulation gestoppt, entweder weil das Level Null oder den Zielwert erreicht hat oder weil die Stop-Bedingung erfüllt wurde.');
       }
-    }, 25000);
-  } else {
-    console.log('Startknopf nicht aktiviert. Simulation nicht gestartet.');
+    }
+  
+    if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] |= (1 << 11)) {
+      let intervalId = setInterval(updateFeederWeight, 25000); // Setze das setInterval hier
+      intervalIds.updateFeederWeight[i] = intervalId;
+    }
   }
-}
+  
 
 
-function simulateFeederThroughputLineRamp(i, nameNodeId, serverValues, IsRunning) {
-  if (!IsRunning) return;
+function simulateFeederThroughputLineRamp(i, nameNodeId, serverValues, ) {
+ 
   var werte = require('./profiles/simulation/variables/Variabeln');
-  console.log("simulateFeederThroughputLineRamp gestarter")
+ 
+
+
 
 
   // Überprüfen Sie, ob die Bedingung für den gegebenen Index erfüllt ist
@@ -1052,6 +1074,17 @@ function simulateFeederThroughputLineRamp(i, nameNodeId, serverValues, IsRunning
 
 
   function adjustThroughput() {
+
+    // Abbruchbedingung
+    if (sharedState.intervalIds.stopSimulateThroughputRamp) {
+      console.log("Abbruchbedingung stopSimulateThroughputRamp")
+      for (let id of intervalIds.adjustThroughput) {
+        clearInterval(id);
+      }
+      intervalIds.adjustThroughput = [];  // Leeren des Arrays
+      return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
+    }
+
     let currentThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
     // Bestimmt die Richtung, in die der Durchsatz verändert werden soll
     let direction = (targetThroughput > currentThroughput) ? 1 : -1;
@@ -1069,18 +1102,18 @@ function simulateFeederThroughputLineRamp(i, nameNodeId, serverValues, IsRunning
     if ((direction === 1 && currentThroughput > targetThroughput) || (direction === -1 && currentThroughput < targetThroughput)) {
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = targetThroughput;
       serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] &= ~((1 << 2) | (1 << 4) | (1 << 9) | (1 << 10) | (1 << 11));
-      clearInterval(intervalId);
+      clearInterval(intervalIds.simulateFeederThroughputLineRamp[i]);
+
       console.log(`Ziel-Durchsatz erreicht für ${nameNodeId}. Simulation beendet.`);
     }
     if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl.nodeId.value] === 4) {
-      clearInterval(intervalId);
+      clearInterval(intervalIds.adjustThroughput[i]);
+
       console.log(`Stopp-Bedingung erfüllt für ${nameNodeId}. Simulation angehalten.`);
     }
-
-
   }
-
   let intervalId = setInterval(adjustThroughput, 800);
+  intervalIds.adjustThroughput[i] = intervalId; // Speichern Sie intervalId im globalen intervalIds-Objekt
 }
 
 
