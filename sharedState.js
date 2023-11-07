@@ -15,7 +15,8 @@ module.exports = {
     SideFeederisOn: false,
     SideFeederisOff: true,
     minimumOneFeederLineMode: false,
-    FeederRampModeisRunning: true,
+    FeederRampModeisOn: false,
+    FeederRampModeisOff: true,
     stopStartFeeder:false,
 
     feeders: [

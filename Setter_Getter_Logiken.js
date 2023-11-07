@@ -2760,6 +2760,7 @@ const SetGetlogic = {
   SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_SetSet: function (i, nameNodeId, serverValues) {
     initial("SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_Set", undefined, {}, i, nameNodeId, serverValues);
     var werte = require('./profiles/simulation/variables/Variabeln');
+    
     // Prüft alle Feeder, welcher Modus gesetzt ist. Demtsprechend werden die Zustände gesetzt
     for (let i = 1; i <= 4; i++) {
       if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_Set.nodeId.value] === 2) {// Line Mode
@@ -2768,7 +2769,6 @@ const SetGetlogic = {
         sharedState.feeders[i].FeederLineMode = false;
       }
     }
-
     // Prüft alle Feeder, welcher Modus gesetzt ist. Demtsprechend werden die Zustände gesetzt
     for (let i = 1; i <= 4; i++) {
       if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_Set.nodeId.value] === 1) {// Single Mode
@@ -2777,95 +2777,23 @@ const SetGetlogic = {
         sharedState.feeders[i].FeederSingleMode = false;
       }
     }
-
-    for (let i = 1; i < 5; i++) {
-      if (sharedState.feeders[i].FeederLineMode) { // Prüfung, ob Feeder im Line Modus ist
+    //Wenn in der HMI "geklickt" wird, wird hier geprüft, ob ein Feeder auf Line steht, wenn ja so wird die Funktion ausgeführt
+         if (sharedState.feeders[i].FeederLineMode &&sharedState.feeders[i].FeederisOff ) { // Prüfung, ob Feeder im Line Modus ist
         //Funktion wird nur gestartet, wenn Extruder an ist.
         if (sharedState.ExtruderisOn && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] > 0) {
           funktionen.simulateLineMode(i, nameNodeId, serverValues)
-        }
-        serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value];
-      }
+                    }
     }
-
-    for (let i = 1; i < 5; i++) {
-      if (sharedState.feeders[i].FeederLineMode) { // Prüfung, ob Feeder im Line Modus ist
+     //Wenn in der HMI "geklickt" wird, wird hier geprüft, ob ein Feeder auf Single steht, wenn ja so wird die Funktion ausgeführt
+          if (sharedState.feeders[i].FeederSingleMode &&sharedState.feeders[i].FeederisOff) { // Prüfung, ob Feeder im Line Modus ist
         //Funktion wird nur gestartet, wenn Extruder an ist.
-        if (sharedState.ExtruderisOn && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] > 0) {
+        if (sharedState.ExtruderisOn && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value] > 0) {
           funktionen.startFeeder(i, nameNodeId, serverValues)
-        }
-      }
-    }
-
-
-    let sum = 0;
-
-
-
-    function distributeBasedOnThroughput() {
-      var werte = require('./profiles/simulation/variables/Variabeln');
-
-
-
-      let totalThroughput = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value]
-      let activeFeeders = 0;
-
-      // Erster Durchlauf: Zählen der aktiven Feeder
-      for (let i = 1; i <= 4; i++) {
-        if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_Set.nodeId.value] === 2) {
-          activeFeeders++;
-          console.log("activeFeeders++;" + activeFeeders)
-        }
-      }
-
-      // Überprüfung, wenn nur ein Feeder aktiv ist
-      if (activeFeeders === 1) {
-
-        for (let i = 1; i <= 4; i++) {
-          if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_Set.nodeId.value] === 2) {
-            let feederThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value];
-            if (feederThroughput < totalThroughput) {
-
-              serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value] = totalThroughput;
-              feederThroughput = totalThroughput;  // aktualisiere die lokale Variable
             }
-          }
-        }
-      }
-
-      // Jetzt berechnen Sie totalThroughput
-      for (let i = 1; i <= 4; i++) {
-        if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_Set.nodeId.value] === 2) {
-          sum += serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value];
-        }
-      }
-      serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value] = sum
-      totalThroughput = sum
-
-      // Prozentsatzberechnung
-      for (let i = 1; i <= 4; i++) {
-        if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_Set.nodeId.value] === 2) {
-          let feederThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value];
-          let percentage = (feederThroughput / totalThroughput) * 100;
-          console.log("totalThroughput   " + totalThroughput)
-          serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value] = percentage;
-          console.log("totalThroughput   " + percentage)
-        } else {
-          serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value] = 0; // Wenn feeder Mode nicht 2 ist, dann wird auf null gesetzt
-        }
-      }
     }
-
-    // Aufruf der Funktion
-    distributeBasedOnThroughput();
-
-
-    //  serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value];
-
-
-
-
-
+    
+    // Aufruf der Funktion für die Verteilung Prozente für den Line Mode
+    funktionen.DistributionPercentages();
 
   },
   SU2110_Feeding_Hmi_udtEmFeeder_udOpModeGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_udOpMode", 0, {}, i, nameNodeId, serverValues); },
@@ -2875,9 +2803,7 @@ const SetGetlogic = {
   SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_MinGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_Min", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_MinSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_Min", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_SetGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_Set", undefined, {}, i, nameNodeId, serverValues); },
-  SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_SetSet: function (i, nameNodeId, serverValues) {
-    initial("SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_Set", undefined, {}, i, nameNodeId, serverValues);
-
+  SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_SetSet: function (i, nameNodeId, serverValues) {    initial("SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_Set", undefined, {}, i, nameNodeId, serverValues);
 
   },
   SU2110_Feeding_Hmi_udtEmFeeder_udSetOpCountGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_udSetOpCount", undefined, {}, i, nameNodeId, serverValues); },
@@ -2886,12 +2812,10 @@ const SetGetlogic = {
   SU2110_Feeding_Hmi_udtEmFeeder_udSetOpCountResetSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_udSetOpCountReset", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStopGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop", 1, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStopSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop", undefined, {}, i, nameNodeId, serverValues); },
-  SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrlGet: function (i, nameNodeId, serverValues) {
-    initial("SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl", undefined, {}, i, nameNodeId, serverValues);
+  SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrlGet: function (i, nameNodeId, serverValues) {initial("SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl", undefined, {}, i, nameNodeId, serverValues);
 
   },
-  SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrlSet: function (i, nameNodeId, serverValues) {
-    initial("SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl", undefined, {}, i, nameNodeId, serverValues);
+  SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrlSet: function (i, nameNodeId, serverValues) {initial("SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl", undefined, {}, i, nameNodeId, serverValues);
 
     var werte = require('./profiles/simulation/variables/Variabeln');
 
@@ -2996,19 +2920,7 @@ const SetGetlogic = {
 
     var werte = require('./profiles/simulation/variables/Variabeln');
 
-    // Das ist dazu da, damit NEW Set auf Set applied wird 
-    let roundedValue = Math.round(serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rAct.nodeId.value] * 100) / 100; // Wert muss gerundet werden, da er nicht ganz 100 ist, sondern 99.999999999999
-    if ((serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] === 32768 || serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] === 33024) && roundedValue === 100) {
-      for (let i = 1; i < 5; i++) {
-        if (sharedState.feeders[i].FeederLineMode) { // Prüfung, ob Feeder im Line Modus ist
-          //Funktion wird nur gestartet, wenn Extruder an ist.
-          if (sharedState.ExtruderisOn && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] > 0) {
-            funktionen.simulateLineMode(i, nameNodeId, serverValues)
-          }
-          serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value];
-        }
-      }
-    }
+
 
     if (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] === 256) { // Auto Start Feeder , das ist der "Haken" in der HMI (POP Up Feeding)
       sharedState.feedingautostartButtons.autoStartFeeder = true
@@ -3062,20 +2974,27 @@ const SetGetlogic = {
       }, 1500); // 5000 Millisekunden oder 5 Sekunden
 
 
+   }
 
 
-      console.log("sharedState.feeders[1].FeederisRunning    " + sharedState.feeders[1].FeederisRunning)
-      console.log("sharedState.feeders[2].FeederisRunning    " + sharedState.feeders[2].FeederisRunning)
-      console.log("sharedState.feeders[3].FeederisRunning    " + sharedState.feeders[3].FeederisRunning)
-      console.log("sharedState.feeders[4].FeederisRunning    " + sharedState.feeders[4].FeederisRunning)
+    // Das ist dazu da, damit NEW Set auf Set applied wird 
+    let roundedValue = Math.round(serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rAct.nodeId.value] * 100) / 100; // Wert muss gerundet werden, da er nicht ganz 100 ist, sondern 99.999999999999
 
-      console.log("sharedState.feeders[1].FeederisOff    " + sharedState.feeders[1].FeederisOff)
-      console.log("sharedState.feeders[2].FeederisOff    " + sharedState.feeders[2].FeederisOff)
-      console.log("sharedState.feeders[3].FeederisOff    " + sharedState.feeders[3].FeederisOff)
-      console.log("sharedState.feeders[4].FeederisOff    " + sharedState.feeders[4].FeederisOff)
-
-      console.log("ab hier neue states wo andrs loaloalalallala")
+    // Prüft ob Apply Taste gedrückt wird, es gibt 3 Möglichkeiten je nachdem welche Tasta  im Pop Feeding gerade aktib ist.
+    if ((serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] === 32768 || serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] === 33024) && roundedValue === 100) {
+      // Prüft alle Feeder, ob diese auf LineMode stehen, wenn ja so werden die Prozente von new Set (rThroughputPercSet_rSet) +bernommen und rThroughputPerc_rSet zugewiesen
+      for (let i = 1; i < 5; i++) {
+        if (sharedState.feeders[i].FeederLineMode) { // Prüfung, ob Feeder im Line Modus ist
+          //Funktion wird nur gestartet, wenn Extruder an ist.
+          serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value];
+          //Wenn Extruder an ist und rThroughputPerc_rSet größer Null, dann die Funktion ausgeführt. Zeile ist notwenig, damit beim Drücken des "Apply" Button die Funktion neu gestartet wird.
+          if (sharedState.ExtruderisOn && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] > 0) {
+            funktionen.simulateLineMode(i, nameNodeId, serverValues)
+          }
+                 }
+      }
     }
+
 
   },
 
@@ -4157,14 +4076,11 @@ const SetGetlogic = {
     // Vorausgesetzt serverValues und werte sind bereits definiert:
     var werte = require('./profiles/simulation/variables/Variabeln');
     // Überprüfen Sie zuerst die Bedingung
-    for (let i = 1; i < 5; i++) {
-      if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_Set.nodeId.value] === 2) {
 
-        // Logging, um zu überprüfen, ob Sie in der if-Anweisung sind und die relevanten Werte anzuzeigen
-        console.log("In der if-Anweisung für Index:", i);
-        console.log("Prozentwert:", serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value]);
-        console.log("Gesetzter Wert:", serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value]);
+    for (let i = 1; i <= 4; i++) {
+      if (sharedState.feeders[i].FeederLineMode) {
 
+       
         // Nehmen Sie den prozentualen Wert
         let percentage = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] / 100;
 
@@ -4196,61 +4112,48 @@ const SetGetlogic = {
   SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrlSet: function (i, nameNodeId, serverValues) {
     initial("SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl", undefined, {}, i, nameNodeId, serverValues);
     var werte = require('./profiles/simulation/variables/Variabeln');
-
-    console.log("serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl.nodeId.value]   " + serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl.nodeId.value])
-
-    // Ramp Up Funktion kann nur im Line Modus funktionieren, hier wird geprüft, ob ein Feeder auf LineModus 2 gestellt ist
-    for (let j = 0; j < 4; j++) {
-      if (serverValues[werte.data[j].SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_Set.nodeId.value] === 2) {
-        minimumOneFeederLineMode = true;
-        break; // Beendet die Schleife, sobald ein Feeder mit dem Wert 2 gefunden wird
-      }
+       
+    // Zustand von FeederRampMode wird gesetzt
+    if (sharedState.ExtruderisOn && serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl.nodeId.value] === 2) { // Ramp Button On
+      sharedState.FeederRampModeisOn=true;
+      sharedState.FeederRampModeisOff=false;
+    }
+// Zustand von FeederRampMode wird gesetzt
+    if (sharedState.ExtruderisOn && serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl.nodeId.value] === 4) { // Ramp Button On
+      sharedState.FeederRampModeisOn=false;
+      sharedState.FeederRampModeisOff=true;
     }
 
-    // Überprüfen Sie nach der Schleife, ob minimumOneFeederLineMode immer noch false ist und ob alle Feeder den Wert 1 haben
-    if (
-      serverValues[werte.data[0].SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_Set.nodeId.value] === 1 &&
-      serverValues[werte.data[1].SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_Set.nodeId.value] === 1 &&
-      serverValues[werte.data[2].SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_Set.nodeId.value] === 1 &&
-      serverValues[werte.data[3].SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_Set.nodeId.value] === 1) {
-      minimumOneFeederLineMode = false;
+    for (let i=1; i<=4;i++){
+if(sharedState.feeders[i].FeederLineMode){
+
+  //funktionen.simulateFeederThroughputLineRamp(i)
+}
     }
 
-
-    //  let IsRunning = true
-    // console.log("kontrolle von is running  " + IsRunning)
-    if (minimumOneFeederLineMode && serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl.nodeId.value] === 2) { // Ramp Button On
-      sharedState.FeederRampModeisRunning = true;
-
-      for (let i = 1; i <= 4; i++) {
-        if (IsRunning) {
-          funktionen.simulateFeederThroughputLineRamp(i, nameNodeId, serverValues, IsRunning);
-        }
-      }
-    } else if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl.nodeId.value] === 4) { // Ramp Button Off 
-
-
-      IsRunning = false
-      sharedState.FeederRampModeisRunning = false;
-    }
+    
 
   },
   SU1000_Line_Hmi_udtLm_udtLineRamp_dwStatGet: function (i, nameNodeId, serverValues) {
-    initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat", 1, nameNodeId, serverValues);
+    initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat", 13, nameNodeId, serverValues);
 
-    setTimeout(() => {
+  setTimeout(() => {
       var werte = require('./profiles/simulation/variables/Variabeln');
-
-      // Die Bedingung wird true, sobald ein Feeder On ist, sobals ein Feeder on ist, wird die Lockcondition von Ramp Off/On entlockt. On Button wird anklickbar
-      if (sharedState.FeedingisOn) {
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << 1);
+      for (let i = 1; i <=4; i++) {
+         // Die Bedingung wird true, sobald ein Feeder On ist und auf LineMode eingestellt ist
+      if (sharedState.ExtruderisOn && sharedState.feeders[i].FeederLineMode) {
+        // Wenn beide Bedingungen wahr sind, setzen Sie das entsprechende Bit.
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << 1);// Lockcondition vom On Button wird "gesetzt". On Button ist dan "anklickbar"
+        break
       }
+    }
+              
       // Wenn FeederRamp Mode aktiv ist, so wird on Button grau
-      if (sharedState.FeederRampModeisRunning) {
+      if (sharedState.FeederRampModeisOn) {
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << 2) | (1 << 4) | (1 << 9) | (1 << 10) | (1 << 11);
       }
       // Wenn FeederRamp Mode deaktiviert ist, so wird on Button wieder "anklickbar"
-      if (!sharedState.FeederRampModeisRunning) {
+    if (sharedState.FeederRampModeisOff) {
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] &= ~((1 << 2) | (1 << 4) | (1 << 9) | (1 << 10) | (1 << 11));
       }
     }, 1);

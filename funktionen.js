@@ -1021,7 +1021,7 @@ function simulateLineMode(i, nameNodeId, serverValues) {
     function updateFeederWeight() {
 
      // Abbruchbedingung
-     if (sharedState.intervalIds.stopupdateFeederWeight) {
+     if (sharedState.intervalIds.stopSimulateFeederWeight) {
       console.log("Abbruchbedingung stopSimulateThroughputRamp")
       for (let id of intervalIds.updateFeederWeight) {
         clearInterval(id);
@@ -1052,25 +1052,21 @@ function simulateLineMode(i, nameNodeId, serverValues) {
   
 
 
-function simulateFeederThroughputLineRamp(i, nameNodeId, serverValues, ) {
+function simulateFeederThroughputLineRamp(i, nameNodeId, serverValues ) {
  
   var werte = require('./profiles/simulation/variables/Variabeln');
  
 
+  // Zieldurchsatz kg/h bestimmen anhand vom Throughput Set
 
+  let throughputSet=serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value]
+  let througputSetPercLineMode=serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value]
 
-
-  // Überprüfen Sie, ob die Bedingung für den gegebenen Index erfüllt ist
-  if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_Set.nodeId.value] !== 2) {
-    console.log(`Feeder mit Index ${i} hat nicht den Modus 2, überspringe...`);
-    return; // Überspringen Sie die aktuelle Iteration, wenn der Feeder-Modus nicht 2 ist
-  }
-
-  // Ziel-Durchsatzwert bestimmen
-  const targetThroughput = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value] * (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] / 100);
-  console.log(`Ziel-Durchsatz für Feeder ${nameNodeId}: ${targetThroughput}`);
-
-  const predefinedIncrement = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value] / 60
+  let targetThroughput=throughputSet*througputSetPercLineMode/100
+    
+ 
+// Steigung der Rampe 
+  let gradient = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value] 
 
 
   function adjustThroughput() {
@@ -1089,31 +1085,88 @@ function simulateFeederThroughputLineRamp(i, nameNodeId, serverValues, ) {
     // Bestimmt die Richtung, in die der Durchsatz verändert werden soll
     let direction = (targetThroughput > currentThroughput) ? 1 : -1;
 
-    // Das Inkrement von predefinedIncrement multipliziert mit der Richtung
-    let increment = predefinedIncrement * direction;
+    // Das Inkrement, also die Steigung  multipliziert mit der Richtung
+    let increment = gradient * direction;
 
     // Aktualisiert den aktuellen Durchsatz mit dem Inkrement
     currentThroughput += increment;
 
+    // Wert wird in der HMI bei den Feedern angezeigt
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput;
-    console.log(`Aktueller Durchsatz für ${nameNodeId}: ${currentThroughput}. Inkrementiert um: ${increment}`);
+    
 
     // Aktualisieren Sie rAct mit dem neuen Durchsatzwert, aber stellen Sie sicher, dass es den Zielwert nicht überschreitet.
     if ((direction === 1 && currentThroughput > targetThroughput) || (direction === -1 && currentThroughput < targetThroughput)) {
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = targetThroughput;
-      serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] &= ~((1 << 2) | (1 << 4) | (1 << 9) | (1 << 10) | (1 << 11));
-      clearInterval(intervalIds.simulateFeederThroughputLineRamp[i]);
+     // serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] &= ~((1 << 2) | (1 << 4) | (1 << 9) | (1 << 10) | (1 << 11));
+      clearInterval(intervalIds.adjustThroughput[i]);
 
       console.log(`Ziel-Durchsatz erreicht für ${nameNodeId}. Simulation beendet.`);
     }
-    if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl.nodeId.value] === 4) {
-      clearInterval(intervalIds.adjustThroughput[i]);
-
-      console.log(`Stopp-Bedingung erfüllt für ${nameNodeId}. Simulation angehalten.`);
-    }
+  
   }
   let intervalId = setInterval(adjustThroughput, 800);
   intervalIds.adjustThroughput[i] = intervalId; // Speichern Sie intervalId im globalen intervalIds-Objekt
+}
+
+
+// Funktion zum Verteilen Prozente
+function DistributionPercentages () {
+  let sum=0
+
+  var werte = require('./profiles/simulation/variables/Variabeln');
+
+  // Zuweisung von udtLineRamp.Throughput.rSet an  totalThroughput (Feeding Popup operating Point oder start Wizzard)
+  let totalThroughput = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value]
+  let activeFeeders = 0;
+
+  // Prüfung ob ein Feeder auf Line steht, Zähler wird dementsprechend hochgezählt.
+  for (let i = 1; i <= 4; i++) {
+    if (sharedState.feeders[i].FeederLineMode) {
+      activeFeeders++;
+              }
+  }
+
+  // Prüfung, ob genau ein Feeder auf Line Modus steht.
+  if (activeFeeders === 1) {
+// Werte aktualisiert, wenn genau ein Feeder auf Line steht
+    for (let i = 1; i <= 4; i++) {
+      if (sharedState.feeders[i].FeederLineMode) {
+        let feederThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value];
+        if (feederThroughput < totalThroughput) { // Wenn der totale Durchsatz kleiner als der Durchsatz vom Feeder ist, dann wird der Durchsatz 
+          serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value] = totalThroughput;
+                       }
+        if (feederThroughput > totalThroughput) { // Wenn Feeder Durchsatz größer als der Totale Durchsatz, ist der Totale Durchsatz gleich dem Feederdurchsatz
+           totalThroughput=serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value]
+      }
+    }
+  }
+  } ////////***** ACHTUNG GILT NUR WENN EIN FEEDER AUF LINE STEHT. ES IST DAFÜR GEDACHT, WENN GENAU EIN FEEDER AUF LINE STEHT */
+  
+  // Jetzt berechnen Sie totalThroughput
+        for (let i = 1; i <= 4; i++) {
+    if (sharedState.feeders[i].FeederLineMode) {
+      sum += serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value];
+    }
+  }
+  serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value] = sum
+  totalThroughput = sum
+
+  // Prozentsatzberechnung
+  for (let i = 1; i <= 4; i++) {
+    if (sharedState.feeders[i].FeederLineMode) {
+      let feederThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value];
+      let percentage = (feederThroughput / totalThroughput) * 100;
+                serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value] = percentage;
+             }      
+  }
+
+// Wenn keiner Feeder auf Line Mode steht, dann ist PercSet_rSet
+  for (let i = 1; i <= 4; i++) {
+    if (!sharedState.feeders[i].FeederLineMode) {
+      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value] = 0; // Wenn feeder Mode nicht 2 ist, dann wird auf null gesetzt
+}
+}
 }
 
 
@@ -1384,6 +1437,7 @@ module.exports = {
   updatedwstat: updatedwstat,
   simulateFeederThroughputLineRamp: simulateFeederThroughputLineRamp,
   dwStatStartWizzard: dwStatStartWizzard,
+  DistributionPercentages:DistributionPercentages,
   StateMachine: StateMachine,
   StateMachineNavigationBar: StateMachineNavigationBar
 

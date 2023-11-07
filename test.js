@@ -149,3 +149,64 @@ setTimeout(function () {
     machine.setState('SU3111_ZeExtruder_Hmi_udtPc_udtModState_dwUnitNavigationStatu', 'RUNNING');
   }
 }, 1); 
+
+
+
+    //   serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value]
+    setTimeout(() => {
+        var werte = require('./profiles/simulation/variables/Variabeln');
+        // Erste Bedingung (Taste Spec.Rate)
+        if (sharedState.SpeedCalculationSpecRateisOn) {
+          // Bit 4 setzen
+          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value] &= ~(1 << 8);
+  
+  
+          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] &= ~(1 << 11); // TRUE: Setpoint value is visible
+          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] &= ~(1 << 13); // TRUE: Setpoint input of Hmi is activ
+  
+  
+          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] |= (1 << 11); // TRUE: Setpoint value is visible
+          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] |= (1 << 13);
+  
+          if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] & (1 << 11)) { // Prüft ob Main Drive on ist
+            console.log("kontrooooole")
+            funktionen.simulateScrewSpeed(i, nameNodeId, serverValues);
+          }
+  
+        }
+  
+        // Zweite Bedingung (Taste Direct)
+        if (sharedState.SpeedCalculationDirectisOn) {
+  
+          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value] |= (1 << 8);
+          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] |= (1 << 11); // TRUE: Setpoint value is visible
+          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] |= (1 << 13); // TRUE: Setpoint input of Hmi is active
+  
+          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] &= ~(1 << 11); // TRUE: Setpoint value is visible
+          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] &= ~(1 << 13);
+          if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] & (1 << 11)) { // Prüft ob Main Drive on ist
+            funktionen.simulateScrewSpeed(i, nameNodeId, serverValues);
+          }
+  
+        }
+      }, 1);
+
+
+
+      if (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] === 288 && (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] & (1 << 8))
+      ) {
+        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << 13);
+        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << 10);
+      }
+      // Auto Stop Button
+      if (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] === 320 && (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] & (1 << 8))
+      ) {
+        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << 13);
+        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << 10);
+      }
+
+      SU2110_Feeding_Hmi_udtUm_dwCtrl
+
+      SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet
+
+      SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet
