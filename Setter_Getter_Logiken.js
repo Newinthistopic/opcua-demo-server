@@ -158,23 +158,23 @@ const SetGetlogic = {
       //serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughput_rAct.nodeId.value] = 0;
       // serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughputTotal_rAct.nodeId.value] = 0;
 
-
+     
 
 
       // Das ist die Abruchbedingung für alle Funktionen, die zum Feeder gehören.
-      sharedState.intervalIds.stopSimulateFeeder = true
+      sharedState.intervalIds.stopSimulateFeederSingle = true
       sharedState.intervalIds.stopSimulateFeederWeight = true,
-        sharedState.intervalIds.stopSimulateFeederThroughputLineRamp = true,
+        sharedState.intervalIds.stopsimulateLineMode = true,
         sharedState.intervalIds.stopAdjustThroughput = true
       sharedState.intervalIds.stopSimulateLineMode = true,
-        sharedState.intervalIds.stopSimulateThroughputRamp = true
+        sharedState.intervalIds.stopSimulateThroughputRampLine = true
       setTimeout(function () {
-        sharedState.intervalIds.stopSimulateFeeder = false,
+        sharedState.intervalIds.stopSimulateFeederSingle = false,
           sharedState.intervalIds.stopSimulateFeederWeight = false,
-          sharedState.intervalIds.stopSimulateFeederThroughputLineRamp = false,
+          sharedState.intervalIds.stopsimulateLineMode = false,
           sharedState.intervalIds.stopAdjustThroughput = false,
           sharedState.intervalIds.stopSimulateLineMode = false,
-          sharedState.intervalIds.stopSimulateThroughputRamp = false
+          sharedState.intervalIds.stopSimulateThroughputRampLine = false
       }, 1500); // 5000 Millisekunden oder 5 Sekunden
 
 
@@ -2616,9 +2616,9 @@ const SetGetlogic = {
 
     var werte = require('./profiles/simulation/variables/Variabeln');
     // Der Button muss auf On stehen, damit der Set Wert die Funktion startet 
-    if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] & (1 << 11)) {
+    if (sharedState.feeders[i].FeederisRunning) {
 
-      funktionen.startFeeder(i, nameNodeId, serverValues)
+      funktionen.simulateSingleMode(i, nameNodeId, serverValues)
     }
 
   },
@@ -2788,7 +2788,7 @@ const SetGetlogic = {
           if (sharedState.feeders[i].FeederSingleMode &&sharedState.feeders[i].FeederisOff) { // Prüfung, ob Feeder im Line Modus ist
         //Funktion wird nur gestartet, wenn Extruder an ist.
         if (sharedState.ExtruderisOn && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value] > 0) {
-          funktionen.startFeeder(i, nameNodeId, serverValues)
+          funktionen.simulateSingleMode(i, nameNodeId, serverValues)
             }
     }
     
@@ -2840,9 +2840,10 @@ const SetGetlogic = {
     if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl.nodeId.value] === 64) { // Off Button
       sharedState.feeders[i].FeederisRunning = false;
       sharedState.feeders[i].FeederisOff = true;
-      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat.nodeId.value] &= ~(1 << 15); // Tolerance Monitoring Off
+            serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat.nodeId.value] &= ~(1 << 15); // Tolerance Monitoring Off
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = 0;// Wenn der Button auf Off gedrückt, wird so fährt der Feeder runter auf Null
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = 0;// Wenn der Button auf Off gedrückt, wird so fährt der Feeder runter auf Null
+      
     }
 
     // Setzt FeederisRunning auf true, sobald der on Button gedrückt wird
@@ -2859,7 +2860,7 @@ const SetGetlogic = {
       //Wenn FeederSingleModus an ist, dann wir die entsprechende Funktion gestartet
       if (sharedState.feeders[i].FeederSingleMode) { // Prüfen ob FeederLineMode true ist
 
-        funktionen.startFeeder(i, nameNodeId, serverValues);
+        funktionen.simulateSingleMode(i, nameNodeId, serverValues);
       }
     }
 
@@ -2958,14 +2959,14 @@ const SetGetlogic = {
 
 
       // Das ist die Abruchbedingung für alle Funktionen, die zum Feeder gehören.
-      sharedState.intervalIds.stopSimulateFeeder = true
+      sharedState.intervalIds.stopSimulateFeederSingle = true
       sharedState.intervalIds.stopSimulateFeederWeight = true,
         sharedState.intervalIds.stopSimulateFeederThroughputLineRamp = true,
         sharedState.intervalIds.stopAdjustThroughput = true
       sharedState.intervalIds.stopSimulateLineMode = true,
         sharedState.intervalIds.stopSimulateThroughputRamp = true
       setTimeout(function () {
-        sharedState.intervalIds.stopSimulateFeeder = false,
+        sharedState.intervalIds.stopSimulateFeederSingle = false,
           sharedState.intervalIds.stopSimulateFeederWeight = false,
           sharedState.intervalIds.stopSimulateFeederThroughputLineRamp = false,
           sharedState.intervalIds.stopAdjustThroughput = false,
@@ -2988,7 +2989,7 @@ const SetGetlogic = {
           //Funktion wird nur gestartet, wenn Extruder an ist.
           serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value];
           //Wenn Extruder an ist und rThroughputPerc_rSet größer Null, dann die Funktion ausgeführt. Zeile ist notwenig, damit beim Drücken des "Apply" Button die Funktion neu gestartet wird.
-          if (sharedState.ExtruderisOn && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] > 0) {
+          if (sharedState.ExtruderisOn && sharedState.feeders[i].FeederisRunning && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] > 0) {
             funktionen.simulateLineMode(i, nameNodeId, serverValues)
           }
                  }
@@ -4117,19 +4118,22 @@ const SetGetlogic = {
     if (sharedState.ExtruderisOn && serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl.nodeId.value] === 2) { // Ramp Button On
       sharedState.FeederRampModeisOn=true;
       sharedState.FeederRampModeisOff=false;
-    }
+
+      for (let i=1; i<=4;i++){
+        if(sharedState.feeders[i].FeederLineMode){
+                  funktionen.simulateLineModeRamp(i, nameNodeId, serverValues)
+        }
+            }
+          }
 // Zustand von FeederRampMode wird gesetzt
-    if (sharedState.ExtruderisOn && serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl.nodeId.value] === 4) { // Ramp Button On
+    if (sharedState.ExtruderisOn && serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl.nodeId.value] === 4) { // Ramp Button Off
       sharedState.FeederRampModeisOn=false;
       sharedState.FeederRampModeisOff=true;
+         
     }
+    
 
-    for (let i=1; i<=4;i++){
-if(sharedState.feeders[i].FeederLineMode){
 
-  //funktionen.simulateFeederThroughputLineRamp(i)
-}
-    }
 
     
 

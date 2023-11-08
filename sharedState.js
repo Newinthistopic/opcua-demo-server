@@ -39,12 +39,13 @@ module.exports = {
 
 
     intervalIds: {
-        stopSimulateFeeder: false,
+        stopSimulateFeederSingle: false,
+        stopSimulateFeederLine:false,
         stopSimulateFeederWeight: false,
         stopSimulateFeederThroughputLineRamp: false,
         stopAdjustThroughput: false,
         stopSimulateLineMode: false,
-        stopSimulateThroughputRamp: false,
+        stopSimulateThroughputRampLine: false,
         
       },
 

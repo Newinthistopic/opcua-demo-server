@@ -449,25 +449,25 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
   const EierUhrEinstellZeit = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_udTimeRel.nodeId.value];
   let EierUhrStartWert = EierUhrEinstellZeit
   const machine = new StateMachine();
-  
+
 
   //********************************************************************************************************************************** */
   //********************************************************************************************************************************** */
   //********************************************************************************************************************************** */
   //********************************************************************************************************************************** */
   if (sharedState.HeatingisOn) {
-    
+
     sharedState.ProzesszonesAreOff = false;
     if (rAct < rTempRelease) {
       wasBelow100[i] = true;
     }
     if (rAct > rTempRelease && !wasBelow100[i]) {
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 6) // BIT 6 stellt auf Ready
-     
+
     }
 
-        if (rAct < rSet && rAct < (rSet - rSetTolMaxMax) && wasBelow100[i]) {
-      
+    if (rAct < rSet && rAct < (rSet - rSetTolMaxMax) && wasBelow100[i]) {
+
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 9) // BIT 9 stellt auf Active
     }
     // geht nur rein, wenn es true ist, also rAct < 100
@@ -487,7 +487,7 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
       sharedState.ProzesszonesAreReady = true
     }
   }
- 
+
   //********************************************************************************************************************************** */
   //********************************************************************************************************************************** */
   // Shut Down Down Button Shut Down Down Button Shut Down Down Button Shut Down Down Button Shut Down Down Button Shut Down Down Button
@@ -505,7 +505,7 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
       wasBelow100[i] = true;
       hasEierUhrFinished = false
       checkedItemsReady[i] = false;
-     
+
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) // Icon ist auf off
     }
 
@@ -536,7 +536,7 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
       wasBelow100[i] = true;
       hasEierUhrFinished = false
       checkedItemsReady[i] = false;
-     
+
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 7);
     }
 
@@ -597,7 +597,7 @@ function startEierUhr(i, callback) {
 
 let pidTimerIddown = []
 let pidTimerIdup = []
-let pidTimerIdshutdown=[]
+let pidTimerIdshutdown = []
 
 
 const MAX_INDEX = 13;  // Index von 1 bis 13
@@ -612,9 +612,9 @@ function PIDUP(i, nameNodeId, serverValues, source) {
   if (pidTimerIddown[i]) clearTimeout(pidTimerIddown[i]); // löscht alle Timer von pidDown, falls ein Timer noch läuft
   if (pidTimerIdshutdown[i]) clearTimeout(pidTimerIdshutdown[i]); // löscht alle Timer von shutDown fals ein Timer noch läuft
 
-  const Kp = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGain.nodeId.value]; 
-  const Ki = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value]; 
-  const Kd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value]; 
+  const Kp = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGain.nodeId.value];
+  const Ki = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value];
+  const Kd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value];
   const dt = 0.01
   const T1 = 120
   const T2 = 115
@@ -631,32 +631,32 @@ function PIDUP(i, nameNodeId, serverValues, source) {
   } else if (source === "B") {
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value];
   }
-  
+
 
   let integral
- 
-  let key = getSaveKey(rAct2, i); 
+
+  let key = getSaveKey(rAct2, i);
 
   if (savedValues.hasOwnProperty(key)) {
-      rAct1 = savedValues[key].rAct1;
-     //integral = savedValues[key].integral;
- //} else {
-  
+    rAct1 = savedValues[key].rAct1;
+    //integral = savedValues[key].integral;
+    //} else {
+
   }
   lastError = 0;
   integral = 0;
-  
- 
+
+
 
   function calculateNextValue() {
     var werte = require('./profiles/simulation/variables/Variabeln');
     if (rSet - rAct2 > 0.1) {
-  
+
       let error = rSet - rAct2;
-   
+
       integral += error * dt;
-     
-      let derivative = (error - lastError) /dt;
+
+      let derivative = (error - lastError) / dt;
       let pTerm = Kp * error;  // Proportional-Anteil
       let iTerm = Ki * integral;  // Integral-Anteil
       let dTerm = Kd * derivative;  // Derivative-Anteil
@@ -679,16 +679,16 @@ function PIDUP(i, nameNodeId, serverValues, source) {
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value] = rAct2;
 
       let streckenAusgang = Math.round(serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value]);
-      
+
       for (let idx = 1; idx <= MAX_INDEX; idx++) {
         const key = getSaveKey(streckenAusgang, idx);
         if (!savedValues.hasOwnProperty(key)) {
-            savedValues[key] = { rAct1: rAct1, integral: integral, };
-            //console.log(`Gespeicherte Werte für ${key}: rAct1 = ${rAct1}, integral = ${integral}, rAct2 = ${streckenAusgang}`);
-            break;  // Sobald wir einen Schlüssel gefunden haben, der nicht existiert und gespeichert wurde, brechen wir aus der Schleife aus.
+          savedValues[key] = { rAct1: rAct1, integral: integral, };
+          //console.log(`Gespeicherte Werte für ${key}: rAct1 = ${rAct1}, integral = ${integral}, rAct2 = ${streckenAusgang}`);
+          break;  // Sobald wir einen Schlüssel gefunden haben, der nicht existiert und gespeichert wurde, brechen wir aus der Schleife aus.
         }
-    }
-            const timerup = setTimeout(calculateNextValue, 10);
+      }
+      const timerup = setTimeout(calculateNextValue, 10);
       pidTimerIdup[i] = timerup; // Timer-ID am spezifischen Index setzen
     }
   }
@@ -702,9 +702,9 @@ function PIDCOOLDOWN(i, nameNodeId, serverValues, source) {
   if (pidTimerIdshutdown[i]) clearTimeout(pidTimerIdshutdown[i]); //löscht alle Timer von shutDown
   intervalEieruhrIds.forEach(intervalEieruhr => clearInterval(intervalEieruhr));
 
-  const Kp = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGain.nodeId.value]; 
-  const Ki = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value]; 
-  const Kd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value]; 
+  const Kp = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGain.nodeId.value];
+  const Ki = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value];
+  const Kd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value];
   const dt = 0.01
   const T1 = 80
   const T2 = 70
@@ -714,52 +714,52 @@ function PIDCOOLDOWN(i, nameNodeId, serverValues, source) {
   let rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   let rSet
   if (source === "A") {
-     rSet = 20
+    rSet = 20
     // Hängt mit der Funktion dwstatupdate zusammen. Für die Toleranzgrenzen braucht man einen Set Wert. Endung _rSet, rTempHeatup_Set geht nicht !
     // serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value]=serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value]
   } else if (source === "B") {
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value];
-    if(rSet<20){
-      rSet=20
+    if (rSet < 20) {
+      rSet = 20
     }
   }
   let lastError = 0;
 
- let integral=0
-  
+  let integral = 0
+
   function calculateNextValue() {
-  if (Math.abs(rSet - rAct2) > 0.1) {
-    let error = rSet - rAct2;
+    if (Math.abs(rSet - rAct2) > 0.1) {
+      let error = rSet - rAct2;
 
-    integral += error*dt;
+      integral += error * dt;
 
-    let derivative = (error - lastError)/dt;
+      let derivative = (error - lastError) / dt;
 
-    let pTerm = Kp * error;  // Proportional-Anteil
-    let iTerm = Ki * integral;  // Integral-Anteil
-    let dTerm = Kd * derivative;  // Derivative-Anteil
+      let pTerm = Kp * error;  // Proportional-Anteil
+      let iTerm = Ki * integral;  // Integral-Anteil
+      let dTerm = Kd * derivative;  // Derivative-Anteil
 
-    let u = pTerm + iTerm + dTerm;
+      let u = pTerm + iTerm + dTerm;
 
-    lastError = error;
+      lastError = error;
 
-    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = u
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = u
 
-    // 1.Glied PT1 der Reglestrecke
-    let dy1 = (K1 * u - rAct1) / T1 * dt;
-    rAct1 += dy1;
+      // 1.Glied PT1 der Reglestrecke
+      let dy1 = (K1 * u - rAct1) / T1 * dt;
+      rAct1 += dy1;
 
-    // 2.Glied PT1 der Regelstrecke
-    let dy2 = (K2 * rAct1 - rAct2) / T2 * dt;
-    rAct2 += dy2;
+      // 2.Glied PT1 der Regelstrecke
+      let dy2 = (K2 * rAct1 - rAct2) / T2 * dt;
+      rAct2 += dy2;
 
-    //Ausgabe des Act Wertes in der HMI 
-    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value] = rAct2;
+      //Ausgabe des Act Wertes in der HMI 
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value] = rAct2;
 
 
-      const timerdown = setTimeout(calculateNextValue,10);
+      const timerdown = setTimeout(calculateNextValue, 10);
       pidTimerIddown[i] = timerdown; // Timer-ID am spezifischen Index setzen
-   }
+    }
   }
   // Start der Berechnung
   calculateNextValue();
@@ -770,19 +770,19 @@ function PIDSHUTDOWN(i, nameNodeId, serverValues) {
   var werte = require('./profiles/simulation/variables/Variabeln');
   if (pidTimerIdup[i]) clearTimeout(pidTimerIdup[i]); //löscht alle Timer von PidUp
   if (pidTimerIddown[i]) clearTimeout(pidTimerIddown[i]); //löscht alle Timer von PidDown
-   
+
   intervalEieruhrIds.forEach(intervalEieruhr => clearInterval(intervalEieruhr));
 
- 
-  const Kp = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGain.nodeId.value]; 
-  const Ki = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value]; 
-  const Kd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value]; 
+
+  const Kp = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGain.nodeId.value];
+  const Ki = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value];
+  const Kd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value];
   const dt = 0.01
   const T1 = 20
   const T2 = 10
   const K1 = 1
   const K2 = 1
- 
+
   var rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   var rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
 
@@ -790,40 +790,40 @@ function PIDSHUTDOWN(i, nameNodeId, serverValues) {
 
   let lastError = 0;
 
-  let integral=0
-   
-   function calculateNextValue() {
-   if (Math.abs(rSet - rAct2) > 0.1) {
-     let error = rSet - rAct2;
- 
-     integral += error*dt;
- 
-     let derivative = (error - lastError)/dt;
- 
-     let pTerm = Kp * error;  // Proportional-Anteil
-     let iTerm = Ki * integral;  // Integral-Anteil
-     let dTerm = Kd * derivative;  // Derivative-Anteil
- 
-     let u = pTerm + iTerm + dTerm;
- 
-     lastError = error;
- 
-     serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = u
- 
-     // 1.Glied PT1 der Reglestrecke
-     let dy1 = (K1 * u - rAct1) / T1 * dt;
-     rAct1 += dy1;
- 
-     // 2.Glied PT1 der Regelstrecke
-     let dy2 = (K2 * rAct1 - rAct2) / T2 * dt;
-     rAct2 += dy2;
- 
-     //Ausgabe des Act Wertes in der HMI 
-     serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value] = rAct2;
+  let integral = 0
+
+  function calculateNextValue() {
+    if (Math.abs(rSet - rAct2) > 0.1) {
+      let error = rSet - rAct2;
+
+      integral += error * dt;
+
+      let derivative = (error - lastError) / dt;
+
+      let pTerm = Kp * error;  // Proportional-Anteil
+      let iTerm = Ki * integral;  // Integral-Anteil
+      let dTerm = Kd * derivative;  // Derivative-Anteil
+
+      let u = pTerm + iTerm + dTerm;
+
+      lastError = error;
+
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = u
+
+      // 1.Glied PT1 der Reglestrecke
+      let dy1 = (K1 * u - rAct1) / T1 * dt;
+      rAct1 += dy1;
+
+      // 2.Glied PT1 der Regelstrecke
+      let dy2 = (K2 * rAct1 - rAct2) / T2 * dt;
+      rAct2 += dy2;
+
+      //Ausgabe des Act Wertes in der HMI 
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value] = rAct2;
 
       const timerdown = setTimeout(calculateNextValue, 10);
       pidTimerIdshutdown[i] = timerdown; // Timer-ID am spezifischen Index setzen
-      
+
     }
   }
   // Start der Berechnung
@@ -864,7 +864,7 @@ function simulateScrewSpeed(i, nameNodeId, serverValues) {
     }
 
 
-  
+
 
     const normalizedTime = t;  // Da t von 0 bis 1 geht, ist es bereits normalisiert
     let currentSpeed = x0 + (xf - x0) / (1 + Math.exp(-roundness * (normalizedTime - 0.5)));
@@ -908,58 +908,57 @@ function simulateScrewSpeed(i, nameNodeId, serverValues) {
 
 //FEEDER//////////////
 let intervalIds = {
-  simulateFeeder: [],
-  simulateThroughputRamp: [],
+  simulateFeederSingle: [],
+  simulateFeederLine: [],
   simulateFeederWeight: [],
-  adjustThroughput: [],
-  updateFeederWeight:[]
+  startsimulateLineModeRamp: [],
+  updateFeederWeight: []
 };
 
-function startFeeder(i, nameNodeId, serverValues) { // Single Mode
- 
+function simulateSingleMode(i, nameNodeId, serverValues) { // Single Mode
+  console.log("startfeeder")
   var werte = require('./profiles/simulation/variables/Variabeln');
 
   let currentThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
 
-  function simulateFeeder() {
+  function simulateFeederSingle() {
 
-   // Abbruchbedingung
-   if (sharedState.intervalIds.stopSimulateFeeder) {
-    
-    console.log("stopen der Fuktion start Feeder");
-    for (let id of intervalIds.simulateFeeder) {
-      clearInterval(id);
+    // 1. Abbruchbedingung
+    if (sharedState.intervalIds.stopSimulateFeederSingle) {
+
+      console.log("stopen der Fuktion start Feeder");
+      for (let id of intervalIds.simulateFeederSingle) {
+        clearInterval(id);
+      }
+      intervalIds.simulateFeederSingle = [];  // Leeren des Arrays
+      return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
     }
-    intervalIds.simulateFeeder = [];  // Leeren des Arrays
-    return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
-  }
     let setThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value];
     let direction = (setThroughput > currentThroughput) ? 1 : -1;
 
     let inkrement = 1.135 * direction;
     currentThroughput += inkrement;
 
-    if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl.nodeId.value] === 64) {
-      clearInterval(intervalIds.simulateFeeder[i]);
-     
-      currentThroughput = 0
-      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput
-    } else if ((direction === 1 && currentThroughput >= setThroughput) || (direction === -1 && currentThroughput <= setThroughput)) {
-      currentThroughput = setThroughput;
-      clearInterval(intervalIds.simulateFeeder[i]);
+    // 2. Abbruchbedingung
+    if (sharedState.feeders[i].FeederisOff) {
 
-      
+      clearInterval(intervalIds.simulateFeederSingle[i]);
     }
+    // 3. Abbruchbedingung
+    if ((direction === 1 && currentThroughput >= setThroughput) || (direction === -1 && currentThroughput <= setThroughput)) {
+      currentThroughput = setThroughput;
+      clearInterval(intervalIds.simulateFeederSingle[i]);
+    }
+
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput;
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = currentThroughput;
   }
 
-  let intervalId = setInterval(simulateFeeder, 200);
-  intervalIds.simulateFeeder[i] = intervalId;
+  let intervalId = setInterval(simulateFeederSingle, 200);
+  intervalIds.simulateFeederSingle[i] = intervalId;
 }
 
 //feeder Line Modus
-
 function simulateLineMode(i, nameNodeId, serverValues) {
   const werte = require('./profiles/simulation/variables/Variabeln');
 
@@ -969,151 +968,163 @@ function simulateLineMode(i, nameNodeId, serverValues) {
   // Der aktuelle prozentuale Durchsatz für den spezifischen Feeder
   let currentFeederThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value];
 
-  function simulateThroughputRamp() {
-   
-       // Abbruchbedingung
-   if (sharedState.intervalIds.stopSimulateThroughputRamp) {
-    console.log("Abbruchbedingung stopSimulateThroughputRamp")
-    for (let id of intervalIds.simulateThroughputRamp) {
-      clearInterval(id);
+  function simulateFeederLine() {
+
+    //1.  Abbruchbedingung
+    if (sharedState.intervalIds.stopsimulateLineMode) {
+      console.log("Abbruchbedingung stopSimulateThroughputRamp")
+      for (let id of intervalIds.simulateFeederLine) {
+        clearInterval(id);
+      }
+      intervalIds.simulateFeederLine = [];  // Leeren des Arrays
+      return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
     }
-    intervalIds.simulateThroughputRamp = [];  // Leeren des Arrays
-    return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
-  }
 
     // Errechne den Ziel-Durchsatz für diesen Feeder basierend auf dem gewünschten prozentualen Anteil
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value]
     let targetThroughputForFeeder = totalTargetThroughput * (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] / 100);
 
-   
+
     let direction = (targetThroughputForFeeder > currentFeederThroughput) ? 1 : -1;
-   
+
     let inkrement = 1.0 * direction;
     currentFeederThroughput += inkrement;
 
-   
-    // Stop Bedingung
-    if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl.nodeId.value] === 64) {
-      currentFeederThroughput = 0;
-      clearInterval(intervalIds.simulateThroughputRamp[i]);
 
-    } else if ((direction === 1 && currentFeederThroughput >= targetThroughputForFeeder) ||
+    //2.  Abbruchbedingung
+    if (sharedState.feeders[i].FeederisOff) {
+      currentFeederThroughput = 0;
+      clearInterval(intervalIds.simulateFeederLine[i]);
+    }
+
+    //3.  Abbruchbedingung
+    if ((direction === 1 && currentFeederThroughput >= targetThroughputForFeeder) ||
       (direction === -1 && currentFeederThroughput <= targetThroughputForFeeder)) {
       currentFeederThroughput = targetThroughputForFeeder;
-      clearInterval(intervalIds.simulateThroughputRamp[i]);
-
+      clearInterval(intervalIds.simulateFeederLine[i]);
     }
+
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value] = (currentFeederThroughput / totalTargetThroughput) * 100
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value]
-   
+
+    //Wert wird der HMI zugewiesen
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentFeederThroughput;
-   
+
   }
-  let intervalId = setInterval(simulateThroughputRamp, 100);
-  intervalIds.simulateThroughputRamp[i] = intervalId;
-  }
+  let intervalId = setInterval(simulateFeederLine, 100);
+  intervalIds.simulateFeederLine[i] = intervalId;
+}
 
 
-  function simulateFeederWeight(i, nameNodeId, serverValues) {
-    console.log("ich bin drinnsfsfsfs");
-    var werte = require('./profiles/simulation/variables/Variabeln');
-  
-    function updateFeederWeight() {
+function simulateFeederWeight(i, nameNodeId, serverValues) {
 
-     // Abbruchbedingung
-     if (sharedState.intervalIds.stopSimulateFeederWeight) {
+  var werte = require('./profiles/simulation/variables/Variabeln');
+
+  function updateFeederWeight() {
+
+    // Abbruchbedingung
+    if (sharedState.intervalIds.stopSimulateFeederWeight) {
       console.log("Abbruchbedingung stopSimulateThroughputRamp")
       for (let id of intervalIds.updateFeederWeight) {
-        clearInterval(id);
+        clearTimeout(id);
       }
       intervalIds.updateFeederWeight = [];  // Leeren des Arrays
       return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
     }
 
-      const ratePerInterval = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
-      let currentLevel = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value];
-  
-      currentLevel -= ratePerInterval;
-      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value] = currentLevel;
-      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rAct.nodeId.value] += ratePerInterval;
-  
-      if (currentLevel <= 0 || serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] === 521) {
-        clearInterval( intervalIds.updateFeederWeight[i]); // Stopp das Interval
-        currentLevel = 0;
-        console.log('Simulation gestoppt, entweder weil das Level Null oder den Zielwert erreicht hat oder weil die Stop-Bedingung erfüllt wurde.');
-      }
-    }
-  
-    if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] |= (1 << 11)) {
-      let intervalId = setInterval(updateFeederWeight, 25000); // Setze das setInterval hier
-      intervalIds.updateFeederWeight[i] = intervalId;
+    const ratePerInterval = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
+    let currentLevel = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value];
+
+    currentLevel -= ratePerInterval;
+    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value] = currentLevel;
+    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rAct.nodeId.value] += ratePerInterval;
+
+    if (currentLevel <= 0 || serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] === 521) {
+      clearInterval(intervalIds.updateFeederWeight[i]); // Stopp das Interval
+      currentLevel = 0;
+      console.log('Simulation gestoppt, entweder weil das Level Null oder den Zielwert erreicht hat oder weil die Stop-Bedingung erfüllt wurde.');
     }
   }
-  
+
+  if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] |= (1 << 11)) {
+    let intervalId = setTimeout(updateFeederWeight, 25000); // Setze das setInterval hier
+    intervalIds.updateFeederWeight[i] = intervalId;
+  }
+}
 
 
-function simulateFeederThroughputLineRamp(i, nameNodeId, serverValues ) {
- 
+
+function simulateLineModeRamp(i, nameNodeId, serverValues) {
+  console.log(" in der funktion simulateLineModeRamp")
   var werte = require('./profiles/simulation/variables/Variabeln');
- 
 
   // Zieldurchsatz kg/h bestimmen anhand vom Throughput Set
+  let throughputSet = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value]
+  let througputSetPercLineMode = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value]
+  let targetThroughput = throughputSet * througputSetPercLineMode / 100
 
-  let throughputSet=serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value]
-  let througputSetPercLineMode=serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value]
 
-  let targetThroughput=throughputSet*througputSetPercLineMode/100
+  // Steigung der Rampe 
+  let gradient = serverValues[werte.data.SU1000_Line_Parameter_udtLm_rThroughputRamp_Set.nodeId.value]
+  console.log("gradient   " + gradient)
+
+  function startsimulateLineModeRamp() {
+    console.log("ppppppppppppppppppppppppppppppppppppppppppppppp")
+   
+
+      let currentThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
+      // Bestimmt die Richtung, in die der Durchsatz verändert werden soll
+      let direction = (targetThroughput > currentThroughput) ? 1 : -1;
+  
+      // Das Inkrement, also die Steigung  multipliziert mit der Richtung
+      let increment = gradient * direction;
+  
+      // Aktualisiert den aktuellen Durchsatz mit dem Inkrement
+      currentThroughput += increment;
+  
+      // Wert wird in der HMI bei den Feedern angezeigt
+      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput;
     
  
-// Steigung der Rampe 
-  let gradient = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value] 
 
 
-  function adjustThroughput() {
-
-    // Abbruchbedingung
-    if (sharedState.intervalIds.stopSimulateThroughputRamp) {
-      console.log("Abbruchbedingung stopSimulateThroughputRamp")
-      for (let id of intervalIds.adjustThroughput) {
-        clearInterval(id);
-      }
-      intervalIds.adjustThroughput = [];  // Leeren des Arrays
-      return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
-    }
-
-    let currentThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
-    // Bestimmt die Richtung, in die der Durchsatz verändert werden soll
-    let direction = (targetThroughput > currentThroughput) ? 1 : -1;
-
-    // Das Inkrement, also die Steigung  multipliziert mit der Richtung
-    let increment = gradient * direction;
-
-    // Aktualisiert den aktuellen Durchsatz mit dem Inkrement
-    currentThroughput += increment;
-
-    // Wert wird in der HMI bei den Feedern angezeigt
-    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput;
-    
-
-    // Aktualisieren Sie rAct mit dem neuen Durchsatzwert, aber stellen Sie sicher, dass es den Zielwert nicht überschreitet.
-    if ((direction === 1 && currentThroughput > targetThroughput) || (direction === -1 && currentThroughput < targetThroughput)) {
-      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = targetThroughput;
-     // serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] &= ~((1 << 2) | (1 << 4) | (1 << 9) | (1 << 10) | (1 << 11));
-      clearInterval(intervalIds.adjustThroughput[i]);
-
-      console.log(`Ziel-Durchsatz erreicht für ${nameNodeId}. Simulation beendet.`);
-    }
-  
+ // 1. Abbruchbedingung
+ if (sharedState.intervalIds.stopSimulateThroughputRampLine) {
+  console.log("Abbruchbedingung stopSimulateThroughputRampLine")
+  for (let id of intervalIds.startsimulateLineModeRamp) {
+    clearInterval(id);
   }
-  let intervalId = setInterval(adjustThroughput, 800);
-  intervalIds.adjustThroughput[i] = intervalId; // Speichern Sie intervalId im globalen intervalIds-Objekt
+  intervalIds.startsimulateLineModeRamp = [];  // Leeren des Arrays
+  console.log("in der return von  intervalIds.startsimulateLineModeRamp  ")
+  return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
+}
+
+
+    // 2. Abbruchbedingung
+    if (sharedState.FeederRampModeisOff) {
+      console.log("fsdfsdfsdfsdfsdfdsdfsfsdfsdfsdfsdfsdfsdfsdfsdf")
+      clearInterval(intervalIds.startsimulateLineModeRamp[1]);
+      intervalIds.startsimulateLineModeRamp = []
+    }
+
+    //3. Abbruchbedingung
+    if ((direction === 1 && currentThroughput > targetThroughput) || (direction === -1 && currentThroughput < targetThroughput)) {
+      console.log("index  " + i)
+      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = targetThroughput;
+      sharedState.FeederRampModeisOff=true;
+      sharedState.FeederRampModeisOn=false;
+      clearInterval(intervalIds.startsimulateLineModeRamp[i]);
+    }
+  }
+
+  let intervalId = setInterval(startsimulateLineModeRamp, 500);
+  intervalIds.startsimulateLineModeRamp[i] = intervalId; // Speichern Sie intervalId im globalen intervalIds-Objekt
 }
 
 
 // Funktion zum Verteilen Prozente
-function DistributionPercentages () {
-  let sum=0
-
+function DistributionPercentages() {
+  let sum = 0
   var werte = require('./profiles/simulation/variables/Variabeln');
 
   // Zuweisung von udtLineRamp.Throughput.rSet an  totalThroughput (Feeding Popup operating Point oder start Wizzard)
@@ -1124,27 +1135,27 @@ function DistributionPercentages () {
   for (let i = 1; i <= 4; i++) {
     if (sharedState.feeders[i].FeederLineMode) {
       activeFeeders++;
-              }
+    }
   }
 
   // Prüfung, ob genau ein Feeder auf Line Modus steht.
   if (activeFeeders === 1) {
-// Werte aktualisiert, wenn genau ein Feeder auf Line steht
+    // Werte aktualisiert, wenn genau ein Feeder auf Line steht
     for (let i = 1; i <= 4; i++) {
       if (sharedState.feeders[i].FeederLineMode) {
         let feederThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value];
         if (feederThroughput < totalThroughput) { // Wenn der totale Durchsatz kleiner als der Durchsatz vom Feeder ist, dann wird der Durchsatz 
           serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value] = totalThroughput;
-                       }
+        }
         if (feederThroughput > totalThroughput) { // Wenn Feeder Durchsatz größer als der Totale Durchsatz, ist der Totale Durchsatz gleich dem Feederdurchsatz
-           totalThroughput=serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value]
+          totalThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value]
+        }
       }
     }
-  }
   } ////////***** ACHTUNG GILT NUR WENN EIN FEEDER AUF LINE STEHT. ES IST DAFÜR GEDACHT, WENN GENAU EIN FEEDER AUF LINE STEHT */
-  
+
   // Jetzt berechnen Sie totalThroughput
-        for (let i = 1; i <= 4; i++) {
+  for (let i = 1; i <= 4; i++) {
     if (sharedState.feeders[i].FeederLineMode) {
       sum += serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value];
     }
@@ -1157,16 +1168,16 @@ function DistributionPercentages () {
     if (sharedState.feeders[i].FeederLineMode) {
       let feederThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value];
       let percentage = (feederThroughput / totalThroughput) * 100;
-                serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value] = percentage;
-             }      
+      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value] = percentage;
+    }
   }
 
-// Wenn keiner Feeder auf Line Mode steht, dann ist PercSet_rSet
+  // Wenn keiner Feeder auf Line Mode steht, dann ist PercSet_rSet
   for (let i = 1; i <= 4; i++) {
     if (!sharedState.feeders[i].FeederLineMode) {
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value] = 0; // Wenn feeder Mode nicht 2 ist, dann wird auf null gesetzt
-}
-}
+    }
+  }
 }
 
 
@@ -1183,11 +1194,11 @@ function OilLubUhrFollowUp(i, nameNodeId, serverValues) {
       // Wert auf 0 setzen, um sicherzustellen, dass er nicht negativ wird
       serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value] = 0;
       // Intervall stoppen, da der Wert 0 erreicht ist
-            clearInterval(interval);
-            sharedState.GearOilRemainTimeFollowUpExpired=true;
-            
+      clearInterval(interval);
+      sharedState.GearOilRemainTimeFollowUpExpired = true;
+
     }
-  }, 500); 
+  }, 500);
 }
 
 
@@ -1204,9 +1215,9 @@ function OilLubUhr(i, nameNodeId, serverValues) {
       // Wert auf 0 setzen, um sicherzustellen, dass er nicht negativ wird
       serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime.nodeId.value] = 0;
       // Intervall stoppen, da der Wert 0 erreicht ist
-           clearInterval(interval);
-      sharedState.GearOilRemainPreRunTimeExpired=true;
-      
+      clearInterval(interval);
+      sharedState.GearOilRemainPreRunTimeExpired = true;
+
     }
   }, 500); // Hier kann die "Geschwindkeit des Intervalls eingestellt werden !!"
 }
@@ -1397,10 +1408,10 @@ class StateMachineNavigationBar {
     var werte = require('./profiles/simulation/variables/Variabeln');
     const state = this.states[stateName];
 
-   // if (!state) {
-     // console.error(`Ungültiger Statusname: ${stateName}`);
-      //return;
-   // }
+    // if (!state) {
+    // console.error(`Ungültiger Statusname: ${stateName}`);
+    //return;
+    // }
 
     const variableKey = werte.data[variableName].nodeId.value;
 
@@ -1428,16 +1439,16 @@ module.exports = {
   simulateScrewSpeed: simulateScrewSpeed,
   PIDSHUTDOWN: PIDSHUTDOWN,
   createCustomVariableString: createCustomVariableString,
-  startFeeder: startFeeder,
+  simulateSingleMode: simulateSingleMode,
   simulateFeederWeight: simulateFeederWeight,
   OilLubUhr: OilLubUhr,
-  OilLubUhrFollowUp:OilLubUhrFollowUp,
+  OilLubUhrFollowUp: OilLubUhrFollowUp,
   updateRThroughputPercSetGesamt: updateRThroughputPercSetGesamt,
   simulateLineMode: simulateLineMode,
   updatedwstat: updatedwstat,
-  simulateFeederThroughputLineRamp: simulateFeederThroughputLineRamp,
+  simulateLineModeRamp: simulateLineModeRamp,
   dwStatStartWizzard: dwStatStartWizzard,
-  DistributionPercentages:DistributionPercentages,
+  DistributionPercentages: DistributionPercentages,
   StateMachine: StateMachine,
   StateMachineNavigationBar: StateMachineNavigationBar
 
