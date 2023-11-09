@@ -2610,13 +2610,18 @@ const SetGetlogic = {
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMaxSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMax", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMinGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMin", 0, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMinSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMin", 10, {}, i, nameNodeId, serverValues); },
-  SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSetGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet", 100, { 2: 50, 3: 60, 4: 70 }, i, nameNodeId, serverValues); },
+  SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSetGet: function (i, nameNodeId, serverValues) {
+     initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet", 100, { 2: 50, 3: 60, 4: 70 }, i, nameNodeId, serverValues);
+    
+    
+    
+    },
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSetSet: function (i, nameNodeId, serverValues) {
     initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet", undefined, {}, i, nameNodeId, serverValues);
 
     var werte = require('./profiles/simulation/variables/Variabeln');
     // Der Button muss auf On stehen, damit der Set Wert die Funktion startet 
-    if (sharedState.feeders[i].FeederisRunning) {
+    if (sharedState.feeders[i].FeederisRunning ) {
 
       funktionen.simulateSingleMode(i, nameNodeId, serverValues)
     }
@@ -2843,7 +2848,7 @@ const SetGetlogic = {
             serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat.nodeId.value] &= ~(1 << 15); // Tolerance Monitoring Off
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = 0;// Wenn der Button auf Off gedrückt, wird so fährt der Feeder runter auf Null
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = 0;// Wenn der Button auf Off gedrückt, wird so fährt der Feeder runter auf Null
-      
+      sharedState.simulateFeederWeightisRunning=false;
     }
 
     // Setzt FeederisRunning auf true, sobald der on Button gedrückt wird
@@ -2852,6 +2857,7 @@ const SetGetlogic = {
       sharedState.feeders[i].FeederisOff = false;
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat.nodeId.value] |= (1 << 15);// Tolerance Monitoring On
       funktionen.simulateFeederWeight(i, nameNodeId, serverValues);
+      sharedState.simulateFeederWeightisRunning=true;
 
       //Wenn FeederLineModus an ist, dann wir die entsprechende Funktion gestartet
       if (sharedState.feeders[i].FeederLineMode && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] > 0) { // Prüfen ob FeederLineMode true ist
@@ -2959,19 +2965,19 @@ const SetGetlogic = {
 
 
       // Das ist die Abruchbedingung für alle Funktionen, die zum Feeder gehören.
-      sharedState.intervalIds.stopSimulateFeederSingle = true
-      sharedState.intervalIds.stopSimulateFeederWeight = true,
-        sharedState.intervalIds.stopSimulateFeederThroughputLineRamp = true,
-        sharedState.intervalIds.stopAdjustThroughput = true
-      sharedState.intervalIds.stopSimulateLineMode = true,
-        sharedState.intervalIds.stopSimulateThroughputRamp = true
+      sharedState.intervalIds.stopSimulateFeederSingle = true;
+      sharedState.intervalIds.stopSimulateFeederWeight = true;
+        sharedState.intervalIds.stopSimulateThroughputRampLine = true;
+        sharedState.intervalIds.stopAdjustThroughput = true;
+      sharedState.intervalIds.stopSimulateLineMode = true;
+       
       setTimeout(function () {
-        sharedState.intervalIds.stopSimulateFeederSingle = false,
-          sharedState.intervalIds.stopSimulateFeederWeight = false,
-          sharedState.intervalIds.stopSimulateFeederThroughputLineRamp = false,
-          sharedState.intervalIds.stopAdjustThroughput = false,
-          sharedState.intervalIds.stopSimulateLineMode = false,
-          sharedState.intervalIds.stopSimulateThroughputRamp = false
+        sharedState.intervalIds.stopSimulateFeederSingle = false;
+          sharedState.intervalIds.stopSimulateFeederWeight = false;
+          sharedState.intervalIds.stopSimulateThroughputRampLine = false;
+          sharedState.intervalIds.stopAdjustThroughput = false;
+          sharedState.intervalIds.stopSimulateLineMode = false;
+          
       }, 1500); // 5000 Millisekunden oder 5 Sekunden
 
 
@@ -4070,7 +4076,7 @@ const SetGetlogic = {
   SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSetGet: function (i, nameNodeId, serverValues) {
     initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet", 80, nameNodeId, serverValues);
 
-
+   
   },
   SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSetSet: function (i, nameNodeId, serverValues) {
     initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet", undefined, nameNodeId, serverValues);
@@ -4129,13 +4135,8 @@ const SetGetlogic = {
     if (sharedState.ExtruderisOn && serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl.nodeId.value] === 4) { // Ramp Button Off
       sharedState.FeederRampModeisOn=false;
       sharedState.FeederRampModeisOff=true;
-         
-    }
-    
-
-
-
-    
+             }
+        
 
   },
   SU1000_Line_Hmi_udtLm_udtLineRamp_dwStatGet: function (i, nameNodeId, serverValues) {

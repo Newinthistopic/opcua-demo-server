@@ -1008,8 +1008,9 @@ function simulateLineMode(i, nameNodeId, serverValues) {
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value]
 
     //Wert wird der HMI zugewiesen
-    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentFeederThroughput;
-
+    
+    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = Math.round(currentFeederThroughput);
+console.log("currentFeederThroughput;   " + currentFeederThroughput)
   }
   let intervalId = setInterval(simulateFeederLine, 100);
   intervalIds.simulateFeederLine[i] = intervalId;
@@ -1022,7 +1023,7 @@ function simulateFeederWeight(i, nameNodeId, serverValues) {
 
   function updateFeederWeight() {
 
-    // Abbruchbedingung
+    // 1. Abbruchbedingung
     if (sharedState.intervalIds.stopSimulateFeederWeight) {
       console.log("Abbruchbedingung stopSimulateThroughputRamp")
       for (let id of intervalIds.updateFeederWeight) {
@@ -1032,22 +1033,29 @@ function simulateFeederWeight(i, nameNodeId, serverValues) {
       return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
     }
 
-    const ratePerInterval = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
+   let ratePerInterval = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
     let currentLevel = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value];
 
     currentLevel -= ratePerInterval;
-    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value] = currentLevel;
+    
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rAct.nodeId.value] += ratePerInterval;
 
+    // Wert wird der HMI zugewiesen
+    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value] = currentLevel;
+
+    // 2. Abbruchbedingung
     if (currentLevel <= 0 || serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] === 521) {
       clearInterval(intervalIds.updateFeederWeight[i]); // Stopp das Interval
       currentLevel = 0;
-      console.log('Simulation gestoppt, entweder weil das Level Null oder den Zielwert erreicht hat oder weil die Stop-Bedingung erfüllt wurde.');
+      //Wert wird der HMI zugewiesen
+      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value] = currentLevel;
+
+     
     }
   }
 
   if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] |= (1 << 11)) {
-    let intervalId = setTimeout(updateFeederWeight, 25000); // Setze das setInterval hier
+    let intervalId = setInterval(updateFeederWeight, 25); // Setze das setInterval hier
     intervalIds.updateFeederWeight[i] = intervalId;
   }
 }
@@ -1065,7 +1073,7 @@ function simulateLineModeRamp(i, nameNodeId, serverValues) {
 
 
   // Steigung der Rampe 
-  let gradient = serverValues[werte.data.SU1000_Line_Parameter_udtLm_rThroughputRamp_Set.nodeId.value]
+  let gradient = serverValues[werte.data.SU1000_Line_Parameter_udtLm_rThroughputRamp_Set.nodeId.value]/60
   console.log("gradient   " + gradient)
 
   function startsimulateLineModeRamp() {
@@ -1084,9 +1092,7 @@ function simulateLineModeRamp(i, nameNodeId, serverValues) {
   
       // Wert wird in der HMI bei den Feedern angezeigt
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput;
-    
- 
-
+     
 
  // 1. Abbruchbedingung
  if (sharedState.intervalIds.stopSimulateThroughputRampLine) {
@@ -1095,10 +1101,9 @@ function simulateLineModeRamp(i, nameNodeId, serverValues) {
     clearInterval(id);
   }
   intervalIds.startsimulateLineModeRamp = [];  // Leeren des Arrays
-  console.log("in der return von  intervalIds.startsimulateLineModeRamp  ")
+ 
   return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
 }
-
 
     // 2. Abbruchbedingung
     if (sharedState.FeederRampModeisOff) {
@@ -1109,8 +1114,8 @@ function simulateLineModeRamp(i, nameNodeId, serverValues) {
 
     //3. Abbruchbedingung
     if ((direction === 1 && currentThroughput > targetThroughput) || (direction === -1 && currentThroughput < targetThroughput)) {
-      console.log("index  " + i)
-      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = targetThroughput;
+     
+           serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = targetThroughput;
       sharedState.FeederRampModeisOff=true;
       sharedState.FeederRampModeisOn=false;
       clearInterval(intervalIds.startsimulateLineModeRamp[i]);
@@ -1180,7 +1185,6 @@ function DistributionPercentages() {
   }
 }
 
-
 function OilLubUhrFollowUp(i, nameNodeId, serverValues) {
   // Werte-Modul einbinden
   var werte = require('./profiles/simulation/variables/Variabeln');
@@ -1223,17 +1227,6 @@ function OilLubUhr(i, nameNodeId, serverValues) {
 }
 
 
-
-
-function updateRThroughputPercSetGesamt() {
-  var werte = require('./profiles/simulation/variables/Variabeln');
-  let rThroughputPercSet1 = serverValues[werte.data[1].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value];
-  let rThroughputPercSet2 = serverValues[werte.data[2].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value];
-  let rThroughputPercSet3 = serverValues[werte.data[3].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value];
-  let rThroughputPercSet4 = serverValues[werte.data[4].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value];
-  var rThroughputPercSetGesamt = rThroughputPercSet1 + rThroughputPercSet2 + rThroughputPercSet3 + rThroughputPercSet4;
-  serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rAct.nodeId.value] = rThroughputPercSetGesamt;
-}
 
 
 let previousRAct = {};
@@ -1443,8 +1436,7 @@ module.exports = {
   simulateFeederWeight: simulateFeederWeight,
   OilLubUhr: OilLubUhr,
   OilLubUhrFollowUp: OilLubUhrFollowUp,
-  updateRThroughputPercSetGesamt: updateRThroughputPercSetGesamt,
-  simulateLineMode: simulateLineMode,
+   simulateLineMode: simulateLineMode,
   updatedwstat: updatedwstat,
   simulateLineModeRamp: simulateLineModeRamp,
   dwStatStartWizzard: dwStatStartWizzard,

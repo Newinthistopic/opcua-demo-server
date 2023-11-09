@@ -221,3 +221,14 @@ setTimeout(function () {
 
       SU1000_Line_Parameter_udtLm_rThroughputRamp_rSet
       let gradient = serverValues[werte.data.SU1000_Line_Parameter_udtLm_rThroughputRamp_rSet.nodeId.value] 
+
+      SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet
+
+      SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet
+      SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet
+
+      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value] 
+      serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value] 
+   
+
+      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] 
