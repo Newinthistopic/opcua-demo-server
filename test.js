@@ -232,3 +232,14 @@ setTimeout(function () {
    
 
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] 
+
+
+      SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_dwStat
+
+
+
+      ${SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rSet}
+
+      SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage
+      SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat
+

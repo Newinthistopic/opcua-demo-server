@@ -83,14 +83,12 @@ const SetGetlogic = {
       var werte = require('./profiles/simulation/variables/Variabeln');
       // Erste Bedingung (Taste Spec.Rate)
       if (sharedState.SpeedCalculationSpecRateisOn) {
-           serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value] &= ~(1 << 8);
-       // serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value] &= ~(1 << sharedState.TargetScrewSpeedCalculation_direct_specRate);
+                 serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.TargetScrewSpeedCalculation_direct_specRate);
       }
       // Zweite Bedingung (Taste Direct)
       if (sharedState.SpeedCalculationDirectisOn) {
-        //serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value] |= (1 << sharedState.TargetScrewSpeedCalculation_direct_specRate);
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value] |= (1 << 8);
-      }
+      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.TargetScrewSpeedCalculation_direct_specRate);
+       }
     }, 1);
 
   },
@@ -101,7 +99,7 @@ const SetGetlogic = {
 
     var werte = require('./profiles/simulation/variables/Variabeln');
     // Erste Bedingung (Taste Spec.Rate)
-    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwCtrl.nodeId.value] === 16) {
+    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwCtrl.nodeId.value] === sharedState.buttonPushed.Speed_calculation_with_spec_throughput) {
       sharedState.SpeedCalculationDirectisOn = false;
       sharedState.SpeedCalculationSpecRateisOn = true;
 
@@ -110,7 +108,7 @@ const SetGetlogic = {
       }
     }
     // Zweite Bedingung (Taste Direct)
-    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwCtrl.nodeId.value] === 32) {
+    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwCtrl.nodeId.value] === sharedState.buttonPushed.Speed_calculation_with_absolut_speed) {
       sharedState.SpeedCalculationDirectisOn = true;
       sharedState.SpeedCalculationSpecRateisOn = false;
       if (sharedState.ExtruderisOn) { // Funktion wird nur gestarten wenn der Extruder an ist. 
@@ -133,18 +131,18 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrlSet: function (i, nameNodeId, serverValues) {
     initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl", undefined, nameNodeId, serverValues);
     var werte = require('./profiles/simulation/variables/Variabeln');
-    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl.nodeId.value] === 32) { // Start Extruder Button On
+    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl.nodeId.value] === sharedState.buttonPushed.ExtruderOn) { // Start Extruder Button On
       sharedState.ExtruderisOn = true
       sharedState.ExtruderisOff = false
 
-      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] |= (1 << 11); // Main drive is running
+      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.MainDrive_On_Off); // Main drive is running
       funktionen.simulateScrewSpeed(i, nameNodeId, serverValues)
     }
 
-    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl.nodeId.value] === 64) { // Start Extruder Button off
+    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl.nodeId.value] === sharedState.buttonPushed.ExtruderOff) { // Start Extruder Button off
 
 
-      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << 11); // Main drive is off
+      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.MainDrive_On_Off); // Main drive is off
       sharedState.ExtruderisOn = false
       sharedState.ExtruderisOff = true
       serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSet.nodeId.value] = 0 // Endwert bzw. Setwert
@@ -483,19 +481,20 @@ const SetGetlogic = {
     setTimeout(() => {
       var werte = require('./profiles/simulation/variables/Variabeln');
       funktionen.updatedwstat(undefined, "SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed", undefined);
-let BIT1=11;
-let Bit2=13
+
+     
+
       //Berechnung des Target Speed ist im Spec Rate Modus
       if (sharedState.SpeedCalculationSpecRateisOn) {
         console.log("sharedState.SpeedCalculationSpecRateisOn")
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] &= ~(1 << BiT1); // TRUE: Setpoint value is visible (Name aus Confluence)
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] &= ~(1 << BiT2); // TRUE: Setpoint input of Hmi is active (Name aus Confluence)
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] &= ~(1 <<  sharedState.BIT_POSITIONS.Setpoint_value_is_visible); 
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Setpoint_input_of_Hmi_is_active); 
       }
       //Berechnung des Target Speed ist im Direct Modus
       if (sharedState.SpeedCalculationDirectisOn) {
         console.log("sharedState.SpeedCalculationDirectisOn")
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] |= (1 << BIT1); // TRUE: Setpoint value is visible (Name aus Confluence)
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] |= (1 << BIT2); // TRUE: Setpoint value is visible (Name aus Confluence)
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] |= (1 <<sharedState.BIT_POSITIONS.Setpoint_value_is_visible); 
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Setpoint_input_of_Hmi_is_active); 
       }
     }, 1);
 

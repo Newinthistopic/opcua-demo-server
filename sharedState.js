@@ -3,14 +3,26 @@ let InitialValueRemainTimeFollowUp = null;
 
 
 const BIT_POSITIONS = {
-    TargetScrewSpeedCalculation_direct_specRate:8 
-        
+    TargetScrewSpeedCalculation_direct_specRate:8, //FLASE: Spec. throughput [kg/h/rpm]    (Throughput [kg/h] / Spec. throughput [kg/h/rpm] = Speed [rpm]    TRUE: Absolut setpoint [rpm]; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325128/udt+Hmi+emExtruderDriveCtrl
+    Setpoint_value_is_visible: 11, // TRUE: Setpoint value is visible; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325158/udt+Hmi+cmHmiValues
+    Setpoint_input_of_Hmi_is_active:13 ,// TRUE: Setpoint input of Hmi is active; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325158/udt+Hmi+cmHmiValues
+    MainDrive_On_Off: 11, //TRUE: Main drive is running    FALSE: Main drive is off; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325128/udt+Hmi+emExtruderDriveCtrl
     
   };
+
+  const buttonPushed={
+    Speed_calculation_with_spec_throughput:16, //TRUE (Impulse): Speed calculation with spec. throughput; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325128/udt+Hmi+emExtruderDriveCtrl
+    Speed_calculation_with_absolut_speed:32, // TRUE (Impulse): Speed calculation with absolut speed; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325128/udt+Hmi+emExtruderDriveCtrl
+
+    ExtruderOn:32, // TRUE: Start operation; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3111715028/cmOpStartStop
+    ExtruderOff:64 // TRUE: Stop operation; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3111715028/cmOpStartStop
+  }
 
 
 
 module.exports = {
+    BIT_POSITIONS,
+    buttonPushed,
     HeatingisOn: false,
     CoolingisOn: false,
     CoolingisOff: true,

@@ -823,7 +823,6 @@ function PIDSHUTDOWN(i, nameNodeId, serverValues) {
 
       const timerdown = setTimeout(calculateNextValue, 10);
       pidTimerIdshutdown[i] = timerdown; // Timer-ID am spezifischen Index setzen
-
     }
   }
   // Start der Berechnung
@@ -832,10 +831,8 @@ function PIDSHUTDOWN(i, nameNodeId, serverValues) {
 
 
 function simulateScrewSpeed(i, nameNodeId, serverValues) {
-  // Werte auslesen
-  var werte = require('./profiles/simulation/variables/Variabeln');
 
-
+ 
   function simulateScrewRamp() {
     var werte = require('./profiles/simulation/variables/Variabeln');
     let x0 = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value]; // Startwert
@@ -845,15 +842,24 @@ function simulateScrewSpeed(i, nameNodeId, serverValues) {
     let nominalTorque = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewTorqueNom_Set.nodeId.value];
     let maxDrehzahl = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMax_Set.nodeId.value];
     let Durchsatzgesamt = serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughputTotal_rAct.nodeId.value];
-    let TargetScrewSpeed = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value];
-    let specificRate_Set = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rSet.nodeId.value]
-    let specificRate_Act = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rAct.nodeId.value]
+       let specificRate_Set = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rSet.nodeId.value]
+   
     let t = 0;
     let increment = 0.1 / rampTime;  // basierend auf einem 100ms Update-Intervall
     // Volumen der Schnecke 
     const screwVolume = 3;
 
-    if (!(TargetScrewSpeed & (1 << 8))) {
+if(sharedState.SpeedCalculationSpecRateisOn){
+  console.log("if(sharedState.SpeedCalculationSpecRateisOn){")
+    // Wenn Anfangs auf Spec.Rate geschaltet wird und der Gesamtdurchsatz null ist, dann wird xf auf die minimale Drehzahl gestellt.
+    if (Durchsatzgesamt === 0) {
+      xf = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMin.nodeId.value];
+    } else {
+      xf = Durchsatzgesamt / specificRate_Set;
+    }
+}
+
+   /* if (!(TargetScrewSpeed & (1 << 8))) {
 
       // Wenn Anfangs auf Spec.Rate geschaltet wird und der Gesamtdurchsatz null ist, dann wird xf auf die minimale Drehzahl gestellt.
       if (Durchsatzgesamt === 0) {
@@ -861,21 +867,21 @@ function simulateScrewSpeed(i, nameNodeId, serverValues) {
       } else {
         xf = Durchsatzgesamt / specificRate_Set;
       }
-    }
-
+    }*/
 
 
 
     const normalizedTime = t;  // Da t von 0 bis 1 geht, ist es bereits normalisiert
     let currentSpeed = x0 + (xf - x0) / (1 + Math.exp(-roundness * (normalizedTime - 0.5)));
 
-    // Geschwindigkeit aktualisieren
+    // Geschwindigkeit wird der HMI zugewiesen
     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value] = currentSpeed;
-    // console.log("aktueller Wert drehzahl    " + currentSpeed);
-
+  
     let drehmoment = (currentSpeed / maxDrehzahl) * nominalTorque;
     let prozentDrehmoment = (drehmoment / nominalTorque) * 100
-    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] = Math.floor(prozentDrehmoment);
+    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] = prozentDrehmoment;
+
+    console.log(" serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value]                  "+   serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value])
 
     // Drehmomentdichte berechnen
     let torqueDensity = drehmoment / screwVolume;
@@ -886,12 +892,10 @@ function simulateScrewSpeed(i, nameNodeId, serverValues) {
     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_rAct.nodeId.value] = (isFinite(specificEnergy) && specificEnergy !== undefined) ? specificEnergy : null; // Muss gemacht werden, damit Act Wert NaN anzeigt, wenn der Durchsatz Null ist dann wird hier durch null geteilt
 
 
-
-
-
     // Prüfen, ob der Unterschied zum Setwert kleiner als 0,01 ist
     if (Math.abs(currentSpeed - xf) < 0.1) {
-      // Durch das Inkrement wird der Wert nie ganz auf den SetWert laufen, daher wird am Ende nochmal der Wert aktualisiert
+     
+     // Durch das Inkrement wird der Wert nie ganz auf den SetWert laufen, daher wird am Ende nochmal der Wert aktualisiert
       serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value] = xf
       clearInterval(intervalId);
     } else if ((xf > x0 && currentSpeed >= xf) || (xf < x0 && currentSpeed <= xf)) {
@@ -1008,9 +1012,9 @@ function simulateLineMode(i, nameNodeId, serverValues) {
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value]
 
     //Wert wird der HMI zugewiesen
-    
+
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = Math.round(currentFeederThroughput);
-console.log("currentFeederThroughput;   " + currentFeederThroughput)
+
   }
   let intervalId = setInterval(simulateFeederLine, 100);
   intervalIds.simulateFeederLine[i] = intervalId;
@@ -1033,11 +1037,11 @@ function simulateFeederWeight(i, nameNodeId, serverValues) {
       return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
     }
 
-   let ratePerInterval = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
+    let ratePerInterval = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
     let currentLevel = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value];
 
     currentLevel -= ratePerInterval;
-    
+
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rAct.nodeId.value] += ratePerInterval;
 
     // Wert wird der HMI zugewiesen
@@ -1049,16 +1053,11 @@ function simulateFeederWeight(i, nameNodeId, serverValues) {
       currentLevel = 0;
       //Wert wird der HMI zugewiesen
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value] = currentLevel;
-
-     
     }
   }
-
-  if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] |= (1 << 11)) {
-    let intervalId = setInterval(updateFeederWeight, 25); // Setze das setInterval hier
+    let intervalId = setInterval(updateFeederWeight, 200); // Setze das setInterval hier
     intervalIds.updateFeederWeight[i] = intervalId;
   }
-}
 
 
 
@@ -1073,37 +1072,37 @@ function simulateLineModeRamp(i, nameNodeId, serverValues) {
 
 
   // Steigung der Rampe 
-  let gradient = serverValues[werte.data.SU1000_Line_Parameter_udtLm_rThroughputRamp_Set.nodeId.value]/60
+  let gradient = serverValues[werte.data.SU1000_Line_Parameter_udtLm_rThroughputRamp_Set.nodeId.value] / 60
   console.log("gradient   " + gradient)
 
   function startsimulateLineModeRamp() {
     console.log("ppppppppppppppppppppppppppppppppppppppppppppppp")
-   
 
-      let currentThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
-      // Bestimmt die Richtung, in die der Durchsatz verändert werden soll
-      let direction = (targetThroughput > currentThroughput) ? 1 : -1;
-  
-      // Das Inkrement, also die Steigung  multipliziert mit der Richtung
-      let increment = gradient * direction;
-  
-      // Aktualisiert den aktuellen Durchsatz mit dem Inkrement
-      currentThroughput += increment;
-  
-      // Wert wird in der HMI bei den Feedern angezeigt
-      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput;
-     
 
- // 1. Abbruchbedingung
- if (sharedState.intervalIds.stopSimulateThroughputRampLine) {
-  console.log("Abbruchbedingung stopSimulateThroughputRampLine")
-  for (let id of intervalIds.startsimulateLineModeRamp) {
-    clearInterval(id);
-  }
-  intervalIds.startsimulateLineModeRamp = [];  // Leeren des Arrays
- 
-  return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
-}
+    let currentThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
+    // Bestimmt die Richtung, in die der Durchsatz verändert werden soll
+    let direction = (targetThroughput > currentThroughput) ? 1 : -1;
+
+    // Das Inkrement, also die Steigung  multipliziert mit der Richtung
+    let increment = gradient * direction;
+
+    // Aktualisiert den aktuellen Durchsatz mit dem Inkrement
+    currentThroughput += increment;
+
+    // Wert wird in der HMI bei den Feedern angezeigt
+    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput;
+
+
+    // 1. Abbruchbedingung
+    if (sharedState.intervalIds.stopSimulateThroughputRampLine) {
+      console.log("Abbruchbedingung stopSimulateThroughputRampLine")
+      for (let id of intervalIds.startsimulateLineModeRamp) {
+        clearInterval(id);
+      }
+      intervalIds.startsimulateLineModeRamp = [];  // Leeren des Arrays
+
+      return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
+    }
 
     // 2. Abbruchbedingung
     if (sharedState.FeederRampModeisOff) {
@@ -1114,10 +1113,10 @@ function simulateLineModeRamp(i, nameNodeId, serverValues) {
 
     //3. Abbruchbedingung
     if ((direction === 1 && currentThroughput > targetThroughput) || (direction === -1 && currentThroughput < targetThroughput)) {
-     
-           serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = targetThroughput;
-      sharedState.FeederRampModeisOff=true;
-      sharedState.FeederRampModeisOn=false;
+
+      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = targetThroughput;
+      sharedState.FeederRampModeisOff = true;
+      sharedState.FeederRampModeisOn = false;
       clearInterval(intervalIds.startsimulateLineModeRamp[i]);
     }
   }
@@ -1436,7 +1435,7 @@ module.exports = {
   simulateFeederWeight: simulateFeederWeight,
   OilLubUhr: OilLubUhr,
   OilLubUhrFollowUp: OilLubUhrFollowUp,
-   simulateLineMode: simulateLineMode,
+  simulateLineMode: simulateLineMode,
   updatedwstat: updatedwstat,
   simulateLineModeRamp: simulateLineModeRamp,
   dwStatStartWizzard: dwStatStartWizzard,
