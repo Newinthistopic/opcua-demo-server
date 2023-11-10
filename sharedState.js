@@ -7,6 +7,10 @@ const BIT_POSITIONS = {
     Setpoint_value_is_visible: 11, // TRUE: Setpoint value is visible; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325158/udt+Hmi+cmHmiValues
     Setpoint_input_of_Hmi_is_active:13 ,// TRUE: Setpoint input of Hmi is active; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325158/udt+Hmi+cmHmiValues
     MainDrive_On_Off: 11, //TRUE: Main drive is running    FALSE: Main drive is off; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325128/udt+Hmi+emExtruderDriveCtrl
+
+    GearOilLubrication_Button_is_On_Off:11,
+    GearOilLubrication_Button_Lock_OFF_Status:10,
+   
     
   };
 
@@ -15,7 +19,10 @@ const BIT_POSITIONS = {
     Speed_calculation_with_absolut_speed:32, // TRUE (Impulse): Speed calculation with absolut speed; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325128/udt+Hmi+emExtruderDriveCtrl
 
     ExtruderOn:32, // TRUE: Start operation; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3111715028/cmOpStartStop
-    ExtruderOff:64 // TRUE: Stop operation; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3111715028/cmOpStartStop
+    ExtruderOff:64, // TRUE: Stop operation; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3111715028/cmOpStartStop
+
+    GearOilLubricationOn:32,
+    GearOilLubricationOff:64,
   }
 
 

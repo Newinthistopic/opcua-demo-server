@@ -1012,7 +1012,6 @@ function simulateLineMode(i, nameNodeId, serverValues) {
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value]
 
     //Wert wird der HMI zugewiesen
-
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = Math.round(currentFeederThroughput);
 
   }
@@ -1060,7 +1059,6 @@ function simulateFeederWeight(i, nameNodeId, serverValues) {
   }
 
 
-
 function simulateLineModeRamp(i, nameNodeId, serverValues) {
   console.log(" in der funktion simulateLineModeRamp")
   var werte = require('./profiles/simulation/variables/Variabeln');
@@ -1076,7 +1074,7 @@ function simulateLineModeRamp(i, nameNodeId, serverValues) {
   console.log("gradient   " + gradient)
 
   function startsimulateLineModeRamp() {
-    console.log("ppppppppppppppppppppppppppppppppppppppppppppppp")
+
 
 
     let currentThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
@@ -1184,46 +1182,55 @@ function DistributionPercentages() {
   }
 }
 
-function OilLubUhrFollowUp(i, nameNodeId, serverValues) {
-  // Werte-Modul einbinden
+function OilLubWatchFollowUp(i, nameNodeId, serverValues) {
+  console.log("In der Funktion OilLubWatchFollowUp");
   var werte = require('./profiles/simulation/variables/Variabeln');
 
-  // Intervall starten
-  var interval = setInterval(function () {
+  // Startwert aus Expert Settings (Config)
+  let currentValue = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Set.nodeId.value];
+
+  function startOilLubWatchFollowUp() {
     // Wert um 1 verringern
-    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value]--;
-    // Überprüfen, ob der Wert 0 oder kleiner ist
-    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value] <= 0) {
-      // Wert auf 0 setzen, um sicherzustellen, dass er nicht negativ wird
-      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value] = 0;
-      // Intervall stoppen, da der Wert 0 erreicht ist
-      clearInterval(interval);
+    currentValue--;
+
+    // Aktualisierten Wert in serverValues speichern
+    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value] = currentValue;
+
+    // Abbruchbedingung, wenn currentValue kleiner oder gleich 0 ist
+    if (currentValue <= 0) {
+      clearInterval(intervalId);
       sharedState.GearOilRemainTimeFollowUpExpired = true;
-
     }
-  }, 500);
+  }
+
+  let intervalId = setInterval(startOilLubWatchFollowUp, 1000); // Speichern der Interval-ID
 }
 
 
-function OilLubUhr(i, nameNodeId, serverValues) {
-  // Werte-Modul einbinden
+function OilLubWatch(i, nameNodeId, serverValues) {
+  console.log("In der Funktion OilLubWatch");
   var werte = require('./profiles/simulation/variables/Variabeln');
 
-  // Intervall starten
-  var interval = setInterval(function () {
-    // Wert um 1 verringern
-    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime.nodeId.value]--;
-    // Überprüfen, ob der Wert 0 oder kleiner ist
-    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime.nodeId.value] <= 0) {
-      // Wert auf 0 setzen, um sicherzustellen, dass er nicht negativ wird
-      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime.nodeId.value] = 0;
-      // Intervall stoppen, da der Wert 0 erreicht ist
-      clearInterval(interval);
-      sharedState.GearOilRemainPreRunTimeExpired = true;
+  // Startwert aus dem ServerValues-Objekt abrufen
+  let currentValue = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Set.nodeId.value];
 
+  function startOilLubUhr() {
+    // Wert um 1 verringern
+    currentValue--;
+
+    // Aktualisierten Wert in serverValues speichern
+    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime.nodeId.value] = currentValue;
+
+    // Abbruchbedingung, wenn currentValue kleiner oder gleich 0 ist
+    if (currentValue <= 0) {
+      clearInterval(intervalId);
+      sharedState.GearOilRemainPreRunTimeExpired = true;
     }
-  }, 500); // Hier kann die "Geschwindkeit des Intervalls eingestellt werden !!"
+  }
+
+  let intervalId = setInterval(startOilLubUhr, 500); // Speichern der Interval-ID, Intervall alle 500 Millisekunden
 }
+
 
 
 
@@ -1433,8 +1440,8 @@ module.exports = {
   createCustomVariableString: createCustomVariableString,
   simulateSingleMode: simulateSingleMode,
   simulateFeederWeight: simulateFeederWeight,
-  OilLubUhr: OilLubUhr,
-  OilLubUhrFollowUp: OilLubUhrFollowUp,
+  OilLubWatch: OilLubWatch,
+  OilLubWatchFollowUp: OilLubWatchFollowUp,
   simulateLineMode: simulateLineMode,
   updatedwstat: updatedwstat,
   simulateLineModeRamp: simulateLineModeRamp,

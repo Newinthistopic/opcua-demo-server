@@ -153,12 +153,8 @@ const SetGetlogic = {
         serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = 0;
 
       }
-      //serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughput_rAct.nodeId.value] = 0;
-      // serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughputTotal_rAct.nodeId.value] = 0;
-
      
-
-
+   
       // Das ist die Abruchbedingung für alle Funktionen, die zum Feeder gehören.
       sharedState.intervalIds.stopSimulateFeederSingle = true
       sharedState.intervalIds.stopSimulateFeederWeight = true,
@@ -173,7 +169,7 @@ const SetGetlogic = {
           sharedState.intervalIds.stopAdjustThroughput = false,
           sharedState.intervalIds.stopSimulateLineMode = false,
           sharedState.intervalIds.stopSimulateThroughputRampLine = false
-      }, 1500); // 5000 Millisekunden oder 5 Sekunden
+      }, 1500); 
 
 
 
@@ -181,7 +177,7 @@ const SetGetlogic = {
     }
 
     let nominalTorque = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewTorqueNom_Set.nodeId.value];
-    console.log("Nominal Torque:", nominalTorque);
+    
   },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStatGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat", 1545, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStatSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat", undefined, nameNodeId, serverValues); },
@@ -481,7 +477,6 @@ const SetGetlogic = {
     setTimeout(() => {
       var werte = require('./profiles/simulation/variables/Variabeln');
       funktionen.updatedwstat(undefined, "SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed", undefined);
-
      
 
       //Berechnung des Target Speed ist im Spec Rate Modus
@@ -492,7 +487,7 @@ const SetGetlogic = {
       }
       //Berechnung des Target Speed ist im Direct Modus
       if (sharedState.SpeedCalculationDirectisOn) {
-        console.log("sharedState.SpeedCalculationDirectisOn")
+       
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] |= (1 <<sharedState.BIT_POSITIONS.Setpoint_value_is_visible); 
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Setpoint_input_of_Hmi_is_active); 
       }
@@ -544,13 +539,13 @@ const SetGetlogic = {
       var werte = require('./profiles/simulation/variables/Variabeln');
       //Berechnung Speed im Spec Rate Modus
       if (sharedState.SpeedCalculationSpecRateisOn) {
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] |= (1 << 11); // TRUE: Setpoint value is visible
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] |= (1 << 13);
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Setpoint_value_is_visible); // TRUE: Setpoint value is visible
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] |= (1 <<  sharedState.BIT_POSITIONS.Setpoint_input_of_Hmi_is_active); // TRUE: Setpoint input of Hmi is active
       }
       //Berechnung Speed im Direct Modus
       if (sharedState.SpeedCalculationDirectisOn) {
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] &= ~(1 << 11); // TRUE: Setpoint value is visible
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] &= ~(1 << 13);
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Setpoint_value_is_visible); // TRUE: Setpoint value is visible
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] &= ~(1 <<  sharedState.BIT_POSITIONS.Setpoint_input_of_Hmi_is_active); // TRUE: Setpoint input of Hmi is active
       }
     }, 1);
 
@@ -908,15 +903,15 @@ const SetGetlogic = {
     initial("SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwCtrl", undefined, {}, i, nameNodeId, serverValues);
 
     var werte = require('./profiles/simulation/variables/Variabeln');
-    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwCtrl.nodeId.value] === 64) { // Off Button drücken
+    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwCtrl.nodeId.value] === sharedState.buttonPushed.GearOilLubricationOff) { // Off Button drücken
       sharedState.GearOilLubricationOn = false
       sharedState.GearOilLubricationOff = true
 
     }
-    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwCtrl.nodeId.value] === 32) { // Start Button drücken
+    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwCtrl.nodeId.value] === sharedState.buttonPushed.GearOilLubricationOn) { // Start Button drücken
       sharedState.GearOilLubricationOn = true;
       sharedState.GearOilLubricationOff = false;
-      funktionen.OilLubUhr(i, nameNodeId, serverValues);
+      funktionen.OilLubWatch(i, nameNodeId, serverValues);
     }
   },
   SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStatGet: function (i, nameNodeId, serverValues) {
@@ -924,21 +919,22 @@ const SetGetlogic = {
     setTimeout(function () {
       var werte = require('./profiles/simulation/variables/Variabeln');
       if (sharedState.GearOilLubricationOff) {
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << 11); // Ölschmierung Off Button
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 <<sharedState.BIT_POSITIONS.GearOilLubrication_Button_is_On_Off); // Ölschmierung Off Button
 
         if (sharedState.GearOilRemainPreRunTimeExpired) { // Wenn die Uhr von RemainPreRunTime abgelaufen ist, so startet die Remain TimeFollowUp
-          funktionen.OilLubUhrFollowUp(i, nameNodeId, serverValues)
+          console.log("hahahahahahahahahahha")
+          funktionen.OilLubWatchFollowUp(i, nameNodeId, serverValues)
           sharedState.GearOilRemainPreRunTimeExpired = false; // Setzt die RemainPreRunTime wieder auf false, damit der Startwert wieder angezeigt wird
         }
       }
       if (sharedState.GearOilLubricationOn) {
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStat.nodeId.value] |= (1 << 11); // Ölschmierung On Button
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.GearOilLubrication_Button_is_On_Off); // Ölschmierung On Button
       }
       if (sharedState.ExtruderisOn) {
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << 10); // Lock Condition wird gesetzt, Öl Schmierung kann nicht ausgemacht werden
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 <<sharedState.BIT_POSITIONS.GearOilLubrication_Button_Lock_OFF_Status); // Lock Condition wird gesetzt, Öl Schmierung kann nicht ausgemacht werden. Off Button wird "grau"
       }
       if (sharedState.ExtruderisOff) {
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStat.nodeId.value] |= (1 << 10); // Lock Condition gelöst, Öl Schmierung kann wieder ausgemacht werden
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.GearOilLubrication_Button_Lock_OFF_Status); // Lock Condition gelöst, Öl Schmierung kann wieder ausgemacht werden. Off Button wird "schwarz"
       }
     }, 1);
   },
@@ -2204,11 +2200,11 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_rOilTempLL_SetSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_rOilTempLL_Set", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTimeGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTimeSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime", undefined, {}, i, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_MaxGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Max", 300, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_MaxGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Max", 250, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_MaxSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Max", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_MinGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Min", 0, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_MinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Min", undefined, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_SetGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Set", 102, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_SetGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Set", 60, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_SetSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Set", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udMonitTimeGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udMonitTime", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udMonitTimeSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udMonitTime", undefined, {}, i, nameNodeId, serverValues); },
@@ -2234,7 +2230,7 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udOilTempType_MinSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udOilTempType_Min", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udOilTempType_SetGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udOilTempType_Set", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udOilTempType_SetSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udOilTempType_Set", undefined, {}, i, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTimeGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime", 1, {}, i, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTimeGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTimeSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_MaxGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Max", 20, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_MaxSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Max", undefined, nameNodeId, serverValues); },

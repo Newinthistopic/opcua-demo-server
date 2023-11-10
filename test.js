@@ -1,4 +1,5 @@
 
+const { SetTriggeringResponse } = require('node-opcua');
 var { SetGetlogic } = require('./../../../Setter_Getter_Logiken')
 const functions = require('./../../../funktionen');
 
@@ -242,4 +243,21 @@ setTimeout(function () {
 
       SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage
       SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat
+
+
+
+      Groud Board Extruder
+      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime.nodeId.value]
+      serverValues[werte.data.  SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value]
+      
+    
+
+Extruder Expert
+serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Set.nodeId.value]
+serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Set.nodeId.value]
+
+
+
+
+
 
