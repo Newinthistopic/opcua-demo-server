@@ -1,6 +1,15 @@
 
 let InitialValueRemainTimeFollowUp = null;
 
+
+const BIT_POSITIONS = {
+    TargetScrewSpeedCalculation_direct_specRate:8 
+        
+    
+  };
+
+
+
 module.exports = {
     HeatingisOn: false,
     CoolingisOn: false,
