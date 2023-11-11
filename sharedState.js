@@ -10,7 +10,33 @@ const BIT_POSITIONS = {
 
     GearOilLubrication_Button_is_On_Off:11,
     GearOilLubrication_Button_Lock_OFF_Status:10,
-   
+
+    Tolerance_monitoring_is_active:15, //TRUE: Tolerance monitoring is active; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325158/udt+Hmi+cmHmiValues
+
+    Status_feeder_is_On_Off:11, // TRUE: Status feeder is on;https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3123576919/udt+Hmi+emFeederRawMaterial
+    Feeder_Button_Lock_On_Status:9,
+  
+
+    Status_Auto_Start_On_Off:8,
+    Lock_On_Off_Status_of_AutoStop_Button:12,
+    Lock_On_Off_Status_of_AutoStart_Button:9,
+    Status_Auto_Stop_On:13,
+    Status_Auto_Start_On: 10
+
+
+
+/*
+    serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << 8); // Setzt den "Haken"
+    serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << 12) // Lock Condition von Auto Stop (Button wird anklickbar und gräulich)
+    serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << 9); // Lock Conditon von Auto Start (Button wird anklickbar und gräulich
+    serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << 13); // Macht AutoStop "Blau
+  } else if (!sharedState.feedingautostartButtons.autoStartFeeder) {
+    serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << 8); // Setzt das "X"
+    serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << 13);
+    serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << 10);
+    serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << 12) // Lock Condition von Auto Stop (Button wird anklickbar und gräulich)
+    serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << 9); // Lock Conditon von Auto Start (Button wird anklickbar und gräulich
+   */
     
   };
 
@@ -23,6 +49,25 @@ const BIT_POSITIONS = {
 
     GearOilLubricationOn:32,
     GearOilLubricationOff:64,
+
+    FeederOn:64,
+    FeederOff:32,
+
+    Feeding_Auto_Start_Feeder_On:256,
+    Feeding_Auto_Start_Feeder_On:0,
+Feeding_Auto_Stop:320,
+Feeding_AutoStart:288,
+Feeding_Stop_Feeding1:8,
+Feeding_Stop_Feeding2:256,
+Feeding_Stop_Feeding3:264,
+
+ApplyChanges1:32768,
+ApplyChanges2:33024,
+
+
+
+
+
   }
 
 

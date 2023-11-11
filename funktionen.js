@@ -1228,7 +1228,7 @@ function OilLubWatch(i, nameNodeId, serverValues) {
     }
   }
 
-  let intervalId = setInterval(startOilLubUhr, 500); // Speichern der Interval-ID, Intervall alle 500 Millisekunden
+  let intervalId = setInterval(startOilLubUhr, 1000); // Speichern der Interval-ID, Intervall alle 500 Millisekunden
 }
 
 
