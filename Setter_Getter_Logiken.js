@@ -3015,8 +3015,8 @@ const SetGetlogic = {
         serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_AutoStart_Button); // Lock Conditon von Auto Start 
       }
       if (sharedState.feedingautostartButtons.autoStart) {
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Status_Auto_Stop_On);
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Status_Auto_Start_On);
+        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Status_Auto_Stop_On); // Auto Stop Button ist nicht mehr blau
+        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Status_Auto_Start_On); // Auto Start Button wird blau
       }
       if (sharedState.feedingautostartButtons.autoStop) {
         serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Status_Auto_Stop_On);
@@ -3045,18 +3045,16 @@ const SetGetlogic = {
     setTimeout(() => {
       let total = 0;
       var werte = require('./profiles/simulation/variables/Variabeln');
-      // Durchlaufen Sie alle Feeder (angenommen, die Feeder sind 0-indexiert)
+     
       for (let i = 1; i < 5; i++) {
-        // Prüfen Sie, ob der FeederMode_Set-Wert 2 ist
+        // Wenn ein Feeder auf Line Mode steht, so wird der Wert addiert
         if (sharedState.feeders[i].FeederLineMode) {
           // Addieren Sie den rAct-Wert zum Gesamtwert
           total += serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
           serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughput_rAct.nodeId.value] = total
         }
       }
-
     }, 10);
-
   },
   SU2110_Feeding_Hmi_udtUm_rThroughput_rActSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughput_rAct", undefined, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtUm_rThroughput_rActRecGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughput_rActRec", undefined, nameNodeId, serverValues); },
@@ -3108,10 +3106,8 @@ const SetGetlogic = {
         total += serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value];
 
         serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rAct.nodeId.value] = total
-      
-      }
-
-    }, 1);  // Der Code wird nach 1000 Millisekunden (1 Sekunde) ausgeführt
+            }
+    }, 1); 
 
 
   },
@@ -3127,11 +3123,7 @@ const SetGetlogic = {
   SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rOpMinGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rOpMin", 0, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rOpMinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rOpMin", undefined, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSet", 100, nameNodeId, serverValues); },
-  SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetSet: function (i, nameNodeId, serverValues) {
-    initial("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSet", undefined, {}, i, nameNodeId, serverValues);
-
-
-
+  SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetSet: function (i, nameNodeId, serverValues) {    initial("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSet", undefined, {}, i, nameNodeId, serverValues);
   },
   SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetRecGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetRec", undefined, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetRecSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetRec", undefined, nameNodeId, serverValues); },
@@ -3155,7 +3147,6 @@ const SetGetlogic = {
     setTimeout(() => {
       funktionen.updatedwstat(undefined, "SU2110_Feeding_Hmi_udtUm_rThroughputTotal", undefined);
     }, 1);
-
   },
   SU2110_Feeding_Hmi_udtUm_rThroughputTotal_dwStatSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughputTotal_dwStat", undefined, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtUm_rThroughputTotal_rActGet: function (i, nameNodeId, serverValues) {
@@ -3212,7 +3203,6 @@ const SetGetlogic = {
       var werte = require('./profiles/simulation/variables/Variabeln');
 
       let FeederTotal = 0;
-
       for (let i = 1; i <= 4; i++) {
         let currentFeeder = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rAct.nodeId.value];
         FeederTotal += currentFeeder;
@@ -3220,7 +3210,6 @@ const SetGetlogic = {
       serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rTotal_rAct.nodeId.value] = FeederTotal;
 
     }, 1);
-
 
   },
   SU2110_Feeding_Hmi_udtUm_rTotal_rActSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_rTotal_rAct", undefined, nameNodeId, serverValues); },
@@ -3858,7 +3847,7 @@ const SetGetlogic = {
     initialSingleValue("SU1000_Line_Hmi_udtLm_dwCtrl", undefined, nameNodeId, serverValues);
     var werte = require('./profiles/simulation/variables/Variabeln');
 
-    if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwCtrl.nodeId.value] === 128) { // Start  Button Start Wizzard
+    if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwCtrl.nodeId.value] === sharedState.buttonPushed.StartWizzard_start) { // Start  Button Start Wizzard
       sharedState.HeatingisOn = true;
       sharedState.CoolingisOn = false;
       sharedState.CoolingisOff = true;
@@ -3866,14 +3855,14 @@ const SetGetlogic = {
 
       for (var i = 1; i < 14; i++) {
         funktionen.PIDUP(i, nameNodeId, serverValues, "A");
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << 17); // Monitoring values active für die Eieruhr 
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~((1 << 6)); // Macht den start down Button "an"
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << 24); // Setzt den Cool Down Button, damit er "schwarz" wird
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << 13); // Setzt den Shut Down Button, damit er "  schwarz" ist
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] |= (1 << 15); // Tolerance Monitoring On
+       // serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << 17); // Monitoring values active für die Eieruhr 
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~((1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_Start_Button)); // Macht den start down Button "grau"
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_CoolDown_Button); // Setzt den Cool Down Button, damit er "schwarz" wird
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_ShutDown_Button); // Setzt den Shut Down Button, damit er "  schwarz" ist
+        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active); // Tolerance Monitoring On
       }
     }
-    if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwCtrl.nodeId.value] === 32768) { // Cool Down Button Start Wizzard
+    if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwCtrl.nodeId.value] ===sharedState.buttonPushed.StartWizzard_coolDown) { // Cool Down Button Start Wizzard
       serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << 24);// Macht den Cool down Button "an" 8(schwarz geht "aus")
       sharedState.HeatingisOn = false;
       sharedState.CoolingisOn = true
@@ -3882,22 +3871,22 @@ const SetGetlogic = {
       for (var i = 1; i < 14; i++) {
 
         funktionen.PIDCOOLDOWN(i, nameNodeId, serverValues, "A");
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << 24);// Macht den Cool down Button "an" 8(schwarz geht "aus")
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << 6); //Setz den start Button, damit er "Schwarz" wird 
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << 13);// Setzt den Shut Down Button, damit er "schwarz" wird
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.value] &= ~((1 << 15));
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_CoolDown_Button);// Macht den Cool down Button "an" 8(schwarz geht "aus")
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_Start_Button); //Setz den start Button, damit er "Schwarz" wird 
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_ShutDown_Button);// Setzt den Shut Down Button, damit er "schwarz" wird
+        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.value] &= ~((1 <<sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active));// Tolerance Monitoring On
       }
     }
-    if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwCtrl.nodeId.value] === 131072) { // Shutdown Button Start Wizzard
+    if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwCtrl.nodeId.value] === sharedState.buttonPushed.StartWizzard_shutDown) { // Shutdown Button Start Wizzard
       sharedState.ShutdownisOn = true
       sharedState.CoolingisOn = false
       sharedState.HeatingisOn = false;
       for (var i = 1; i < 14; i++) {
         funktionen.PIDSHUTDOWN(i, nameNodeId, serverValues);
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << 13);
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << 6);
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << 24);
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.value] &= ~((1 << 15));
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_ShutDown_Button);
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_Start_Button);
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_CoolDown_Button);
+        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.value] &= ~((1 <<sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active));
       }
     }
   },

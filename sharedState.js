@@ -21,8 +21,11 @@ const BIT_POSITIONS = {
     Lock_On_Off_Status_of_AutoStop_Button:12,
     Lock_On_Off_Status_of_AutoStart_Button:9,
     Status_Auto_Stop_On:13,
-    Status_Auto_Start_On: 10
+    Status_Auto_Start_On: 10,
 
+Lock_On_Off_Status_of_Start_Button:6,
+Lock_On_Off_Status_of_CoolDown_Button:24,
+Lock_On_Off_Status_of_ShutDown_Button:13,
 
 
 /*
@@ -63,6 +66,10 @@ Feeding_Stop_Feeding3:264,
 
 ApplyChanges1:32768,
 ApplyChanges2:33024,
+
+StartWizzard_start:128,
+StartWizzard_coolDown:32768,
+StartWizzard_shutDown:131072,
 
 
 
