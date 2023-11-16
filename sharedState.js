@@ -12,9 +12,36 @@ const BIT_POSITIONS = {
     GearOilLubrication_Button_Lock_OFF_Status:10,
 
     Tolerance_monitoring_is_active:15, //TRUE: Tolerance monitoring is active; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325158/udt+Hmi+cmHmiValues
+    Out_of_tolerance_MaxMax:16, // TRUE: Out of tolerance MaxMax;https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325158/udt+Hmi+cmHmiValues
+    Out_of_tolerance_Max:17, // TRUE: Out of tolerance Max
+    Actual_value_tendence_is_down:23, // TRUE: Actual value tendence is down
+    Actual_value_tendence_is_up:22, // TRUE: Actual value tendence is up
+    Tolreances_are_absolute:14, // TRUE: Tolreances are absolute
+
 
     Status_feeder_is_On_Off:11, // TRUE: Status feeder is on;https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3123576919/udt+Hmi+emFeederRawMaterial
     Feeder_Button_Lock_On_Status:9,
+
+    Status_AutoStart_Side_Feeder_is_On_Off:15,
+    
+    Status_Side_Feeder_is_On_Off:11,
+
+statemachine:{
+    Idle:5,
+    Running:3,
+    Stopped:4,
+    E_Stop_Pressed:1,
+    E_Stop_Released:2,
+    Preheating:2
+}
+,
+statemachine_navigationbar:{
+    Stopped:4,
+      Running: 5,
+      Warning: 2,
+      Error: 1,
+      Critical: 0
+},
   
 
     Status_Auto_Start_On_Off:8,
@@ -26,6 +53,8 @@ const BIT_POSITIONS = {
 Lock_On_Off_Status_of_Start_Button:6,
 Lock_On_Off_Status_of_CoolDown_Button:24,
 Lock_On_Off_Status_of_ShutDown_Button:13,
+
+Lock_On_Off_Status_of_RampOn_Button:1
 
 
 /*
@@ -53,8 +82,8 @@ Lock_On_Off_Status_of_ShutDown_Button:13,
     GearOilLubricationOn:32,
     GearOilLubricationOff:64,
 
-    FeederOn:64,
-    FeederOff:32,
+    FeederOn:32,
+    FeederOff:64,
 
     Feeding_Auto_Start_Feeder_On:256,
     Feeding_Auto_Start_Feeder_On:0,
@@ -64,6 +93,12 @@ Feeding_Stop_Feeding1:8,
 Feeding_Stop_Feeding2:256,
 Feeding_Stop_Feeding3:264,
 
+AutoStart_Side_Feeder_On:32768,
+AutoStart_Side_Feeder_Off:0,
+
+Side_Feeder_On:32,
+Side_Feeder_Off:64,
+
 ApplyChanges1:32768,
 ApplyChanges2:33024,
 
@@ -71,7 +106,8 @@ StartWizzard_start:128,
 StartWizzard_coolDown:32768,
 StartWizzard_shutDown:131072,
 
-
+LineRamp_Off:4,
+LineRamp_On:2
 
 
 

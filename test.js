@@ -248,13 +248,42 @@ setTimeout(function () {
 
       Groud Board Extruder
       serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime.nodeId.value]
-      serverValues[werte.data.  SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value]
+      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value]
       
     
 
 Extruder Expert
+
 serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Set.nodeId.value]
 serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Set.nodeId.value]
+
+serverValues[werte.data[i].SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_rAct.nodeId.value]
+serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_rAct.nodeId.value]
+
+SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_rAct
+
+
+serverValues[werte.data[i].SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_rAct.nodeId.value]
+serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp.rAct.nodeId.value]
+
+SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin_Set
+
+
+serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin_Set.nodeId.value]
+
+serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMax.nodeId.value]
+
+
+
+serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_Set.nodeId.value]
+
+
+serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMin.nodeId.value]
+
+SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMin
+
+
+SU3111_ZeExtruder.Hmi.udtEmExtruderDriveCtrl.rSpecRate.dwStat
 
 
 

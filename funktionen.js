@@ -438,14 +438,14 @@ const checkedItemsReady = Array(13).fill(false); // Alle Prozesszonen sind auf R
 const checkedItemsOff = Array(13).fill(false); // Alle Prozesszonen sind auf Off
 function dwStatStartWizzard(i, nameNodeId, serverValues) {
   var werte = require('./profiles/simulation/variables/Variabeln');
-  let rSetTolMax = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSetTolMax.nodeId.value];
+  
   let rSetTolMaxMax = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSetTolMaxMax.nodeId.value];
-  let rTempRel = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempRel_Set.nodeId.value];
+ 
   let rAct = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   let rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value];
   let rTempCooldown = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempCooldown_Set.nodeId.value];
   let rTempRelease = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempRel_Set.nodeId.value];
-  let diActRemainTime
+ 
   const EierUhrEinstellZeit = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_udTimeRel.nodeId.value];
   let EierUhrStartWert = EierUhrEinstellZeit
   const machine = new StateMachine();
@@ -595,9 +595,9 @@ function startEierUhr(i, callback) {
 
 
 
-let pidTimerIddown = []
-let pidTimerIdup = []
-let pidTimerIdshutdown = []
+let pidTimerIddown = [] // Array für die Id des Setintervalls 
+let pidTimerIdup = []//  Array für die Id des Setintervalls 
+let pidTimerIdshutdown = [] // Array für die Id des Setintervalls 
 
 
 const MAX_INDEX = 13;  // Index von 1 bis 13
@@ -616,12 +616,13 @@ function PIDUP(i, nameNodeId, serverValues, source) {
   const Ki = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value];
   const Kd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value];
   const dt = 0.01
-  const T1 = 120
-  const T2 = 115
+  const T1 = 105 
+  const T2 = 100 
   const K1 = 1
   const K2 = 1
   let rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   let rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
+
 
   let rSet;
   if (source === "A") {
@@ -631,7 +632,6 @@ function PIDUP(i, nameNodeId, serverValues, source) {
   } else if (source === "B") {
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value];
   }
-
 
   let integral
 
@@ -645,7 +645,6 @@ function PIDUP(i, nameNodeId, serverValues, source) {
   }
   lastError = 0;
   integral = 0;
-
 
 
   function calculateNextValue() {
@@ -663,9 +662,17 @@ function PIDUP(i, nameNodeId, serverValues, source) {
 
       let u = pTerm + iTerm + dTerm;
 
+
       lastError = error;
 
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = u
+  // Begrenzung des Wertes von u zwischen -100 und 100
+u_begrenzt = Math.max(-100, Math.min(u, 100));
+
+// Wert wird der HMI zugewiesen
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = u_begrenzt
+
+
+ 
 
       // 1.Glied PT1 der Reglestrecke
       let dy1 = (K1 * u - rAct1) / T1 * dt;
@@ -743,7 +750,13 @@ function PIDCOOLDOWN(i, nameNodeId, serverValues, source) {
 
       lastError = error;
 
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = u
+// Begrenzung des Wertes von u zwischen -100 und 100
+u_begrenzt = Math.max(-100, Math.min(u, 100));
+
+// Wert wird der HMI zugewiesen
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = u_begrenzt
+    
+      
 
       // 1.Glied PT1 der Reglestrecke
       let dy1 = (K1 * u - rAct1) / T1 * dt;
@@ -778,8 +791,8 @@ function PIDSHUTDOWN(i, nameNodeId, serverValues) {
   const Ki = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value];
   const Kd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value];
   const dt = 0.01
-  const T1 = 20
-  const T2 = 10
+  const T1 = 50
+  const T2 = 50
   const K1 = 1
   const K2 = 1
 
@@ -859,18 +872,7 @@ if(sharedState.SpeedCalculationSpecRateisOn){
     }
 }
 
-   /* if (!(TargetScrewSpeed & (1 << 8))) {
-
-      // Wenn Anfangs auf Spec.Rate geschaltet wird und der Gesamtdurchsatz null ist, dann wird xf auf die minimale Drehzahl gestellt.
-      if (Durchsatzgesamt === 0) {
-        xf = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMin.nodeId.value];
-      } else {
-        xf = Durchsatzgesamt / specificRate_Set;
-      }
-    }*/
-
-
-
+ 
     const normalizedTime = t;  // Da t von 0 bis 1 geht, ist es bereits normalisiert
     let currentSpeed = x0 + (xf - x0) / (1 + Math.exp(-roundness * (normalizedTime - 0.5)));
 
@@ -881,7 +883,7 @@ if(sharedState.SpeedCalculationSpecRateisOn){
     let prozentDrehmoment = (drehmoment / nominalTorque) * 100
     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] = prozentDrehmoment;
 
-    console.log(" serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value]                  "+   serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value])
+   
 
     // Drehmomentdichte berechnen
     let torqueDensity = drehmoment / screwVolume;
@@ -1041,6 +1043,7 @@ function simulateFeederWeight(i, nameNodeId, serverValues) {
 
     currentLevel -= ratePerInterval;
 
+    // Wert wird in der HMI zugewiesen
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rAct.nodeId.value] += ratePerInterval;
 
     // Wert wird der HMI zugewiesen
@@ -1054,7 +1057,7 @@ function simulateFeederWeight(i, nameNodeId, serverValues) {
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value] = currentLevel;
     }
   }
-    let intervalId = setInterval(updateFeederWeight, 200); // Setze das setInterval hier
+    let intervalId = setInterval(updateFeederWeight, 60000); 
     intervalIds.updateFeederWeight[i] = intervalId;
   }
 
@@ -1260,103 +1263,103 @@ function updatedwstat(i, NameVariabel) {
   let set = serverValues[data[NameVariabel + "_rSet"].nodeId.value];
   let dwStat = serverValues[data[NameVariabel + "_dwStat"].nodeId.value];
 
-  if (!(dwStat & (1 << 15))) { // Wenn das Bit für Tolerance Monitoring aus,  dann werden die Farben rot und orange "gelöscht"
-    dwStat &= ~(1 << 16);
-    dwStat &= ~(1 << 17);
+  if (!(dwStat & (1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active))) { // Wenn das Bit für Tolerance Monitoring aus,  dann werden die Farben rot und orange "gelöscht"
+    dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
+    dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
   }
 
 
   if (rAct === 0) {
-    dwStat &= ~(1 << 23);
-    dwStat &= ~(1 << 22);
-    dwStat &= ~(1 << 16);
-    dwStat &= ~(1 << 17);
+    dwStat &= ~(1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_down);
+    dwStat &= ~(1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_up);
+    dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
+    dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
   } else {
     if (typeof previousRAct[rActKey] !== 'undefined') {
       if (rAct > previousRAct[rActKey]) {
         consecutiveCounter[rActKey] = 0;
-        dwStat |= (1 << 22);
-        dwStat &= ~(1 << 23);
+        dwStat |= (1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_up);
+        dwStat &= ~(1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_down);
       } else if (rAct < previousRAct[rActKey]) {
         consecutiveCounter[rActKey] = 0;
-        dwStat |= (1 << 23);
-        dwStat &= ~(1 << 22);
+        dwStat |= (1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_down);
+        dwStat &= ~(1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_up);
       } else {
         consecutiveCounter[rActKey] = (consecutiveCounter[rActKey] || 0) + 1;
         if (consecutiveCounter[rActKey] > 20) {
-          dwStat &= ~(1 << 23);
-          dwStat &= ~(1 << 22);
+          dwStat &= ~(1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_down);
+          dwStat &= ~(1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_up);
         }
       }
     }
   }
 
-  if ((dwStat & (1 << 15)) && (dwStat & (1 << 14))) {
+  if ((dwStat & (1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active)) && (dwStat & (1 << sharedState.BIT_POSITIONS.Tolreances_are_absolute))) {
 
 
     if (rSetTolMin === 0 && rAct < rSetTolMinMin && rAct < rSetTolMax && rAct < rSetTolMaxMax) {
-      dwStat &= ~(1 << 17);
-      dwStat |= (1 << 16); // ROT
+      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
+      dwStat |= (1 <<sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax); // ROT
       //console.log("erste Stufe")
     }
 
     if (rAct === 0) {
-      dwStat &= ~(1 << 23);
-      dwStat &= ~(1 << 22);
-      dwStat &= ~(1 << 16);
-      dwStat &= ~(1 << 17);
+      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_down);
+      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_up);
+      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
+      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
     }
 
     if (rAct < rSetTolMin && rAct < rSetTolMinMin && rAct < rSetTolMax && rAct < rSetTolMaxMax) {
-      dwStat &= ~(1 << 17);
-      dwStat |= (1 << 16); // ROT
+      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
+      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax); // ROT
       //  console.log("erste Stude 1 B")
     }
     if (rAct > rSetTolMin && rSetTolMin > 0 && rAct < rSetTolMinMin && rAct < rSetTolMax && rAct < rSetTolMaxMax) {
-      dwStat &= ~(1 << 16);
-      dwStat |= (1 << 17);
+      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
+      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
       //console.log("zweite Stufe")
     }
 
     if (rAct > rSetTolMinMin && rAct < rSetTolMax && rAct < rSetTolMaxMax) {
-      dwStat &= ~(1 << 16);
-      dwStat &= ~(1 << 17);
+      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
+      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
       // console.log("dritte Stufe")
     }
 
     if (rAct > rSetTolMin && rAct > rSetTolMinMin && rAct < rSetTolMaxMax && rAct > rSetTolMax) {
-      dwStat &= ~(1 << 16);
-      dwStat |= (1 << 17);
+      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
+      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
       // console.log("vierte Stufe")
     }
     if (rAct > rSetTolMin && rAct > rSetTolMinMin && rAct > rSetTolMaxMax && rAct > rSetTolMax) {
-      dwStat &= ~(1 << 17);
-      dwStat |= (1 << 16);
+      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
+      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
       // console.log("fünfte Stufe")
     }
   }
 
 
-  if ((dwStat & (1 << 15)) && !(dwStat & (1 << 14))) {
+  if ((dwStat & (1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active)) && !(dwStat & (1 << sharedState.BIT_POSITIONS.Tolreances_are_absolute))) {
     // BIT15 ist gesetzt und BIT14 ist nicht gesetzt
 
     // Relativ zum Set-Wert
     if (rAct < set - rSetTolMinMin) {
-      dwStat |= (1 << 16);
+      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
     }
     if (rAct < set - rSetTolMin && rAct > set - rSetTolMinMin) {
-      dwStat &= ~(1 << 16);
-      dwStat |= (1 << 17);
+      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
+      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
     }
     if (rAct > set - rSetTolMin) {
-      dwStat &= ~((1 << 16) | (1 << 17));
+      dwStat &= ~((1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax) | (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max));
     }
     if (rAct > set + rSetTolMinMin) {
-      dwStat |= (1 << 16);
+      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
     }
 
     if (rAct > set + rSetTolMin) {
-      dwStat |= (1 << 17);
+      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
     }
 
   }
@@ -1370,12 +1373,12 @@ function updatedwstat(i, NameVariabel) {
 class StateMachine {
   constructor() {
     this.states = {
-      IDLE: { name: "IDLE", bit: (1 << 5) },
-      RUNNING: { name: "RUNNING", bit: (1 << 3) },
-      STOPPED: { name: "STOPPED", bit: (1 << 4) },
-      E_STOP_PRESSED: { name: "E-STOP-PRESSED", bit: (1 << 1) },
-      E_STOP_RELEASED: { name: "E-STOP-RELEASED", bit: (1 << 2) },
-      PREHEATING: { name: "PREHEATING", bit: (1 << 2) }
+      IDLE: { name: "IDLE", bit: (1 << sharedState.BIT_POSITIONS.statemachine.Idle) },
+      RUNNING: { name: "RUNNING", bit: (1 <<  sharedState.BIT_POSITIONS.statemachine.Running) },
+      STOPPED: { name: "STOPPED", bit: (1 <<  sharedState.BIT_POSITIONS.statemachine.Stopped) },
+      E_STOP_PRESSED: { name: "E-STOP-PRESSED", bit: (1 << sharedState.BIT_POSITIONS.statemachine.E_Stop_Pressed) },
+      E_STOP_RELEASED: { name: "E-STOP-RELEASED", bit: (1 <<  sharedState.BIT_POSITIONS.statemachine.E_Stop_Released) },
+      PREHEATING: { name: "PREHEATING", bit: (1 <<  sharedState.BIT_POSITIONS.statemachine.Preheating) }
     };
   }
   setState(variableName, stateName) {
@@ -1395,11 +1398,11 @@ class StateMachine {
 class StateMachineNavigationBar {
   constructor() {
     this.states = {
-      STOPPED: { name: "STOPPED", bit: (1 << 4) },
-      RUNNING: { name: "RUNNING", bit: (1 << 5) },
-      WARNING: { name: "WARNING", bit: (1 << 2) },
-      ERROR: { name: "ERROR", bit: (1 << 1) },
-      CRITICAL: { name: "CRITICAL", bit: (1 << 0) }
+      STOPPED: { name: "STOPPED", bit: (1 << sharedState.BIT_POSITIONS.statemachine_navigationbar.Stopped) },
+      RUNNING: { name: "RUNNING", bit: (1 <<sharedState.BIT_POSITIONS.statemachine_navigationbar.Running) },
+      WARNING: { name: "WARNING", bit: (1 << sharedState.BIT_POSITIONS.statemachine_navigationbar.Warning) },
+      ERROR: { name: "ERROR", bit: (1 << sharedState.BIT_POSITIONS.statemachine_navigationbar.Error) },
+      CRITICAL: { name: "CRITICAL", bit: (1 << sharedState.BIT_POSITIONS.statemachine_navigationbar.Critical) }
     };
   }
 
@@ -1407,12 +1410,7 @@ class StateMachineNavigationBar {
     var werte = require('./profiles/simulation/variables/Variabeln');
     const state = this.states[stateName];
 
-    // if (!state) {
-    // console.error(`Ungültiger Statusname: ${stateName}`);
-    //return;
-    // }
-
-    const variableKey = werte.data[variableName].nodeId.value;
+       const variableKey = werte.data[variableName].nodeId.value;
 
     if (typeof serverValues[variableKey] !== 'undefined') {
       serverValues[variableKey] = state.bit;
@@ -1421,7 +1419,6 @@ class StateMachineNavigationBar {
     }
   }
 }
-
 
 
 module.exports = {
@@ -1449,5 +1446,4 @@ module.exports = {
   DistributionPercentages: DistributionPercentages,
   StateMachine: StateMachine,
   StateMachineNavigationBar: StateMachineNavigationBar
-
 }
