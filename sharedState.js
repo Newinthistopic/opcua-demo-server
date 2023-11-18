@@ -134,6 +134,7 @@ module.exports = {
     BIT_POSITIONS,
     buttonPushed,
     Alarms_Warnings,
+    status_Alarms_Warnings,
     HeatingisOn: false,
     CoolingisOn: false,
     CoolingisOff: true,

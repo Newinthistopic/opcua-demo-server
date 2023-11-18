@@ -2,6 +2,7 @@ var { initial } = require('./../opcua-demo-server/funktionen');
 var { initialSingleValue } = require('./../opcua-demo-server/funktionen');
 var { StateMachine, StateMachineNavigationBar } = require('./../opcua-demo-server/funktionen');
 const funktionen = require('./../opcua-demo-server/funktionen'); // Pfade entsprechend anpassen, falls nötig
+const alarms_warnings_funktionen = require('./../opcua-demo-server/alarm_warning_functions'); // Pfade entsprechend anpassen, falls nötig
 var sharedState = require('./../opcua-demo-server/sharedState');
 
 
@@ -127,18 +128,23 @@ const SetGetlogic = {
     if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] < serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Set.nodeId.value]) {
       // Setzen des Warnungsbits
           serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] |= (1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning.Warning_Torque_too_low_shutdown_timer_started);
+          sharedState.status_Alarms_Warnings.Warning_Torque_too_low_shutdown_timer_started=true;
+          alarms_warnings_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues);
   } else {
       // Zurücksetzen des Warnungsbits
       serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] &= ~(1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning.Warning_Torque_too_low_shutdown_timer_started);
+      sharedState.status_Alarms_Warnings.Warning_Torque_too_low_shutdown_timer_started=false;
   }
 
-        // Wenn ScrewTorque Act unter 5 %, so wird die Warnung Torque to Low angezeigt
+        // Wenn ScrewTorque Act über rScrewTorqueHH_Set, so wird die Warnung Torque to High angezeigt
         if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] > serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Set.nodeId.value]) {
           // Setzen des Warnungsbits
               serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] |= (1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning.Warning_Torque_too_high_shutdown_timer_started);
+              sharedState.status_Alarms_Warnings.Warning_Torque_too_high_shutdown_timer_started=true;
       } else {
           // Zurücksetzen des Warnungsbits
           serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] &= ~(1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning.Warning_Torque_too_high_shutdown_timer_started);
+          sharedState.status_Alarms_Warnings.Warning_Torque_too_high_shutdown_timer_started=false;
       }
     
 

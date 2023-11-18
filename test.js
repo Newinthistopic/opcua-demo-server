@@ -323,9 +323,11 @@ var werte = require('./profiles/simulation/variables/Variabeln');
 
 
 serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value]
-serverValues[werte.data.SU3111_ZeExtruder.Hmi.udtEmExtruderDriveCtrl.rScrewTorque.dwStat.nodeId.value]
+serverValues[werte.data.SU3111_ZeExtruder.Hmi.udtEmExtruderDriveCtrl.rScrewTorque.rAct.nodeId.value]
 serverValues[werte.data.SU3111_ZeExtruder.Parameter.udtEmExtruderDriveCtrl.rScrewTorqueHH.Set.nodeId.value]
+serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Set.nodeId.value]
 
+serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_Set.nodeId.value]
 
 
 
