@@ -274,8 +274,10 @@ serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSp
 serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMax.nodeId.value]
 
 
+serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMax.nodeId.value]
 
-serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_Set.nodeId.value]
+
+
 
 
 serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMin.nodeId.value]
@@ -286,6 +288,43 @@ SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMin
 SU3111_ZeExtruder.Hmi.udtEmExtruderDriveCtrl.rSpecRate.dwStat
 
 
+
+
+
+
+
+
+serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rSetTolMin.nodeId.value]
+
+
+serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rSetTolMinMin.nodeId.value]=serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Set.nodeId.value]
+serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rSetTolMax.nodeId.value]=serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_Set.nodeId.value]
+serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rSetTolMaxMax.nodeId.value]=serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Set.nodeId.value]
+
+
+
+
+
+
+
+
+DiverterValve.Hmi.udtUm_
+
+
+SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMin
+
+rMinThroughput_Set
+
+serverValues[werte.data[i].SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughput_Set.nodeId.value]
+serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMin.nodeId.value]
+
+var werte = require('./profiles/simulation/variables/Variabeln');
+
+
+
+serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value]
+serverValues[werte.data.SU3111_ZeExtruder.Hmi.udtEmExtruderDriveCtrl.rScrewTorque.dwStat.nodeId.value]
+serverValues[werte.data.SU3111_ZeExtruder.Parameter.udtEmExtruderDriveCtrl.rScrewTorqueHH.Set.nodeId.value]
 
 
 
