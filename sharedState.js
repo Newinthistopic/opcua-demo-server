@@ -115,19 +115,30 @@ const buttonPushed = {
 const Alarms_Warnings = {
 
     ExtruderDriveControl: {
-        Warning: {
+        
             Warning_Torque_too_high_shutdown_timer_started: 10,
-            Warning_Torque_too_low_shutdown_timer_started: 11
-        },
-        Alarm: {
-            Torque_too_high_delay_shutdown_time_expired: 32,
-            Torque_too_low_delay_shutdown_time_expired: 64
+            Warning_Torque_too_low_shutdown_timer_started: 11,
+               
+            Alarm_Torque_too_high_delay_shutdown_time_expired: 32,
+            Alarm_Torque_too_low_delay_shutdown_time_expired: 64
         }
+    }
 
-    },
+
+const feeders = [
+    null, // Platzhalter für Index 0
+    { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true }, // Zustand für Feeder 1
+    { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true }, // Zustand für Feeder 2
+    { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true }, // Zustand für Feeder 3
+    { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true }  // Zustand für Feeder 4
+]
+
+const status_Alarms_Warnings={
+    ExtruderDriveControl:{
+        status_Warning_Torque_too_low_shutdown_timer_started:false,
+        status_Warning_Torque_too_high_shutdown_timer_started:false,
+    }
 }
-
-
 
 
 module.exports = {
@@ -142,6 +153,7 @@ module.exports = {
 
     ExtruderisOn: false,
     ExtruderisOff: true,
+    feeders,
 
     FeedingisOn: false, // bezieht sich auf alle Feder, sobald ein Feeder an ist, egal welchen Modus
 
@@ -154,13 +166,7 @@ module.exports = {
 
     simulateFeederWeightisRunning: false,
 
-    feeders: [
-        null,  // Platzhalter für Index 0
-        { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true },  // Zustand für Feeder 1
-        { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true },  // Zustand für Feeder 2
-        { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true },  // Zustand für Feeder 3
-        { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true }   // Zustand für Feeder 4
-    ],
+   
 
 
     feedingautostartButtons: {

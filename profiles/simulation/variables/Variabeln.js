@@ -1346,9 +1346,9 @@ function run1(addressSpace, device, opcua, verbose, serverValues,) {
 
     var SU2110_Feeding_Hmi_udtCmEstop = functions.createCustomVariable(undefined, "SU2110_Feeding_Hmi_udtCmEstop", SU2110_Feeding_Hmi, "udtCmEstop", "SU2110_Feeding.Hmi", "udtCmEstop", undefined, undefined, undefined, undefined, undefined)
 
-    // var data = {};
+    
     for (var i = 0; i < 2; i++) {
-        //data[i] = {};
+       
 
         data[i].SU2110_Feeding_Hmi_udtCmEstopLoop = functions.createCustomVariable(i, "SU2110_Feeding_Hmi_udtCmEstopLoop", SU2110_Feeding_Hmi_udtCmEstop, i.toString(), "SU2110_Feeding.Hmi", "udtCmEstop", undefined, undefined, undefined, undefined, undefined)
         data[i].SU2110_Feeding_Hmi_udtCmEstop_dwStat = functions.createCustomVariable(i, "SU2110_Feeding_Hmi_udtCmEstop_dwStat", data[i].SU2110_Feeding_Hmi_udtCmEstopLoop, "dwStat", "SU2110_Feeding.Hmi", "udtCmEstop", "dwStat", undefined, undefined, SetGetlogic.SU2110_Feeding_Hmi_udtCmEstop_dwStatGet, SetGetlogic.SU2110_Feeding_Hmi_udtCmEstop_dwStatSet)
@@ -1359,9 +1359,9 @@ function run1(addressSpace, device, opcua, verbose, serverValues,) {
     var SU2110_Feeding_Hmi_udtCmEstopMessages_wMessage = functions.createCustomVariable(undefined, "SU2110_Feeding_Hmi_udtCmEstopMessages_wMessage", SU2110_Feeding_Hmi_udtCmEstopMessages, "wMessage", "SU2110_Feeding.Hmi", "udtCmEstopMessages", "wMessage", undefined, undefined, SetGetlogic.SU2110_Feeding_Hmi_udtCmEstopMessages_wMessageGet, SetGetlogic.SU2110_Feeding_Hmi_udtCmEstopMessages_wMessageSet)
 
     var SU2110_Feeding_Hmi_udtEmFeeder = functions.createCustomVariable(undefined, "SU2110_Feeding_Hmi_udtEmFeeder", SU2110_Feeding_Hmi, "udtEmFeeder", "SU2110_Feeding.Hmi", "udtEmFeeder", undefined, undefined, undefined, undefined, undefined)
-    // var data = {};
-    for (var i = 0; i < 5; i++) {
-        //data[i] = {};
+    
+    for (var i = 1; i < 5; i++) {
+        
 
         data[i].SU2110_Feeding_Hmi_udtEmFeederLoop = functions.createCustomVariable(i, "SU2110_Feeding_Hmi_udtEmFeederLoop", SU2110_Feeding_Hmi_udtEmFeeder, i.toString(), "SU2110_Feeding.Hmi", "udtEmFeeder", undefined, undefined, undefined, undefined, undefined)
         data[i].SU2110_Feeding_Hmi_udtEmFeeder_dwCtrl = functions.createCustomVariable(i, "SU2110_Feeding_Hmi_udtEmFeeder_dwCtrl", data[i].SU2110_Feeding_Hmi_udtEmFeederLoop, "dwCtrl", "SU2110_Feeding.Hmi", "udtEmFeeder", "dwCtrl", undefined, undefined, SetGetlogic.SU2110_Feeding_Hmi_udtEmFeeder_dwCtrlGet, SetGetlogic.SU2110_Feeding_Hmi_udtEmFeeder_dwCtrlSet)

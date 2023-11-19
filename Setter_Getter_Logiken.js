@@ -1,15 +1,15 @@
 var { initial } = require('./../opcua-demo-server/funktionen');
 var { initialSingleValue } = require('./../opcua-demo-server/funktionen');
 var { StateMachine, StateMachineNavigationBar } = require('./../opcua-demo-server/funktionen');
-const funktionen = require('./../opcua-demo-server/funktionen'); // Pfade entsprechend anpassen, falls nötig
-const alarms_warnings_funktionen = require('./../opcua-demo-server/alarm_warning_functions'); // Pfade entsprechend anpassen, falls nötig
+const funktionen = require('./../opcua-demo-server/funktionen'); 
+const alarms_warnings_funktionen = require('./../opcua-demo-server/alarms_warnings_function'); 
 var sharedState = require('./../opcua-demo-server/sharedState');
 
 
 var serverModule = require('./server');
 var serverValues = serverModule.serverValues;
 var previousRAct = []
-
+let functionCallCounter = 0;
 const SetGetlogic = {
 
 
@@ -78,18 +78,18 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrlGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrlSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStatGet: function (i, nameNodeId, serverValues) {
-    initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat",537923341, nameNodeId, serverValues);
+    initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat", 537923341, nameNodeId, serverValues);
 
     setTimeout(function () {
       var werte = require('./profiles/simulation/variables/Variabeln');
       // Erste Bedingung (Taste Spec.Rate)
       if (sharedState.SpeedCalculationSpecRateisOn) {
-                 serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.TargetScrewSpeedCalculation_direct_specRate);
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.TargetScrewSpeedCalculation_direct_specRate);
       }
       // Zweite Bedingung (Taste Direct)
       if (sharedState.SpeedCalculationDirectisOn) {
-      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.TargetScrewSpeedCalculation_direct_specRate);
-       }
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.TargetScrewSpeedCalculation_direct_specRate);
+      }
     }, 1);
 
   },
@@ -104,7 +104,7 @@ const SetGetlogic = {
       sharedState.SpeedCalculationDirectisOn = false;
       sharedState.SpeedCalculationSpecRateisOn = true;
 
-      if (sharedState.ExtruderisOn) { // Funktion wird nur gestarten wenn der Extruder an ist. 
+      if (sharedState.ExtruderisOn && !sharedState.ExtruderisOff) { // Funktion wird nur gestarten wenn der Extruder an ist. 
         funktionen.simulateScrewSpeed(i, nameNodeId, serverValues); // Startet die Funktion, damit falls die Target Speed Calculation geändert wird
       }
     }
@@ -118,41 +118,46 @@ const SetGetlogic = {
     }
 
   },
-  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessageGet: function (i, nameNodeId, serverValues) { 
-    initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage",undefined,  nameNodeId, serverValues); 
-  
-    setTimeout(function() {
+  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessageGet: function (i, nameNodeId, serverValues) {
+    initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage", undefined, nameNodeId, serverValues);
+
+    setTimeout(function () {
       var werte = require('./profiles/simulation/variables/Variabeln');
 
       // Wenn ScrewTorque Act unter rScrewTorqueL_Set, so wird die Warnung Torque to Low angezeigt
-    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] < serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Set.nodeId.value]) {
-      // Setzen des Warnungsbits
-          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] |= (1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning.Warning_Torque_too_low_shutdown_timer_started);
-          sharedState.status_Alarms_Warnings.Warning_Torque_too_low_shutdown_timer_started=true;
-          alarms_warnings_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues);
-  } else {
-      // Zurücksetzen des Warnungsbits
-      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] &= ~(1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning.Warning_Torque_too_low_shutdown_timer_started);
-      sharedState.status_Alarms_Warnings.Warning_Torque_too_low_shutdown_timer_started=false;
-  }
-
-        // Wenn ScrewTorque Act über rScrewTorqueHH_Set, so wird die Warnung Torque to High angezeigt
-        if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] > serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Set.nodeId.value]) {
-          // Setzen des Warnungsbits
-              serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] |= (1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning.Warning_Torque_too_high_shutdown_timer_started);
-              sharedState.status_Alarms_Warnings.Warning_Torque_too_high_shutdown_timer_started=true;
+      if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] < serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Set.nodeId.value] && sharedState.ExtruderisOn) {
+        // Setzen des Warnungsbits
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] |= (1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning_Torque_too_low_shutdown_timer_started);
+sharedState.status_Alarms_Warnings.ExtruderDriveControl.status_Warning_Torque_too_low_shutdown_timer_started=true;
+alarms_warnings_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues);
       } else {
-          // Zurücksetzen des Warnungsbits
-          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] &= ~(1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning.Warning_Torque_too_high_shutdown_timer_started);
-          sharedState.status_Alarms_Warnings.Warning_Torque_too_high_shutdown_timer_started=false;
+        // Zurücksetzen des Warnungsbits
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] &= ~(1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning_Torque_too_low_shutdown_timer_started) && sharedState.ExtruderisOn;
+        sharedState.status_Alarms_Warnings.ExtruderDriveControl.status_Warning_Torque_too_low_shutdown_timer_started=false;
       }
-    
 
-  
 
-},1);
 
-  
+      // Wenn ScrewTorque Act über rScrewTorqueHH_Set, so wird die Warnung Torque to High angezeigt
+      if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] > serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Set.nodeId.value]) {
+        // Setzen des Warnungsbits
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] |= (1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning.Warning_Torque_too_high_shutdown_timer_started);
+
+        sharedState.status_Alarms_Warnings.ExtruderDriveControl.status_Warning_Torque_too_high_shutdown_timer_started=true;
+
+      } else {
+        // Zurücksetzen des Warnungsbits
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] &= ~(1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning_Torque_too_high_shutdown_timer_started);
+        sharedState.status_Alarms_Warnings.ExtruderDriveControl.status_Warning_Torque_too_high_shutdown_timer_started=false
+
+      }
+
+
+
+
+    }, 1);
+
+
   },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessageSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtIntLockSwitchGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtIntLockSwitch", 1, {}, i, nameNodeId, serverValues); },
@@ -163,7 +168,23 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtIntLockSwitch_strTagSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtIntLockSwitch_strTag", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStopGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStopSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop", undefined, {}, i, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrlGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl", undefined, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrlGet: function (i, nameNodeId, serverValues) { 
+    initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl", undefined, nameNodeId, serverValues); 
+  
+    setTimeout(function () {
+      var werte = require('./profiles/simulation/variables/Variabeln');
+    //Extruder ist an
+    if(sharedState.ExtruderisOn && !sharedState.ExtruderisOff){
+      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.MainDrive_On_Off); // Main drive is running
+    }
+
+    // Extruder ist Aus
+    if(sharedState.ExtruderisOff && !sharedState.ExtruderisOn){
+
+      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.MainDrive_On_Off); // Main drive is off
+    }
+  }, 1);
+  },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrlSet: function (i, nameNodeId, serverValues) {
     initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl", undefined, nameNodeId, serverValues);
     var werte = require('./profiles/simulation/variables/Variabeln');
@@ -171,14 +192,14 @@ const SetGetlogic = {
       sharedState.ExtruderisOn = true
       sharedState.ExtruderisOff = false
 
-      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.MainDrive_On_Off); // Main drive is running
+      
       funktionen.simulateScrewSpeed(i, nameNodeId, serverValues)
     }
 
     if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl.nodeId.value] === sharedState.buttonPushed.ExtruderOff) { // Start Extruder Button off
 
 
-      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.MainDrive_On_Off); // Main drive is off
+    
       sharedState.ExtruderisOn = false
       sharedState.ExtruderisOff = true
       serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSet.nodeId.value] = 0 // Endwert bzw. Setwert
@@ -189,8 +210,8 @@ const SetGetlogic = {
         serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = 0;
 
       }
-     
-   
+
+
       // Das ist die Abruchbedingung für alle Funktionen, die zum Feeder gehören.
       sharedState.intervalIds.stopSimulateFeederSingle = true
       sharedState.intervalIds.stopSimulateFeederWeight = true,
@@ -205,7 +226,7 @@ const SetGetlogic = {
           sharedState.intervalIds.stopAdjustThroughput = false,
           sharedState.intervalIds.stopSimulateLineMode = false,
           sharedState.intervalIds.stopSimulateThroughputRampLine = false
-      }, 1500); 
+      }, 1500);
 
 
 
@@ -213,7 +234,7 @@ const SetGetlogic = {
     }
 
     let nominalTorque = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewTorqueNom_Set.nodeId.value];
-    
+
   },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStatGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat", 1545, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStatSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat", undefined, nameNodeId, serverValues); },
@@ -513,19 +534,19 @@ const SetGetlogic = {
     setTimeout(() => {
       var werte = require('./profiles/simulation/variables/Variabeln');
       funktionen.updatedwstat(undefined, "SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed", undefined);
-     
+
 
       //Berechnung des Target Speed ist im Spec Rate Modus
       if (sharedState.SpeedCalculationSpecRateisOn) {
         console.log("sharedState.SpeedCalculationSpecRateisOn")
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] &= ~(1 <<  sharedState.BIT_POSITIONS.Setpoint_value_is_visible); 
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Setpoint_input_of_Hmi_is_active); 
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Setpoint_value_is_visible);
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Setpoint_input_of_Hmi_is_active);
       }
       //Berechnung des Target Speed ist im Direct Modus
       if (sharedState.SpeedCalculationDirectisOn) {
-       
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] |= (1 <<sharedState.BIT_POSITIONS.Setpoint_value_is_visible); 
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Setpoint_input_of_Hmi_is_active); 
+
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Setpoint_value_is_visible);
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Setpoint_input_of_Hmi_is_active);
       }
     }, 1);
 
@@ -539,16 +560,17 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rMaLimMaxSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rMaLimMax", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rMaLimMinGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rMaLimMin", 1205, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rMaLimMinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rMaLimMin", undefined, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMaxGet: function (i, nameNodeId, serverValues) {     initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMax", 1205, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMaxGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMax", 1205, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMaxSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMax", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMinGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMin", 37, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMin", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSetGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSet", 100, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSetSet: function (i, nameNodeId, serverValues) {
     initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSet", undefined, nameNodeId, serverValues);
-
+console.log("fsdfsdfsd")
     // Der Extruder muss an sein, damit ein neu gewählter Set Wert die Funktion auslöst
-    if (sharedState.ExtruderisOn) { // Main Drive is On
+    if (sharedState.ExtruderisOn && !sharedState.ExtruderisOff) { // Main Drive is On
+      console.log("dasdasdsadadasdas")
       funktionen.simulateScrewSpeed(i, nameNodeId, serverValues);
     }
   },
@@ -576,12 +598,12 @@ const SetGetlogic = {
       //Berechnung Speed im Spec Rate Modus
       if (sharedState.SpeedCalculationSpecRateisOn) {
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Setpoint_value_is_visible); // TRUE: Setpoint value is visible
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] |= (1 <<  sharedState.BIT_POSITIONS.Setpoint_input_of_Hmi_is_active); // TRUE: Setpoint input of Hmi is active
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Setpoint_input_of_Hmi_is_active); // TRUE: Setpoint input of Hmi is active
       }
       //Berechnung Speed im Direct Modus
       if (sharedState.SpeedCalculationDirectisOn) {
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Setpoint_value_is_visible); // TRUE: Setpoint value is visible
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] &= ~(1 <<  sharedState.BIT_POSITIONS.Setpoint_input_of_Hmi_is_active); // TRUE: Setpoint input of Hmi is active
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Setpoint_input_of_Hmi_is_active); // TRUE: Setpoint input of Hmi is active
       }
     }, 1);
 
@@ -616,9 +638,9 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rMaLimMaxSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rMaLimMax", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rMaLimMinGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rMaLimMin", 0.3, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rMaLimMinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rMaLimMin", undefined, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMaxGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMax",  5, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMaxGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMax", 5, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMaxSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMax", undefined, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMinGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMin",  3, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMinGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMin", 3, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMin", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rSetGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rSet", 3, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rSetSet: function (i, nameNodeId, serverValues) {
@@ -955,7 +977,7 @@ const SetGetlogic = {
     setTimeout(function () {
       var werte = require('./profiles/simulation/variables/Variabeln');
       if (sharedState.GearOilLubricationOff) {
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 <<sharedState.BIT_POSITIONS.GearOilLubrication_Button_is_On_Off); // Ölschmierung Off Button
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.GearOilLubrication_Button_is_On_Off); // Ölschmierung Off Button
 
         if (sharedState.GearOilRemainPreRunTimeExpired) { // Wenn die Uhr von RemainPreRunTime abgelaufen ist, so startet die Remain TimeFollowUp
           console.log("hahahahahahahahahahha")
@@ -966,10 +988,10 @@ const SetGetlogic = {
       if (sharedState.GearOilLubricationOn) {
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.GearOilLubrication_Button_is_On_Off); // Ölschmierung On Button
       }
-      if (sharedState.ExtruderisOn) {
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 <<sharedState.BIT_POSITIONS.GearOilLubrication_Button_Lock_OFF_Status); // Lock Condition wird gesetzt, Öl Schmierung kann nicht ausgemacht werden. Off Button wird "grau"
+      if (sharedState.ExtruderisOn && !sharedState.ExtruderisOff) {
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.GearOilLubrication_Button_Lock_OFF_Status); // Lock Condition wird gesetzt, Öl Schmierung kann nicht ausgemacht werden. Off Button wird "grau"
       }
-      if (sharedState.ExtruderisOff) {
+      if (sharedState.ExtruderisOff && !sharedState.ExtruderisOn) {
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.GearOilLubrication_Button_Lock_OFF_Status); // Lock Condition gelöst, Öl Schmierung kann wieder ausgemacht werden. Off Button wird "schwarz"
       }
     }, 1);
@@ -1015,7 +1037,7 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_dwCtrlSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_dwStatGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_dwStat", 13, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_dwStatSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_dwStat", undefined, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_rActGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_rAct", 190,  nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_rActGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_rAct", 190, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_rActSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_rAct", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_rActRecGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_rActRec", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_rActRecSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_rActRec", undefined, {}, i, nameNodeId, serverValues); },
@@ -1344,7 +1366,7 @@ const SetGetlogic = {
     initial("SU3111_ZeExtruder_Hmi_udtEmPz_dwStat", 13, {}, i, nameNodeId, serverValues);
 
     for (let i = 1; i < 14; i++) {
-      setTimeout(function () {  
+      setTimeout(function () {
         funktionen.dwStatStartWizzard(i, nameNodeId, serverValues);
       }, 1);
     }
@@ -1360,15 +1382,17 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwCtrlSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStatGet: function (i, nameNodeId, serverValues) {
     initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat", 33554445, {}, i, nameNodeId, serverValues);
-    setTimeout(function () {  
-          funktionen.updatedwstat(i, "SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp");
+    setTimeout(function () {
+      funktionen.updatedwstat(i, "SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp");
     }, 1);
   },
 
   SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStatSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat", undefined, {}, i, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rActGet: function (i, nameNodeId, serverValues) {    initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct", 20, {}, i, nameNodeId, serverValues);
+  SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rActGet: function (i, nameNodeId, serverValues) {
+    initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct", 20, {}, i, nameNodeId, serverValues);
   },
-  SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rActSet: function (i, nameNodeId, serverValues) {    initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct", undefined, {}, i, nameNodeId, serverValues);
+  SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rActSet: function (i, nameNodeId, serverValues) {
+    initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct", undefined, {}, i, nameNodeId, serverValues);
 
   },
 
@@ -1382,7 +1406,8 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rOpMaxSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rOpMax", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rOpMinGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rOpMin", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rOpMinSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rOpMin", undefined, {}, i, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSetGet: function (i, nameNodeId, serverValues) {    initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet", 200, {}, i, nameNodeId, serverValues);
+  SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSetGet: function (i, nameNodeId, serverValues) {
+    initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet", 200, {}, i, nameNodeId, serverValues);
 
   },
   SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSetSet: function (i, nameNodeId, serverValues) {
@@ -1606,14 +1631,14 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_MinGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_Min", 70, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_MinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_Min", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_SetGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_Set", 80, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_SetSet: function (i, nameNodeId, serverValues) { 
+  SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_SetSet: function (i, nameNodeId, serverValues) {
     initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_Set", undefined, nameNodeId, serverValues);
-  
+
     var werte = require('./profiles/simulation/variables/Variabeln');
-    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rSetTolMax.nodeId.value]=serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_Set.nodeId.value]
+    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rSetTolMax.nodeId.value] = serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_Set.nodeId.value]
 
     // er aktuelle Set Wert von rScrewTorqueH ist gleich das Minimum von rScrewTorqueHH
-    serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Min.nodeId.value]=serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_Set.nodeId.value]
+    serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Min.nodeId.value] = serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_Set.nodeId.value]
 
   },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHHGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH", undefined, {}, i, nameNodeId, serverValues); },
@@ -1624,14 +1649,14 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_MinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Min", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_SetGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Set", 110, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_SetSet: function (i, nameNodeId, serverValues) {
-     initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Set", undefined, nameNodeId, serverValues); 
+    initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Set", undefined, nameNodeId, serverValues);
 
-     var werte = require('./profiles/simulation/variables/Variabeln');
-     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rSetTolMaxMax.nodeId.value]=serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Set.nodeId.value]
+    var werte = require('./profiles/simulation/variables/Variabeln');
+    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rSetTolMaxMax.nodeId.value] = serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Set.nodeId.value]
 
-     // der aktuelle Set Wert von rScrewTorqueHH ist gleich das Maximum von rScrewTorqueH_Set
-     serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_Max.nodeId.value]=serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Set.nodeId.value]
-    },
+    // der aktuelle Set Wert von rScrewTorqueHH ist gleich das Maximum von rScrewTorqueH_Set
+    serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_Max.nodeId.value] = serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Set.nodeId.value]
+  },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueLGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueLSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_MaxGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Max", 100, nameNodeId, serverValues); },
@@ -1640,17 +1665,17 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_MinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Min", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_SetGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Set", 10, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_SetSet: function (i, nameNodeId, serverValues) {
-     initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Set", undefined, nameNodeId, serverValues);
-    
-    
-    
-     var werte = require('./profiles/simulation/variables/Variabeln');
+    initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Set", undefined, nameNodeId, serverValues);
 
-     // SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Set ist der untere Toleranzwert, der in der HMI verstellt werden kann. Dieser muss dann rSetTolMinMin zugewiesen werden, damit die Funktion für die farblichen Toleranzgrenzen funktionieren
-     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rSetTolMinMin.nodeId.value]=serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Set.nodeId.value]
 
-    
-    },
+
+    var werte = require('./profiles/simulation/variables/Variabeln');
+
+    // SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Set ist der untere Toleranzwert, der in der HMI verstellt werden kann. Dieser muss dann rSetTolMinMin zugewiesen werden, damit die Funktion für die farblichen Toleranzgrenzen funktionieren
+    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rSetTolMinMin.nodeId.value] = serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Set.nodeId.value]
+
+
+  },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueSetGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueSet", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueSetSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueSet", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueSet_MaxGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueSet_Max", 1, {}, i, nameNodeId, serverValues); },
@@ -1667,34 +1692,34 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMax_MinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMax_Min", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMax_SetGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMax_Set", 7, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMax_SetSet: function (i, nameNodeId, serverValues) {
-     initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMax_Set", undefined, nameNodeId, serverValues); 
-    
-     initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_Max", undefined, nameNodeId, serverValues);
-    
-     var werte = require('./profiles/simulation/variables/Variabeln');
-     
-     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMax.nodeId.value]=serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMax_Set.nodeId.value]
+    initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMax_Set", undefined, nameNodeId, serverValues);
 
-    
-    },
+    initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_Max", undefined, nameNodeId, serverValues);
+
+    var werte = require('./profiles/simulation/variables/Variabeln');
+
+    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMax.nodeId.value] = serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMax_Set.nodeId.value]
+
+
+  },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMinGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMinSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_MaxGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_Max", 7, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_MaxSet: function (i, nameNodeId, serverValues) {
-    
-     },
+
+  },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_MinGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_Min", 0, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_MinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_Min", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_SetGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_Set", 3, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_SetSet: function (i, nameNodeId, serverValues) {
-     initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_Set", undefined, nameNodeId, serverValues);
-    
-     var werte = require('./profiles/simulation/variables/Variabeln');
-     
-     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMin.nodeId.value]=serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_Set.nodeId.value]
+    initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_Set", undefined, nameNodeId, serverValues);
+
+    var werte = require('./profiles/simulation/variables/Variabeln');
+
+    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMin.nodeId.value] = serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputMin_Set.nodeId.value]
 
 
-    },
+  },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputPushButtonGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputPushButton", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputPushButtonSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputPushButton", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputPushButton_MaxGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rSpecThroughputPushButton_Max", 2, nameNodeId, serverValues); },
@@ -1721,11 +1746,11 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewRampTime_SetSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewRampTime_Set", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTimeGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTimeSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime", undefined, {}, i, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_MaxGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_Max", 20, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_MaxGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_Max", 30, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_MaxSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_Max", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_MinGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_Min", 0, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_MinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_Min", undefined, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_SetGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_Set", 10, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_SetGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_Set", 20, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_SetSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_Set", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmPzCoolGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtEmPzCool", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtEmPzCoolSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtEmPzCool", undefined, {}, i, nameNodeId, serverValues); },
@@ -2022,7 +2047,7 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rDeadZoneSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rDeadZone", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGainGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGain", 7, {}, i, nameNodeId, serverValues); }, //7
   SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGainSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGain", undefined, {}, i, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rPWeightingGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rPWeighting", 0.8, {}, i, nameNodeId, serverValues); }, 
+  SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rPWeightingGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rPWeighting", 0.8, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rPWeightingSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rPWeighting", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTdGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd", 0.01, {}, i, nameNodeId, serverValues); },// 0,01
   SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTdSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd", undefined, {}, i, nameNodeId, serverValues); },
@@ -2102,12 +2127,12 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMax_MinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMax_Min", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMax_SetGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMax_Set", 1204, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMax_SetSet: function (i, nameNodeId, serverValues) {
-     initialSingleValue("SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMax_Set", undefined, nameNodeId, serverValues);
-     var werte = require('./profiles/simulation/variables/Variabeln');
-       // Wenn in den Expert Settings der Min Wert geändert wird, so wird Wert bei Screw Speed Op Max geändert
-       serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMax.nodeId.value]=serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMax_Set.nodeId.value]
+    initialSingleValue("SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMax_Set", undefined, nameNodeId, serverValues);
+    var werte = require('./profiles/simulation/variables/Variabeln');
+    // Wenn in den Expert Settings der Min Wert geändert wird, so wird Wert bei Screw Speed Op Max geändert
+    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMax.nodeId.value] = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMax_Set.nodeId.value]
 
-     },
+  },
   SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMinGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMinSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin_MaxGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin_Max", 50, nameNodeId, serverValues); },
@@ -2116,11 +2141,11 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin_MinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin_Min", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin_SetGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin_Set", 33, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin_SetSet: function (i, nameNodeId, serverValues) {
-     initialSingleValue("SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin_Set", undefined, nameNodeId, serverValues); 
-     var werte = require('./profiles/simulation/variables/Variabeln');
-     // Wenn in den Expert Settings der Min Wert geändert wird, so wird Wert bei Screw Speed Op Min geändert
-     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMin.nodeId.value]=serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin_Set.nodeId.value]
-    },
+    initialSingleValue("SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin_Set", undefined, nameNodeId, serverValues);
+    var werte = require('./profiles/simulation/variables/Variabeln');
+    // Wenn in den Expert Settings der Min Wert geändert wird, so wird Wert bei Screw Speed Op Min geändert
+    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMin.nodeId.value] = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin_Set.nodeId.value]
+  },
   SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewTorqueNomGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewTorqueNom", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewTorqueNomSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewTorqueNom", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewTorqueNom_MaxGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewTorqueNom_Max", 99999999, nameNodeId, serverValues); },
@@ -2300,14 +2325,14 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_MinGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Min", 0, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_MinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Min", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_SetGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Set", 30, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_SetSet: function (i, nameNodeId, serverValues) { 
-    initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Set", undefined, nameNodeId, serverValues); 
-  
+  SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_SetSet: function (i, nameNodeId, serverValues) {
+    initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Set", undefined, nameNodeId, serverValues);
+
 
     var werte = require('./profiles/simulation/variables/Variabeln');
     // Wert aus der Config Expert Settings wird an den Wert im Group Board zugewiesen. 
-  serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value]= serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Set.nodeId.value]
-  
+    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value] = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Set.nodeId.value]
+
   },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udMonitTimeGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udMonitTime", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udMonitTimeSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udMonitTime", undefined, {}, i, nameNodeId, serverValues); },
@@ -2340,17 +2365,17 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_MinGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Min", 0, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_MinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Min", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_SetGet: function (i, nameNodeId, serverValues) {
-     initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Set", 15, nameNodeId, serverValues);
+    initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Set", 15, nameNodeId, serverValues);
 
-    },
+  },
   SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_SetSet: function (i, nameNodeId, serverValues) {
-     initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Set", undefined, nameNodeId, serverValues);
-    
-     var werte = require('./profiles/simulation/variables/Variabeln');
-     // Wert aus der Config wird dem Wert aus Group Board zugewiesen.
-    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime.nodeId.value]= serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Set.nodeId.value]
+    initialSingleValue("SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Set", undefined, nameNodeId, serverValues);
 
-    },
+    var werte = require('./profiles/simulation/variables/Variabeln');
+    // Wert aus der Config wird dem Wert aus Group Board zugewiesen.
+    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime.nodeId.value] = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Set.nodeId.value]
+
+  },
   SU3111_ZeExtruder_Config_udtCmInterfDriveExtGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtCmInterfDriveExt", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtCmInterfDriveExtSet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtCmInterfDriveExt", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtCmInterfDriveExt_rNomCurrentGet: function (i, nameNodeId, serverValues) { initial("SU3111_ZeExtruder_Config_udtCmInterfDriveExt_rNomCurrent", 1, {}, i, nameNodeId, serverValues); },
@@ -2606,7 +2631,7 @@ const SetGetlogic = {
   SU2110_Feeding_Hmi_udtEmFeeder_dwCtrlGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_dwCtrlSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_dwStatGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_dwStat", 68216973, {}, i, nameNodeId, serverValues); },
-  SU2110_Feeding_Hmi_udtEmFeeder_dwStatSet: function (i, nameNodeId, serverValues) {    initial("SU2110_Feeding_Hmi_udtEmFeeder_dwStat", undefined, {}, i, nameNodeId, serverValues);  },
+  SU2110_Feeding_Hmi_udtEmFeeder_dwStatSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_dwStat", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rLevelGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rLevel", 1, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rLevelSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rLevel", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rLevel_dwCtrlGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rLevel_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
@@ -2643,13 +2668,14 @@ const SetGetlogic = {
   SU2110_Feeding_Hmi_udtEmFeeder_rSpeedSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rSpeed", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwCtrlGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwCtrlSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
-  SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStatGet: function (i, nameNodeId, serverValues) {    initial("SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat", 16415, {}, i, nameNodeId, serverValues);
+  SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStatGet: function (i, nameNodeId, serverValues) {
+    initial("SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat", 16415, {}, i, nameNodeId, serverValues);
     setTimeout(() => {
       funktionen.updatedwstat(i, "SU2110_Feeding_Hmi_udtEmFeeder_rSpeed", "SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet")
     }, 1);
   },
   SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStatSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat", undefined, {}, i, nameNodeId, serverValues); },
-  SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rActGet: function (i, nameNodeId, serverValues) {    initial("SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct", 0, {}, i, nameNodeId, serverValues);  },
+  SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rActGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct", 0, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rActSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rActRecGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rActRec", 0, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rActRecSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rActRec", undefined, {}, i, nameNodeId, serverValues); },
@@ -2706,19 +2732,20 @@ const SetGetlogic = {
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rMaLimMaxSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rMaLimMax", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rMaLimMinGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rMaLimMin", 0, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rMaLimMinSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rMaLimMin", undefined, {}, i, nameNodeId, serverValues); },
-  SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMaxGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMax", 300, { }, i, nameNodeId, serverValues); },
+  SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMaxGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMax", 300, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMaxSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMax", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMinGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMin", 30, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMinSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMin", 10, {}, i, nameNodeId, serverValues); },
-  SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSetGet: function (i, nameNodeId, serverValues) {     initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet", 150, { }, i, nameNodeId, serverValues);
-            
-    },
+  SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSetGet: function (i, nameNodeId, serverValues) {
+    initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet", 150, {}, i, nameNodeId, serverValues);
+
+  },
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSetSet: function (i, nameNodeId, serverValues) {
     initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet", undefined, {}, i, nameNodeId, serverValues);
 
-    
+
     // Der Button muss auf On stehen, damit der Setter  die Funktion startet 
-    if (sharedState.feeders[i].FeederisRunning ) {
+    if (sharedState.feeders[i].FeederisRunning) {
 
       funktionen.simulateSingleMode(i, nameNodeId, serverValues)
     }
@@ -2795,7 +2822,7 @@ const SetGetlogic = {
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSetGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet", 0, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSetSet: function (i, nameNodeId, serverValues) {
     initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet", undefined, {}, i, nameNodeId, serverValues);
-      },
+  },
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSetRecGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSetRec", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSetRecSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSetRec", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSetSimActualGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSetSimActual", undefined, {}, i, nameNodeId, serverValues); },
@@ -2814,7 +2841,8 @@ const SetGetlogic = {
   SU2110_Feeding_Hmi_udtEmFeeder_rTotal_dwCtrlSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rTotal_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rTotal_dwStatGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rTotal_dwStat", 13, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_rTotal_dwStatSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rTotal_dwStat", undefined, {}, i, nameNodeId, serverValues); },
-  SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rActGet: function (i, nameNodeId, serverValues) {    initial("SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rAct", 245, { 4: 230 }, i, nameNodeId, serverValues);
+  SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rActGet: function (i, nameNodeId, serverValues) {
+    initial("SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rAct", 245, { 4: 230 }, i, nameNodeId, serverValues);
 
   },
   SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rActSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rAct", undefined, {}, i, nameNodeId, serverValues); },
@@ -2854,7 +2882,7 @@ const SetGetlogic = {
   SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_SetSet: function (i, nameNodeId, serverValues) {
     initial("SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_Set", undefined, {}, i, nameNodeId, serverValues);
     var werte = require('./profiles/simulation/variables/Variabeln');
-    
+
     // Prüft alle Feeder, welcher Modus gesetzt ist. Demtsprechend werden die Zustände gesetzt
     for (let i = 1; i <= 4; i++) {
       if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udFeederMode_Set.nodeId.value] === 2) {// Line Mode
@@ -2872,20 +2900,20 @@ const SetGetlogic = {
       }
     }
     //Wenn in der HMI "geklickt" wird, wird hier geprüft, ob ein Feeder auf Line steht, wenn ja so wird die Funktion ausgeführt
-         if (sharedState.feeders[i].FeederLineMode &&sharedState.feeders[i].FeederisOff ) { // Prüfung, ob Feeder im Line Modus ist
-        //Funktion wird nur gestartet, wenn Extruder an ist.
-        if (sharedState.ExtruderisOn && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] > 0) {
-          funktionen.simulateLineMode(i, nameNodeId, serverValues)
-                    }
+    if (sharedState.feeders[i].FeederLineMode && sharedState.feeders[i].FeederisOff) { // Prüfung, ob Feeder im Line Modus ist
+      //Funktion wird nur gestartet, wenn Extruder an ist.
+      if (sharedState.ExtruderisOn && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] > 0) {
+        funktionen.simulateLineMode(i, nameNodeId, serverValues)
+      }
     }
-     //Wenn in der HMI "geklickt" wird, wird hier geprüft, ob ein Feeder auf Single steht, wenn ja so wird die Funktion ausgeführt
-          if (sharedState.feeders[i].FeederSingleMode &&sharedState.feeders[i].FeederisOff) { // Prüfung, ob Feeder im Line Modus ist
-        //Funktion wird nur gestartet, wenn Extruder an ist.
-        if (sharedState.ExtruderisOn && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value] > 0) {
-          funktionen.simulateSingleMode(i, nameNodeId, serverValues)
-            }
+    //Wenn in der HMI "geklickt" wird, wird hier geprüft, ob ein Feeder auf Single steht, wenn ja so wird die Funktion ausgeführt
+    if (sharedState.feeders[i].FeederSingleMode && sharedState.feeders[i].FeederisOff) { // Prüfung, ob Feeder im Line Modus ist
+      //Funktion wird nur gestartet, wenn Extruder an ist.
+      if (sharedState.ExtruderisOn && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value] > 0) {
+        funktionen.simulateSingleMode(i, nameNodeId, serverValues)
+      }
     }
-    
+
     // Aufruf der Funktion für die Verteilung Prozente für den Line Mode
     funktionen.DistributionPercentages();
 
@@ -2897,7 +2925,8 @@ const SetGetlogic = {
   SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_MinGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_Min", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_MinSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_Min", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_SetGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_Set", undefined, {}, i, nameNodeId, serverValues); },
-  SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_SetSet: function (i, nameNodeId, serverValues) {    initial("SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_Set", undefined, {}, i, nameNodeId, serverValues);
+  SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_SetSet: function (i, nameNodeId, serverValues) {
+    initial("SU2110_Feeding_Hmi_udtEmFeeder_udOpMode_Set", undefined, {}, i, nameNodeId, serverValues);
 
   },
   SU2110_Feeding_Hmi_udtEmFeeder_udSetOpCountGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_udSetOpCount", undefined, {}, i, nameNodeId, serverValues); },
@@ -2906,11 +2935,13 @@ const SetGetlogic = {
   SU2110_Feeding_Hmi_udtEmFeeder_udSetOpCountResetSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_udSetOpCountReset", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStopGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop", 1, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStopSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop", undefined, {}, i, nameNodeId, serverValues); },
-  SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrlGet: function (i, nameNodeId, serverValues) {initial("SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl", undefined, {}, i, nameNodeId, serverValues);
+  SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrlGet: function (i, nameNodeId, serverValues) {
+    initial("SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl", undefined, {}, i, nameNodeId, serverValues);
 
   },
-  SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrlSet: function (i, nameNodeId, serverValues) {initial("SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl", undefined, {}, i, nameNodeId, serverValues);
-
+  SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrlSet: function (i, nameNodeId, serverValues) {
+    initial("SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl", undefined, {}, i, nameNodeId, serverValues);
+    
     var werte = require('./profiles/simulation/variables/Variabeln');
 
     // sobald ein Bit auf On gesetzt ist, wird der Status FeedingisOn auf true gesetzt
@@ -2929,24 +2960,30 @@ const SetGetlogic = {
     ) {
       sharedState.FeedingisOn = false;
     }
-
+   
     // Setzt FeederisRunning auf false, sobald der off Button gedrückt wird
     if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl.nodeId.value] === sharedState.buttonPushed.FeederOff) { // Off Button
+
       sharedState.feeders[i].FeederisRunning = false;
-      sharedState.feeders[i].FeederisOff = true;
-            serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active); // Tolerance Monitoring Off
+    sharedState.feeders[i].FeederisOff = true;
+
+      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active); // Tolerance Monitoring Off
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = 0;// Wenn der Button auf Off gedrückt, wird so fährt der Feeder runter auf Null
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = 0;// Wenn der Button auf Off gedrückt, wird so fährt der Feeder runter auf Null
-      sharedState.simulateFeederWeightisRunning=false;
+      sharedState.simulateFeederWeightisRunning = false;
+     
     }
 
     // Setzt FeederisRunning auf true, sobald der on Button gedrückt wird
     if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl.nodeId.value] === sharedState.buttonPushed.FeederOn) {  // On Button
-      sharedState.feeders[i].FeederisRunning = true;
-      sharedState.feeders[i].FeederisOff = false;
+      
+     sharedState.feeders[i].FeederisRunning = true;
+     sharedState.feeders[i].FeederisOff = false;
+      
+     
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active);// Tolerance Monitoring On
       funktionen.simulateFeederWeight(i, nameNodeId, serverValues);
-      sharedState.simulateFeederWeightisRunning=true;
+      sharedState.simulateFeederWeightisRunning = true;
 
       //Wenn FeederLineModus an ist, dann wir die entsprechende Funktion gestartet
       if (sharedState.feeders[i].FeederLineMode && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] > 0) { // Prüfen ob FeederLineMode true ist
@@ -2958,11 +2995,16 @@ const SetGetlogic = {
         funktionen.simulateSingleMode(i, nameNodeId, serverValues);
       }
     }
+   
   },
   SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStatGet: function (i, nameNodeId, serverValues) {
     initial("SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat", 1033, {}, i, nameNodeId, serverValues);
+  
+
+  
     setTimeout(function () {
       var werte = require('./profiles/simulation/variables/Variabeln');
+
       if (sharedState.ExtruderisOff) { // Main Drive is Off
         for (let i = 1; i <= 4; i++) {
           serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Feeder_Button_Lock_On_Status); // So lange Main Drive off ist, wird lock condition gesetzt (On Button vom Feeder nicht "anklickbar")
@@ -2970,30 +3012,30 @@ const SetGetlogic = {
           serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active); // Tolerance Monitoring Off
         }
         if (sharedState.feedingautostartButtons.stopFeeding) {
-          serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Status_feeder_is_On_Off); // Status feeder is off
+          serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Status_feeder_is_On_Off); // Status  auto start feeder is off (POP UP Feeding)
         }
       }
       if (sharedState.ExtruderisOn) { // Main Drive is On
         for (let i = 1; i <= 4; i++) {
-          serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Feeder_Button_Lock_On_Status); // Lock Conditin wird aufgehoben (On Button "anklickbar")
-
+          serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Feeder_Button_Lock_On_Status); // Lock Conditin wird aufgehoben (On Button vom Feeder "anklickbar")
         }
       }
 
-      // Wenn ein FeederisRunning auf true steht, so wird der on Button schwarz
-      for (let i = 1; i <= 4; i++) {
-        if (sharedState.feeders[i].FeederisRunning && !sharedState.feeders[i].FeederisOff) {
-          serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Status_feeder_is_On_Off); // Setzt Status feeder auf "on"
-        }
-      }
-
-      // Wenn ein FeederisOff auf true steht, so wird der on Button schwarz
+      // Wenn ein FeederisOff auf true steht, so wird der off Button schwarz
       for (let i = 1; i <= 4; i++) {
         if (sharedState.feeders[i].FeederisOff && !sharedState.feeders[i].FeederisRunning) {
           serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Status_feeder_is_On_Off); // Setzt Status feeder auf "off"
-          serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = 0;// Wenn der Button auf Off gedrückt, wird so fährt der Feeder runter auf Null
-          serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = 0;// Wenn der Button auf Off gedrückt, wird so fährt der Feeder runter auf Null
+          serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = 0;// Wenn der Button auf Off gedrückt, wird so fährt der Feeder Act Wert auf Null gesetzt
+          serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = 0;// Wenn der Button auf Off gedrückt, wird so fährt der Feeder Act Wert auf Null gesetzt
           serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active); // Tolerance Monitoring Off
+        }
+      }
+ 
+      // Wenn ein FeederisRunning auf true steht, so wird der on Button schwarz
+     for (let i = 1; i <= 4; i++) {
+        if (sharedState.feeders[i].FeederisRunning && !sharedState.feeders[i].FeederisOff) {
+         
+          serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Status_feeder_is_On_Off); // Setzt Status feeder auf "on"
         }
       }
 
@@ -3034,10 +3076,12 @@ const SetGetlogic = {
       sharedState.feedingautostartButtons.autoStop = true
     }
     // STOP FEEDING Button (POP Up Feeding)
-    if (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] ===sharedState.buttonPushed.Feeding_Stop_Feeding1  ||
+    if (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] === sharedState.buttonPushed.Feeding_Stop_Feeding1 ||
       serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] === sharedState.buttonPushed.Feeding_Stop_Feeding2 ||
       serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] === sharedState.buttonPushed.Feeding_Stop_Feeding3) {
       sharedState.feedingautostartButtons.stopFeeding = true;
+
+
 
       sharedState.feeders[1].FeederisOff = true;
       sharedState.feeders[2].FeederisOff = true;
@@ -3053,21 +3097,21 @@ const SetGetlogic = {
       // Das ist die Abruchbedingung für alle Funktionen, die zum Feeder gehören.
       sharedState.intervalIds.stopSimulateFeederSingle = true;
       sharedState.intervalIds.stopSimulateFeederWeight = true;
-        sharedState.intervalIds.stopSimulateThroughputRampLine = true;
-        sharedState.intervalIds.stopAdjustThroughput = true;
+      sharedState.intervalIds.stopSimulateThroughputRampLine = true;
+      sharedState.intervalIds.stopAdjustThroughput = true;
       sharedState.intervalIds.stopSimulateLineMode = true;
-       
+
       setTimeout(function () {
         sharedState.intervalIds.stopSimulateFeederSingle = false;
-          sharedState.intervalIds.stopSimulateFeederWeight = false;
-          sharedState.intervalIds.stopSimulateThroughputRampLine = false;
-          sharedState.intervalIds.stopAdjustThroughput = false;
-          sharedState.intervalIds.stopSimulateLineMode = false;
-          
+        sharedState.intervalIds.stopSimulateFeederWeight = false;
+        sharedState.intervalIds.stopSimulateThroughputRampLine = false;
+        sharedState.intervalIds.stopAdjustThroughput = false;
+        sharedState.intervalIds.stopSimulateLineMode = false;
+
       }, 1500); // 5000 Millisekunden oder 5 Sekunden
 
 
-   }
+    }
 
 
     // Das ist dazu da, damit NEW Set auf Set applied wird 
@@ -3084,7 +3128,7 @@ const SetGetlogic = {
           if (sharedState.ExtruderisOn && sharedState.feeders[i].FeederisRunning && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] > 0) {
             funktionen.simulateLineMode(i, nameNodeId, serverValues)
           }
-                 }
+        }
       }
     }
 
@@ -3117,11 +3161,8 @@ const SetGetlogic = {
         serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Status_Auto_Stop_On);
         serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Status_Auto_Start_On);
       }
-      if (sharedState.feedingautostartButtons.stopFeeding)
-        sharedState.feeders[1].FeederisRunning = false
-      sharedState.feeders[2].FeederisRunning = false
-      sharedState.feeders[3].FeederisRunning = false
-      sharedState.feeders[4].FeederisRunning = false
+
+  
     }, 1)
   },
 
@@ -3140,7 +3181,7 @@ const SetGetlogic = {
     setTimeout(() => {
       let total = 0;
       var werte = require('./profiles/simulation/variables/Variabeln');
-     
+
       for (let i = 1; i < 5; i++) {
         // Wenn ein Feeder auf Line Mode steht, so wird der Wert addiert
         if (sharedState.feeders[i].FeederLineMode) {
@@ -3201,8 +3242,8 @@ const SetGetlogic = {
         total += serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value];
 
         serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rAct.nodeId.value] = total
-            }
-    }, 1); 
+      }
+    }, 1);
 
 
   },
@@ -3218,7 +3259,7 @@ const SetGetlogic = {
   SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rOpMinGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rOpMin", 0, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rOpMinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rOpMin", undefined, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSet", 100, nameNodeId, serverValues); },
-  SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetSet: function (i, nameNodeId, serverValues) {    initial("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSet", undefined, {}, i, nameNodeId, serverValues);
+  SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetSet: function (i, nameNodeId, serverValues) {initial("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSet", undefined, {}, i, nameNodeId, serverValues);
   },
   SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetRecGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetRec", undefined, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetRecSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetRec", undefined, nameNodeId, serverValues); },
@@ -3647,12 +3688,12 @@ const SetGetlogic = {
   SU2110_Feeding_Parameter_udtEmFeeder_rMaxThroughput_MinSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Parameter_udtEmFeeder_rMaxThroughput_Min", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Parameter_udtEmFeeder_rMaxThroughput_SetGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Parameter_udtEmFeeder_rMaxThroughput_Set", 1004, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Parameter_udtEmFeeder_rMaxThroughput_SetSet: function (i, nameNodeId, serverValues) {
-     initial("SU2110_Feeding_Parameter_udtEmFeeder_rMaxThroughput_Set", undefined, {}, i, nameNodeId, serverValues); 
-    
-     var werte = require('./profiles/simulation/variables/Variabeln');
-     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMax.nodeId.value]= serverValues[werte.data[i].SU2110_Feeding_Parameter_udtEmFeeder_rMaxThroughput_Set.nodeId.value]
+    initial("SU2110_Feeding_Parameter_udtEmFeeder_rMaxThroughput_Set", undefined, {}, i, nameNodeId, serverValues);
 
-    },
+    var werte = require('./profiles/simulation/variables/Variabeln');
+    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMax.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Parameter_udtEmFeeder_rMaxThroughput_Set.nodeId.value]
+
+  },
   SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughputGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughput", 1, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughputSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughput", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughput_MaxGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughput_Max", 150, {}, i, nameNodeId, serverValues); },
@@ -3661,12 +3702,12 @@ const SetGetlogic = {
   SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughput_MinSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughput_Min", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughput_SetGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughput_Set", 0, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughput_SetSet: function (i, nameNodeId, serverValues) {
-     initial("SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughput_Set", undefined, {}, i, nameNodeId, serverValues); 
-    
-     var werte = require('./profiles/simulation/variables/Variabeln');
-     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMin.nodeId.value]= serverValues[werte.data[i].SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughput_Set.nodeId.value]
-    
-    },
+    initial("SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughput_Set", undefined, {}, i, nameNodeId, serverValues);
+
+    var werte = require('./profiles/simulation/variables/Variabeln');
+    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMin.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughput_Set.nodeId.value]
+
+  },
   SU2110_Feeding_Parameter_udtEmFeeder_rPurgeThroughputPercGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Parameter_udtEmFeeder_rPurgeThroughputPerc", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Parameter_udtEmFeeder_rPurgeThroughputPercSet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Parameter_udtEmFeeder_rPurgeThroughputPerc", undefined, {}, i, nameNodeId, serverValues); },
   SU2110_Feeding_Parameter_udtEmFeeder_rPurgeThroughputPerc_MaxGet: function (i, nameNodeId, serverValues) { initial("SU2110_Feeding_Parameter_udtEmFeeder_rPurgeThroughputPerc_Max", 1, {}, i, nameNodeId, serverValues); },
@@ -3969,7 +4010,7 @@ const SetGetlogic = {
         serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active); // Tolerance Monitoring On
       }
     }
-    if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwCtrl.nodeId.value] ===sharedState.buttonPushed.StartWizzard_coolDown) { // Cool Down Button Start Wizzard
+    if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwCtrl.nodeId.value] === sharedState.buttonPushed.StartWizzard_coolDown) { // Cool Down Button Start Wizzard
       serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_CoolDown_Button);// Macht den Cool down Button "an" 8(schwarz geht "aus")
       sharedState.HeatingisOn = false;
       sharedState.CoolingisOn = true
@@ -3981,7 +4022,7 @@ const SetGetlogic = {
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_CoolDown_Button);// Macht den Cool down Button "an" 8(schwarz geht "aus")
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_Start_Button); //Setz den start Button, damit er "Schwarz" wird 
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_ShutDown_Button);// Setzt den Shut Down Button, damit er "schwarz" wird
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.value] &= ~((1 <<sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active));// Tolerance Monitoring On
+        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.value] &= ~((1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active));// Tolerance Monitoring On
       }
     }
     if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwCtrl.nodeId.value] === sharedState.buttonPushed.StartWizzard_shutDown) { // Shutdown Button Start Wizzard
@@ -3993,7 +4034,7 @@ const SetGetlogic = {
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_ShutDown_Button);
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_Start_Button);
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_CoolDown_Button);
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.value] &= ~((1 <<sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active));
+        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.value] &= ~((1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active));
       }
     }
   },
@@ -4152,8 +4193,9 @@ const SetGetlogic = {
   SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rOpMaxSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rOpMax", undefined, {}, i, nameNodeId, serverValues); },
   SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rOpMinGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rOpMin", 65, {}, i, nameNodeId, serverValues); },
   SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rOpMinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rOpMin", undefined, {}, i, nameNodeId, serverValues); },
-  SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSetGet: function (i, nameNodeId, serverValues) {    initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet", 80, nameNodeId, serverValues);
-   
+  SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSetGet: function (i, nameNodeId, serverValues) {
+    initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet", 80, nameNodeId, serverValues);
+
   },
   SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSetSet: function (i, nameNodeId, serverValues) {
     initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet", undefined, nameNodeId, serverValues);
@@ -4163,13 +4205,13 @@ const SetGetlogic = {
 
     for (let i = 1; i <= 4; i++) {
       if (sharedState.feeders[i].FeederLineMode) {
-       
+
         // Nehmen Sie den prozentualen Wert
         let percentage = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] / 100;
 
         // Multiplizieren Sie den gesetzten Wert mit dem prozentualen Wert
         serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value] = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value] * percentage;
-       
+
       }
     }
 
@@ -4186,57 +4228,58 @@ const SetGetlogic = {
   SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSetTolMinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSetTolMin", undefined, nameNodeId, serverValues); },
   SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSetTolMinMinGet: function (i, nameNodeId, serverValues) { initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSetTolMinMin", 0, nameNodeId, serverValues); },
   SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSetTolMinMinSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSetTolMinMin", undefined, nameNodeId, serverValues); },
-  SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrlGet: function (i, nameNodeId, serverValues) {    initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl", undefined, {}, i, nameNodeId, serverValues);
+  SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrlGet: function (i, nameNodeId, serverValues) {
+    initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl", undefined, {}, i, nameNodeId, serverValues);
 
   },
   SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrlSet: function (i, nameNodeId, serverValues) {
     initial("SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl", undefined, {}, i, nameNodeId, serverValues);
     var werte = require('./profiles/simulation/variables/Variabeln');
-       
+
     // Zustand von FeederRampMode wird gesetzt
     if (sharedState.ExtruderisOn && serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl.nodeId.value] === sharedState.buttonPushed.LineRamp_On) { // Ramp Button On
-      sharedState.FeederRampModeisOn=true;
-      sharedState.FeederRampModeisOff=false;
+      sharedState.FeederRampModeisOn = true;
+      sharedState.FeederRampModeisOff = false;
 
-      for (let i=1; i<=4;i++){
-        if(sharedState.feeders[i].FeederLineMode){
-                  funktionen.simulateLineModeRamp(i, nameNodeId, serverValues)
+      for (let i = 1; i <= 4; i++) {
+        if (sharedState.feeders[i].FeederLineMode) {
+          funktionen.simulateLineModeRamp(i, nameNodeId, serverValues)
         }
-            }
-          }
-// Zustand von FeederRampMode wird gesetzt
+      }
+    }
+    // Zustand von FeederRampMode wird gesetzt
     if (sharedState.ExtruderisOn && serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl.nodeId.value] === sharedState.buttonPushed.LineRamp_Off) { // Ramp Button Off
-      sharedState.FeederRampModeisOn=false;
-      sharedState.FeederRampModeisOff=true;
-             }
-        
+      sharedState.FeederRampModeisOn = false;
+      sharedState.FeederRampModeisOff = true;
+    }
+
   },
   SU1000_Line_Hmi_udtLm_udtLineRamp_dwStatGet: function (i, nameNodeId, serverValues) {
     initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat", 13, nameNodeId, serverValues);
 
-  setTimeout(() => {
+    setTimeout(() => {
       var werte = require('./profiles/simulation/variables/Variabeln');
-      if (!sharedState.feeders[1].FeederLineMode && 
+      if (!sharedState.feeders[1].FeederLineMode &&
         !sharedState.feeders[2].FeederLineMode &&
         !sharedState.feeders[3].FeederLineMode &&
         !sharedState.feeders[4].FeederLineMode) {
         // Bit zurücksetzen, wenn keiner der Feeder auf LineMode ist
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_RampOn_Button);
-    } else {
+      } else {
         // Bit setzen, wenn mindestens einer der Feeder auf LineMode ist
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_RampOn_Button);
-    }
-    
+      }
+
       // Wenn FeederRamp Mode aktiv ist, so wird on Button grau
       if (sharedState.FeederRampModeisOn) {
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << 2) 
-       // serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << 4)
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << 2)
+        // serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << 4)
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << 9)
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << 10)
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << 11)
       }
       // Wenn FeederRamp Mode deaktiviert ist, so wird on Button wieder "anklickbar"
-    if (sharedState.FeederRampModeisOff) {
+      if (sharedState.FeederRampModeisOff) {
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] &= ~((1 << 2) | (1 << 4) | (1 << 9) | (1 << 10) | (1 << 11));
       }
     }, 1);
@@ -4384,9 +4427,11 @@ const SetGetlogic = {
 
   },
   SU3100_Plastification_Hmi_udtPc_udtModState_dwUnitNavigationStatusSet: function (i, nameNodeId, serverValues) { initialSingleValue("SU3100_Plastification_Hmi_udtPc_udtModState_dwUnitNavigationStatus", undefined, nameNodeId, serverValues); },
-  SU3100_Plastification_Hmi_udtPc_udtModState_uiActOpModeGet: function (i, nameNodeId, serverValues) {    initialSingleValue("SU3100_Plastification_Hmi_udtPc_udtModState_uiActOpMode", undefined, nameNodeId, serverValues);
+  SU3100_Plastification_Hmi_udtPc_udtModState_uiActOpModeGet: function (i, nameNodeId, serverValues) {
+    initialSingleValue("SU3100_Plastification_Hmi_udtPc_udtModState_uiActOpMode", undefined, nameNodeId, serverValues);
   },
-  SU3100_Plastification_Hmi_udtPc_udtModState_uiActOpModeSet: function (i, nameNodeId, serverValues) {    initialSingleValue("SU3100_Plastification_Hmi_udtPc_udtModState_uiActOpMode", undefined, nameNodeId, serverValues);
+  SU3100_Plastification_Hmi_udtPc_udtModState_uiActOpModeSet: function (i, nameNodeId, serverValues) {
+    initialSingleValue("SU3100_Plastification_Hmi_udtPc_udtModState_uiActOpMode", undefined, nameNodeId, serverValues);
   },
   SU3100_Plastification_Hmi_udtPc_wMessageGet: function (i, nameNodeId, serverValues) { initial("SU3100_Plastification_Hmi_udtPc_wMessage", undefined, {}, i, nameNodeId, serverValues); },
   SU3100_Plastification_Hmi_udtPc_wMessageSet: function (i, nameNodeId, serverValues) { initial("SU3100_Plastification_Hmi_udtPc_wMessage", undefined, {}, i, nameNodeId, serverValues); },
@@ -4457,14 +4502,14 @@ const SetGetlogic = {
   SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_dwStatGet: function (i, nameNodeId, serverValues) { initial("SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_dwStat", 13, {}, i, nameNodeId, serverValues); },
   SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_dwStatSet: function (i, nameNodeId, serverValues) { initial("SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_dwStat", undefined, {}, i, nameNodeId, serverValues); },
   SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_rActGet: function (i, nameNodeId, serverValues) {
-     initial("SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_rAct", 0, {}, i, nameNodeId, serverValues);
-    
-     setTimeout(function() {
+    initial("SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_rAct", 0, {}, i, nameNodeId, serverValues);
+
+    setTimeout(function () {
       var werte = require('./profiles/simulation/variables/Variabeln');
-     serverValues[werte.data[1].SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_rAct.nodeId.value]= serverValues[werte.data[1].SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_rAct.nodeId.value]*1.1235
+      serverValues[werte.data[1].SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_rAct.nodeId.value] = serverValues[werte.data[1].SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_rAct.nodeId.value] * 1.1235
     }, 1);
 
-    },
+  },
   SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_rActSet: function (i, nameNodeId, serverValues) { initial("SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_rAct", undefined, {}, i, nameNodeId, serverValues); },
   SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_rActRecGet: function (i, nameNodeId, serverValues) { initial("SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_rActRec", 1, {}, i, nameNodeId, serverValues); },
   SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_rActRecSet: function (i, nameNodeId, serverValues) { initial("SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_rActRec", undefined, {}, i, nameNodeId, serverValues); },
@@ -4509,14 +4554,14 @@ const SetGetlogic = {
   SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_dwStatGet: function (i, nameNodeId, serverValues) { initial("SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_dwStat", 13, {}, i, nameNodeId, serverValues); },
   SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_dwStatSet: function (i, nameNodeId, serverValues) { initial("SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_dwStat", undefined, {}, i, nameNodeId, serverValues); },
   SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_rActGet: function (i, nameNodeId, serverValues) {
-     initial("SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_rAct", 20, {}, i, nameNodeId, serverValues); 
-    
-     setTimeout(function() {
-     var werte = require('./profiles/simulation/variables/Variabeln');
-     serverValues[werte.data[1].SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_rAct.nodeId.value]=serverValues[werte.data[13].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp.rAct.nodeId.value]
+    initial("SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_rAct", 20, {}, i, nameNodeId, serverValues);
+
+    setTimeout(function () {
+      var werte = require('./profiles/simulation/variables/Variabeln');
+      serverValues[werte.data[1].SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_rAct.nodeId.value] = serverValues[werte.data[13].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp.rAct.nodeId.value]
     }, 1);
-     
-    },
+
+  },
   SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_rActSet: function (i, nameNodeId, serverValues) { initial("SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_rAct", undefined, {}, i, nameNodeId, serverValues); },
   SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_rActRecGet: function (i, nameNodeId, serverValues) { initial("SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_rActRec", 1, {}, i, nameNodeId, serverValues); },
   SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_rActRecSet: function (i, nameNodeId, serverValues) { initial("SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_rActRec", undefined, {}, i, nameNodeId, serverValues); },
@@ -5658,7 +5703,8 @@ const SetGetlogic = {
   SU3131_Zsa_Hmi_udtUm_rScrewTorque_rSetTolMinMinGet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_rScrewTorque_rSetTolMinMin", undefined, {}, i, nameNodeId, serverValues); },
   SU3131_Zsa_Hmi_udtUm_rScrewTorque_rSetTolMinMinSet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_rScrewTorque_rSetTolMinMin", undefined, {}, i, nameNodeId, serverValues); },
   SU3131_Zsa_Hmi_udtUm_udtButtonStartStopGet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_udtButtonStartStop", undefined, {}, i, nameNodeId, serverValues); },
-  SU3131_Zsa_Hmi_udtUm_udtButtonStartStopSet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_udtButtonStartStop", undefined, {}, i, nameNodeId, serverValues);
+  SU3131_Zsa_Hmi_udtUm_udtButtonStartStopSet: function (i, nameNodeId, serverValues) {
+    initial("SU3131_Zsa_Hmi_udtUm_udtButtonStartStop", undefined, {}, i, nameNodeId, serverValues);
 
   },
   SU3131_Zsa_Hmi_udtUm_udtButtonStartStop_dwCtrlGet: function (i, nameNodeId, serverValues) { initial("SU3131_Zsa_Hmi_udtUm_udtButtonStartStop_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },

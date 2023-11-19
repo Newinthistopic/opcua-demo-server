@@ -844,11 +844,11 @@ function PIDSHUTDOWN(i, nameNodeId, serverValues) {
 
 
 function simulateScrewSpeed(i, nameNodeId, serverValues) {
-
- 
+  var werte = require('./profiles/simulation/variables/Variabeln');
+  const x0 = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value]; // Startwert
   function simulateScrewRamp() {
-    var werte = require('./profiles/simulation/variables/Variabeln');
-    let x0 = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value]; // Startwert
+    
+    
     let xf = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSet.nodeId.value]; // Endwert bzw. Setwert
     let rampTime = serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewRampTime_Set.nodeId.value];
     let roundness = serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewRampRoundTime_Set.nodeId.value];
@@ -871,7 +871,6 @@ if(sharedState.SpeedCalculationSpecRateisOn){
       xf = Durchsatzgesamt / specificRate_Set;
     }
 }
-
  
     const normalizedTime = t;  // Da t von 0 bis 1 geht, ist es bereits normalisiert
     let currentSpeed = x0 + (xf - x0) / (1 + Math.exp(-roundness * (normalizedTime - 0.5)));
@@ -884,7 +883,6 @@ if(sharedState.SpeedCalculationSpecRateisOn){
     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] = prozentDrehmoment;
 
    
-
     // Drehmomentdichte berechnen
     let torqueDensity = drehmoment / screwVolume;
     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_rAct.nodeId.value] = torqueDensity;
