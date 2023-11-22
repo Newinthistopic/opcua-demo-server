@@ -1,5 +1,4 @@
-console.log("<<< WebIQ OPC UA Server without MQTT >>>");
-console.log("(c) 2019 Smart HMI GmbH");
+console.log("OPC UA Server  ");
 console.log("-----------------------------------------------------------");
 console.log('Starting... please wait!');
 
@@ -15,55 +14,18 @@ const certificateManager = new OPCUACertificateManager({
     rootFolder: "./certs",
 });
 
-// Select profile
-var profile = 'default';
-if (process.argv.length > 2) {
-    profile = process.argv[2];
-}
-var profileDir = __dirname + '/profiles/' + profile;
+const path = require('path');
 
-if (!fs.existsSync(profileDir)) {
-    console.log('ERROR: Profile does not exist: "' + profile + '" dir: ' + profileDir);
-    process.exit(1);
-}
-
-console.log('Using profile "' + profile + '"');
+// Pfad zur Konfigurationsdatei
+var configPath = path.join(__dirname, 'profiles', 'simulation', 'config.json');
+var config = require(configPath);
 
 // Functions
 const opcua = require("node-opcua");
-var config = require(profileDir + '/config.json');
-const jp = require('jsonpath');
-var batchVars = null;
-
-//console.log(batchVars);
 
 // Settings / vars
-var verbose = config.verbose;
+var verbose = true;
 var serverValues = {}; // Holds all server values
-const methodConfigDir = profileDir + '/methods';
-const varConfigDir = profileDir + '/variables';
-
-// Parse config files (JS)
-let methodFiles = [];
-let varFiles = [];
-if (fs.existsSync(methodConfigDir)) {
-    var files = fs.readdirSync(methodConfigDir);
-    files.forEach(file => {
-        if (file.match(/\.js$/)) {
-            methodFiles.push(file);
-        }
-    });
-}
-
-if (fs.existsSync(varConfigDir)) {
-    files = fs.readdirSync(varConfigDir);
-    files.forEach(file => {
-        if (file.match(/\.js$/)) {
-            varFiles.push(file);
-        }
-    });
-}
-
 
 
 (async () => {
@@ -86,14 +48,11 @@ if (fs.existsSync(varConfigDir)) {
             }
         );
 
-
         await server.initialize();
-        if (verbose) console.log("[OK] OPC UA: Server created");
-
+        console.log("[OK] OPC UA: Server created");
 
         const addressSpace = server.engine.addressSpace;
         const namespace = addressSpace?.getOwnNamespace()
-
 
         const namespaceUri2 = "http://mynamespace-2/UA/";
         const namespace2 = addressSpace.registerNamespace(namespaceUri2);
@@ -130,34 +89,16 @@ if (fs.existsSync(varConfigDir)) {
             device: device,
             serverValues: serverValues,
             verbose: verbose
-
-
-
         };
 
         /*****************/
         /*** VARIABLES ***/
         /*****************/
 
-        var myModule = require('./profiles/simulation/variables/Variabeln')
-
-
-       
-
-        myModule.run1(addressSpace, device, opcua, verbose, serverValues)
-            
-        /* if (varFiles.length) {
-                     if (verbose) console.log("[..] OPC UA: Creating variables from " + varFiles.length + ' external files');
-                     varFiles.forEach(function (file) {
-                         var module = require(profileDir + '/variables/' + file);
-                         var varName = file.replace(/\.js$/);
-                         serverValues[varName] = module.run1(addressSpace, device, opcua, verbose, serverValues);
-                     });
-                     if (verbose) console.log("[OK] OPC UA: Variables created");
-                 }
-                 */
-
-
+       var myModule = require('./profiles/simulation/variables/Variabeln')
+      
+       myModule.run1(addressSpace, device, opcua, verbose, serverValues)
+                  
         /********************/
         /*** START SERVER ***/
         /********************/
@@ -167,7 +108,7 @@ if (fs.existsSync(varConfigDir)) {
         // Replace host name by local ip
         endpointUrl = endpointUrl.replace(/^opc.tcp:\/\/([^:]+)/, "opc.tcp://127.0.0.1");
 
-        if (verbose) console.log("[OK] OPC UA: Listening on port " + server.endpoints[0].port);
+         console.log("[OK] OPC UA: Listening on port " + server.endpoints[0].port);
         console.log('\nPlease use these values to connect to this server via the IO Manager in WebIQ Designer:');
         console.log("Endpoint URL: ", endpointUrl);
         console.log("Namespace:     " + namespace.namespaceUri);
@@ -176,7 +117,6 @@ if (fs.existsSync(varConfigDir)) {
         console.log("[ERROR]");
         console.log(err);
     }
-
 
 })();
 
