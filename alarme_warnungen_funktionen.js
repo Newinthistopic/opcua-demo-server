@@ -1,4 +1,4 @@
-var sharedState = require('./sharedState');
+var sharedState = require('./Zustände');
 const funktionen = require('./funktionen');
 
 

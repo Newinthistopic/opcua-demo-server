@@ -1,8 +1,8 @@
 var {serverValues, opcua, namespace3} = require('./../opcua-demo-server/server');
 
-var sharedState = require('./sharedState');
+var sharedState = require('./Zustände');
 
-function createCustomVariable(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
+function createCustomVariableFloat(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
   var nodeId = `"ns=3;s=\"${part1}\".\"${part2}\"`;
 
   if (i !== undefined) {
@@ -59,15 +59,12 @@ function createCustomVariableString(i, variableName, componentOf, browseName, pa
   if (i !== undefined) {
     nodeId += `[${i}]`;
   }
-
   if (part3) {
     nodeId += `.\"${part3}\"`;
   }
-
   if (part4) {
     nodeId += `.\"${part4}\"`;
   }
-
   if (part5) {
     nodeId += `.\"${part5}\"`;
   }
@@ -80,16 +77,13 @@ function createCustomVariableString(i, variableName, componentOf, browseName, pa
     value: {
       get: function () {
         var nameNodeId = {};
-
         nameNodeId[variableName + "NodeId"] = this.nodeId.value;
-
         if (customGetLogic) {
           customGetLogic(i, nameNodeId, serverValues);
         }
         return new opcua.Variant({ dataType: opcua.DataType.String, value: serverValues[nameNodeId[variableName + "NodeId"]] });
       },
       set: function (variant) {
-
         return opcua.StatusCodes.Good;
       }
     },
@@ -97,8 +91,7 @@ function createCustomVariableString(i, variableName, componentOf, browseName, pa
   return newVariable[variableName];
 }
 
-
-function Uint16createCustomVariable(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
+function createCustomVariableUint16(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
   var nodeId = `"ns=3;s=\"${part1}\".\"${part2}\"`;
 
   if (i !== undefined) {
@@ -196,7 +189,7 @@ function createVariableforTime(i, variableName, componentOf, browseName, nodeId,
 
 
 
-function Uint32createCustomVariable(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
+function createCustomVariableUint32(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
   var nodeId = `"ns=3;s=\"${part1}\".\"${part2}\"`;
 
   if (i !== undefined) {
@@ -246,37 +239,28 @@ function Uint32createCustomVariable(i, variableName, componentOf, browseName, pa
         if (customSetLogic) {
           customSetLogic(i, nameNodeId, serverValues);
         }
-
         return opcua.StatusCodes.Good;
       }
     },
   });
-
-  // Zustand der zurückgegebenen Variable setzen
-
-
   return newVariable[variableName];
 }
 
-function Int32createCustomVariable(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
+function createCustomVariableInt32(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
   var nodeId = `"ns=3;s=\"${part1}\".\"${part2}\"`;
 
   if (i !== undefined) {
     nodeId += `[${i}]`;
   }
-
   if (part3) {
     nodeId += `.\"${part3}\"`;
   }
-
   if (part4) {
     nodeId += `.\"${part4}\"`;
   }
-
   if (part5) {
     nodeId += `.\"${part5}\"`;
   }
-
   var newVariable = {};
 
   newVariable[variableName] = namespace3.addVariable({
@@ -308,20 +292,15 @@ function Int32createCustomVariable(i, variableName, componentOf, browseName, par
         if (customSetLogic) {
           customSetLogic(i, nameNodeId, serverValues);
         }
-
         return opcua.StatusCodes.Good;
       }
     },
   });
-
-  // Zustand der zurückgegebenen Variable setzen
-
-
   return newVariable[variableName];
 }
 
 
-function Uint64createCustomVariable(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
+function createCustomVariableUint64(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
   var nodeId = `"ns=3;s=\"${part1}\".\"${part2}\"`;
 
   if (i !== undefined) {
@@ -462,7 +441,7 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
     if (rAct > (rSet - rSetTolMaxMax) && wasBelow100[i] && !hasEierUhrFinished[i]) {
 
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 15)  // BIT 15 Show remain time on hmi
-      startEierUhr(i, function (index) {
+      startTimerIconStartWizzard(i, function (index) {
         serverValues[werte.data[index].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 6)  // Bit 6 stellt Icon auf Ready
       });
     }
@@ -553,7 +532,7 @@ let intervalEieruhrIds = [];
 let isEierUhrRunning = Array(14).fill(false);  // Neue Variable als Array
 let hasEierUhrFinished = Array(14).fill(false);  // Array, um den abgeschlossenen Status der Eieruhr für jeden Index zu verfolgen
 
-function startEierUhr(i, callback) {
+function startTimerIconStartWizzard(i, callback) {
   var werte = require('./profiles/simulation/variables/Variablen');
 
   // Überprüfen, ob bereits ein Intervall für den gegebenen Index i läuft
@@ -658,9 +637,6 @@ u_begrenzt = Math.max(-100, Math.min(u, 100));
 
 // Wert wird der HMI zugewiesen
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = u_begrenzt
-
-
- 
 
       // 1.Glied PT1 der Reglestrecke
       let dy1 = (K1 * u - rAct1) / T1 * dt;
@@ -902,12 +878,12 @@ if(sharedState.SpeedCalculationSpecRateisOn){
 let intervalIds = {
   simulateFeederSingle: [],
   simulateFeederLine: [],
-  simulateFeederWeight: [],
+  simulateFeederFillLevel: [],
   startsimulateLineModeRamp: [],
   updateFeederWeight: []
 };
 
-function simulateSingleMode(i, nameNodeId, serverValues) { // Single Mode
+function simulateFeederSingleMode(i, nameNodeId, serverValues) { // Single Mode
   console.log("startfeeder")
   var werte = require('./profiles/simulation/variables/Variablen');
 
@@ -941,7 +917,6 @@ function simulateSingleMode(i, nameNodeId, serverValues) { // Single Mode
       currentThroughput = setThroughput;
       clearInterval(intervalIds.simulateFeederSingle[i]);
     }
-
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput;
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = currentThroughput;
   }
@@ -951,7 +926,7 @@ function simulateSingleMode(i, nameNodeId, serverValues) { // Single Mode
 }
 
 //feeder Line Modus
-function simulateLineMode(i, nameNodeId, serverValues) {
+function simulateFeederLineMode(i, nameNodeId, serverValues) {
   const werte = require('./profiles/simulation/variables/Variablen');
 
   // Der Gesamtdurchsatz für die gesamte Linie
@@ -1008,7 +983,7 @@ function simulateLineMode(i, nameNodeId, serverValues) {
 }
 
 
-function simulateFeederWeight(i, nameNodeId, serverValues) {
+function simulateFeederFillLevel(i, nameNodeId, serverValues) {
 
   var werte = require('./profiles/simulation/variables/Variablen');
 
@@ -1048,8 +1023,8 @@ function simulateFeederWeight(i, nameNodeId, serverValues) {
   }
 
 
-function simulateLineModeRamp(i, nameNodeId, serverValues) {
-  console.log(" in der funktion simulateLineModeRamp")
+function simulateFeederLineModeRamp(i, nameNodeId, serverValues) {
+  console.log(" in der funktion simulateFeederLineModeRamp")
   var werte = require('./profiles/simulation/variables/Variablen');
 
   // Zieldurchsatz kg/h bestimmen anhand vom Throughput Set
@@ -1114,7 +1089,7 @@ function simulateLineModeRamp(i, nameNodeId, serverValues) {
 
 
 // Funktion zum Verteilen Prozente
-function DistributionPercentages() {
+function PercentagedistributionFeederLineMode() {
   let sum = 0
   var werte = require('./profiles/simulation/variables/Variablen');
 
@@ -1171,8 +1146,8 @@ function DistributionPercentages() {
   }
 }
 
-function OilLubWatchFollowUp(i, nameNodeId, serverValues) {
-  console.log("In der Funktion OilLubWatchFollowUp");
+function GearboxOilLubricationFollowUpTimer(i, nameNodeId, serverValues) {
+  console.log("In der Funktion GearboxOilLubricationFollowUpTimer");
   var werte = require('./profiles/simulation/variables/Variablen');
 
   // Startwert aus Expert Settings (Config)
@@ -1196,8 +1171,8 @@ function OilLubWatchFollowUp(i, nameNodeId, serverValues) {
 }
 
 
-function OilLubWatch(i, nameNodeId, serverValues) {
-  console.log("In der Funktion OilLubWatch");
+function GearboxOilLubricationTimerPreRun(i, nameNodeId, serverValues) {
+  console.log("In der Funktion GearboxOilLubricationTimerPreRun");
   var werte = require('./profiles/simulation/variables/Variablen');
 
   // Startwert aus dem ServerValues-Objekt abrufen
@@ -1408,28 +1383,28 @@ class StateMachineNavigationBar {
 
 
 module.exports = {
-  createCustomVariable: createCustomVariable,
+  createCustomVariableFloat: createCustomVariableFloat,
   initial: initial,
   createVariableforTime: createVariableforTime,
-  Uint32createCustomVariable: Uint32createCustomVariable,
-  Uint64createCustomVariable: Uint64createCustomVariable,
-  Uint16createCustomVariable: Uint16createCustomVariable,
-  Int32createCustomVariable: Int32createCustomVariable,
+  createCustomVariableUint32: createCustomVariableUint32,
+  createCustomVariableUint64: createCustomVariableUint64,
+  createCustomVariableUint16: createCustomVariableUint16,
+  createCustomVariableInt32: createCustomVariableInt32,
   initialSingleValue: initialSingleValue,
   PIDUP: PIDUP,
   PIDCOOLDOWN: PIDCOOLDOWN,
   simulateScrewSpeed: simulateScrewSpeed,
   PIDSHUTDOWN: PIDSHUTDOWN,
   createCustomVariableString: createCustomVariableString,
-  simulateSingleMode: simulateSingleMode,
-  simulateFeederWeight: simulateFeederWeight,
-  OilLubWatch: OilLubWatch,
-  OilLubWatchFollowUp: OilLubWatchFollowUp,
-  simulateLineMode: simulateLineMode,
+  simulateFeederSingleMode: simulateFeederSingleMode,
+  simulateFeederFillLevel: simulateFeederFillLevel,
+  GearboxOilLubricationTimerPreRun: GearboxOilLubricationTimerPreRun,
+  GearboxOilLubricationFollowUpTimer: GearboxOilLubricationFollowUpTimer,
+  simulateFeederLineMode: simulateFeederLineMode,
   updatedwstat: updatedwstat,
-  simulateLineModeRamp: simulateLineModeRamp,
+  simulateFeederLineModeRamp: simulateFeederLineModeRamp,
   dwStatStartWizzard: dwStatStartWizzard,
-  DistributionPercentages: DistributionPercentages,
+  PercentagedistributionFeederLineMode: PercentagedistributionFeederLineMode,
   StateMachine: StateMachine,
   StateMachineNavigationBar: StateMachineNavigationBar
 }

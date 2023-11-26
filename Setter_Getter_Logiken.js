@@ -1,6 +1,8 @@
 const funktionen = require('./../opcua-demo-server/funktionen'); 
-const alarms_warnings_funktionen = require('./alarms_warnings_funktionen'); 
-var sharedState = require('./../opcua-demo-server/sharedState');
+
+const alarme_warnungen_funktionen = require('./alarme_warnungen_funktionen'); 
+
+var sharedState = require('./Zustände');
 
 
 
@@ -117,7 +119,7 @@ const SetGetlogic = {
         // Setzen des Warnungsbits
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] |= (1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning_Torque_too_low_shutdown_timer_started);
 sharedState.status_Alarms_Warnings.ExtruderDriveControl.status_Warning_Torque_too_low_shutdown_timer_started=true;
-alarms_warnings_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues);
+alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues);
       } else {
         // Zurücksetzen des Warnungsbits
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] &= ~(1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning_Torque_too_low_shutdown_timer_started) && sharedState.ExtruderisOn;
@@ -957,7 +959,7 @@ console.log("fsdfsdfsd")
     if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwCtrl.nodeId.value] === sharedState.buttonPushed.GearOilLubricationOn) { // Start Button drücken
       sharedState.GearOilLubricationOn = true;
       sharedState.GearOilLubricationOff = false;
-      funktionen.OilLubWatch(i, nameNodeId, serverValues);
+      funktionen.GearboxOilLubricationTimerPreRun(i, nameNodeId, serverValues);
     }
   },
   SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStatGet: function (i, nameNodeId, serverValues) {
@@ -969,7 +971,7 @@ console.log("fsdfsdfsd")
 
         if (sharedState.GearOilRemainPreRunTimeExpired) { // Wenn die Uhr von RemainPreRunTime abgelaufen ist, so startet die Remain TimeFollowUp
           console.log("hahahahahahahahahahha")
-          funktionen.OilLubWatchFollowUp(i, nameNodeId, serverValues)
+          funktionen.GearboxOilLubricationFollowUpTimer(i, nameNodeId, serverValues)
           sharedState.GearOilRemainPreRunTimeExpired = false; // Setzt die RemainPreRunTime wieder auf false, damit der Startwert wieder angezeigt wird
         }
       }
@@ -2735,7 +2737,7 @@ console.log("fsdfsdfsd")
     // Der Button muss auf On stehen, damit der Setter  die Funktion startet 
     if (sharedState.feeders[i].FeederisRunning) {
 
-      funktionen.simulateSingleMode(i, nameNodeId, serverValues)
+      funktionen.simulateFeederSingleMode(i, nameNodeId, serverValues)
     }
   },
   SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSetRecGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSetRec", 0, {}, i, nameNodeId, serverValues); },
@@ -2891,19 +2893,19 @@ console.log("fsdfsdfsd")
     if (sharedState.feeders[i].FeederLineMode && sharedState.feeders[i].FeederisOff) { // Prüfung, ob Feeder im Line Modus ist
       //Funktion wird nur gestartet, wenn Extruder an ist.
       if (sharedState.ExtruderisOn && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] > 0) {
-        funktionen.simulateLineMode(i, nameNodeId, serverValues)
+        funktionen.simulateFeederLineMode(i, nameNodeId, serverValues)
       }
     }
     //Wenn in der HMI "geklickt" wird, wird hier geprüft, ob ein Feeder auf Single steht, wenn ja so wird die Funktion ausgeführt
     if (sharedState.feeders[i].FeederSingleMode && sharedState.feeders[i].FeederisOff) { // Prüfung, ob Feeder im Line Modus ist
       //Funktion wird nur gestartet, wenn Extruder an ist.
       if (sharedState.ExtruderisOn && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value] > 0) {
-        funktionen.simulateSingleMode(i, nameNodeId, serverValues)
+        funktionen.simulateFeederSingleMode(i, nameNodeId, serverValues)
       }
     }
 
     // Aufruf der Funktion für die Verteilung Prozente für den Line Mode
-    funktionen.DistributionPercentages();
+    funktionen.PercentagedistributionFeederLineMode();
 
   },
   SU2110_Feeding_Hmi_udtEmFeeder_udOpModeGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU2110_Feeding_Hmi_udtEmFeeder_udOpMode", 0, {}, i, nameNodeId, serverValues); },
@@ -2970,17 +2972,17 @@ console.log("fsdfsdfsd")
       
      
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active);// Tolerance Monitoring On
-      funktionen.simulateFeederWeight(i, nameNodeId, serverValues);
+      funktionen.simulateFeederFillLevel(i, nameNodeId, serverValues);
       sharedState.simulateFeederWeightisRunning = true;
 
       //Wenn FeederLineModus an ist, dann wir die entsprechende Funktion gestartet
       if (sharedState.feeders[i].FeederLineMode && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] > 0) { // Prüfen ob FeederLineMode true ist
-        funktionen.simulateLineMode(i, nameNodeId, serverValues);
+        funktionen.simulateFeederLineMode(i, nameNodeId, serverValues);
       }
       //Wenn FeederSingleModus an ist, dann wir die entsprechende Funktion gestartet
       if (sharedState.feeders[i].FeederSingleMode) { // Prüfen ob FeederLineMode true ist
 
-        funktionen.simulateSingleMode(i, nameNodeId, serverValues);
+        funktionen.simulateFeederSingleMode(i, nameNodeId, serverValues);
       }
     }
    
@@ -3114,7 +3116,7 @@ console.log("fsdfsdfsd")
           serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value];
           //Wenn Extruder an ist und rThroughputPerc_rSet größer Null, dann die Funktion ausgeführt. Zeile ist notwenig, damit beim Drücken des "Apply" Button die Funktion neu gestartet wird.
           if (sharedState.ExtruderisOn && sharedState.feeders[i].FeederisRunning && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] > 0) {
-            funktionen.simulateLineMode(i, nameNodeId, serverValues)
+            funktionen.simulateFeederLineMode(i, nameNodeId, serverValues)
           }
         }
       }
@@ -4231,7 +4233,7 @@ console.log("fsdfsdfsd")
 
       for (let i = 1; i <= 4; i++) {
         if (sharedState.feeders[i].FeederLineMode) {
-          funktionen.simulateLineModeRamp(i, nameNodeId, serverValues)
+          funktionen.simulateFeederLineModeRamp(i, nameNodeId, serverValues)
         }
       }
     }
