@@ -1,16 +1,6 @@
-
-
-
-const { writeTCPMessageHeader } = require('node-opcua');
-var serverModule = require('./../opcua-demo-server/server');
+var {serverValues, opcua, namespace3} = require('./../opcua-demo-server/server');
 
 var sharedState = require('./sharedState');
-
-var addressSpace = serverModule.addressSpace;
-var namespace2 = serverModule.namespace2;
-var namespace3 = serverModule.namespace3;
-var opcua = serverModule.opcua;
-var serverValues = serverModule.serverValues;
 
 function createCustomVariable(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
   var nodeId = `"ns=3;s=\"${part1}\".\"${part2}\"`;
@@ -21,11 +11,9 @@ function createCustomVariable(i, variableName, componentOf, browseName, part1, p
   if (part3) {
     nodeId += `.\"${part3}\"`;
   }
-
   if (part4) {
     nodeId += `.\"${part4}\"`;
   }
-
   if (part5) {
     nodeId += `.\"${part5}\"`;
   }
@@ -437,7 +425,7 @@ var timerWasOn = Array(13).fill(false);
 const checkedItemsReady = Array(13).fill(false); // Alle Prozesszonen sind auf Ready
 const checkedItemsOff = Array(13).fill(false); // Alle Prozesszonen sind auf Off
 function dwStatStartWizzard(i, nameNodeId, serverValues) {
-  var werte = require('./profiles/simulation/variables/Variabeln');
+  var werte = require('./profiles/simulation/variables/Variablen');
   
   let rSetTolMaxMax = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSetTolMaxMax.nodeId.value];
  
@@ -566,7 +554,7 @@ let isEierUhrRunning = Array(14).fill(false);  // Neue Variable als Array
 let hasEierUhrFinished = Array(14).fill(false);  // Array, um den abgeschlossenen Status der Eieruhr für jeden Index zu verfolgen
 
 function startEierUhr(i, callback) {
-  var werte = require('./profiles/simulation/variables/Variabeln');
+  var werte = require('./profiles/simulation/variables/Variablen');
 
   // Überprüfen, ob bereits ein Intervall für den gegebenen Index i läuft
   // oder die Eieruhr für den Index i bereits abgelaufen ist
@@ -608,7 +596,7 @@ function getSaveKey(rAct2, index) {
 }
 
 function PIDUP(i, nameNodeId, serverValues, source) {
-  var werte = require('./profiles/simulation/variables/Variabeln');
+  var werte = require('./profiles/simulation/variables/Variablen');
   if (pidTimerIddown[i]) clearTimeout(pidTimerIddown[i]); // löscht alle Timer von pidDown, falls ein Timer noch läuft
   if (pidTimerIdshutdown[i]) clearTimeout(pidTimerIdshutdown[i]); // löscht alle Timer von shutDown fals ein Timer noch läuft
 
@@ -648,7 +636,7 @@ function PIDUP(i, nameNodeId, serverValues, source) {
 
 
   function calculateNextValue() {
-    var werte = require('./profiles/simulation/variables/Variabeln');
+    var werte = require('./profiles/simulation/variables/Variablen');
     if (rSet - rAct2 > 0.1) {
 
       let error = rSet - rAct2;
@@ -704,7 +692,7 @@ u_begrenzt = Math.max(-100, Math.min(u, 100));
 }
 
 function PIDCOOLDOWN(i, nameNodeId, serverValues, source) {
-  var werte = require('./profiles/simulation/variables/Variabeln');
+  var werte = require('./profiles/simulation/variables/Variablen');
   if (pidTimerIdup[i]) clearTimeout(pidTimerIdup[i]); // löscht alle Timer von pidUp
   if (pidTimerIdshutdown[i]) clearTimeout(pidTimerIdshutdown[i]); //löscht alle Timer von shutDown
   intervalEieruhrIds.forEach(intervalEieruhr => clearInterval(intervalEieruhr));
@@ -780,7 +768,7 @@ u_begrenzt = Math.max(-100, Math.min(u, 100));
 
 
 function PIDSHUTDOWN(i, nameNodeId, serverValues) {
-  var werte = require('./profiles/simulation/variables/Variabeln');
+  var werte = require('./profiles/simulation/variables/Variablen');
   if (pidTimerIdup[i]) clearTimeout(pidTimerIdup[i]); //löscht alle Timer von PidUp
   if (pidTimerIddown[i]) clearTimeout(pidTimerIddown[i]); //löscht alle Timer von PidDown
 
@@ -844,7 +832,7 @@ function PIDSHUTDOWN(i, nameNodeId, serverValues) {
 
 
 function simulateScrewSpeed(i, nameNodeId, serverValues) {
-  var werte = require('./profiles/simulation/variables/Variabeln');
+  var werte = require('./profiles/simulation/variables/Variablen');
  
   function simulateScrewRamp() {
     
@@ -921,7 +909,7 @@ let intervalIds = {
 
 function simulateSingleMode(i, nameNodeId, serverValues) { // Single Mode
   console.log("startfeeder")
-  var werte = require('./profiles/simulation/variables/Variabeln');
+  var werte = require('./profiles/simulation/variables/Variablen');
 
   let currentThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
 
@@ -964,7 +952,7 @@ function simulateSingleMode(i, nameNodeId, serverValues) { // Single Mode
 
 //feeder Line Modus
 function simulateLineMode(i, nameNodeId, serverValues) {
-  const werte = require('./profiles/simulation/variables/Variabeln');
+  const werte = require('./profiles/simulation/variables/Variablen');
 
   // Der Gesamtdurchsatz für die gesamte Linie
   let totalTargetThroughput = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value];
@@ -1022,7 +1010,7 @@ function simulateLineMode(i, nameNodeId, serverValues) {
 
 function simulateFeederWeight(i, nameNodeId, serverValues) {
 
-  var werte = require('./profiles/simulation/variables/Variabeln');
+  var werte = require('./profiles/simulation/variables/Variablen');
 
   function updateFeederWeight() {
 
@@ -1062,7 +1050,7 @@ function simulateFeederWeight(i, nameNodeId, serverValues) {
 
 function simulateLineModeRamp(i, nameNodeId, serverValues) {
   console.log(" in der funktion simulateLineModeRamp")
-  var werte = require('./profiles/simulation/variables/Variabeln');
+  var werte = require('./profiles/simulation/variables/Variablen');
 
   // Zieldurchsatz kg/h bestimmen anhand vom Throughput Set
   let throughputSet = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value]
@@ -1128,7 +1116,7 @@ function simulateLineModeRamp(i, nameNodeId, serverValues) {
 // Funktion zum Verteilen Prozente
 function DistributionPercentages() {
   let sum = 0
-  var werte = require('./profiles/simulation/variables/Variabeln');
+  var werte = require('./profiles/simulation/variables/Variablen');
 
   // Zuweisung von udtLineRamp.Throughput.rSet an  totalThroughput (Feeding Popup operating Point oder start Wizzard)
   let totalThroughput = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value]
@@ -1185,7 +1173,7 @@ function DistributionPercentages() {
 
 function OilLubWatchFollowUp(i, nameNodeId, serverValues) {
   console.log("In der Funktion OilLubWatchFollowUp");
-  var werte = require('./profiles/simulation/variables/Variabeln');
+  var werte = require('./profiles/simulation/variables/Variablen');
 
   // Startwert aus Expert Settings (Config)
   let currentValue = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Set.nodeId.value];
@@ -1210,7 +1198,7 @@ function OilLubWatchFollowUp(i, nameNodeId, serverValues) {
 
 function OilLubWatch(i, nameNodeId, serverValues) {
   console.log("In der Funktion OilLubWatch");
-  var werte = require('./profiles/simulation/variables/Variabeln');
+  var werte = require('./profiles/simulation/variables/Variablen');
 
   // Startwert aus dem ServerValues-Objekt abrufen
   let currentValue = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Set.nodeId.value];
@@ -1241,7 +1229,7 @@ let consecutiveCounter = {};
 
 function updatedwstat(i, NameVariabel) {
 
-  var werte = require('./profiles/simulation/variables/Variabeln');
+  var werte = require('./profiles/simulation/variables/Variablen');
   var rActKey;
   var data;
 
@@ -1380,7 +1368,7 @@ class StateMachine {
     };
   }
   setState(variableName, stateName) {
-    var werte = require('./profiles/simulation/variables/Variabeln');
+    var werte = require('./profiles/simulation/variables/Variablen');
     const state = this.states[stateName];
 
     const variableKey = werte.data[variableName].nodeId.value;
@@ -1405,7 +1393,7 @@ class StateMachineNavigationBar {
   }
 
   setState(variableName, stateName) {
-    var werte = require('./profiles/simulation/variables/Variabeln');
+    var werte = require('./profiles/simulation/variables/Variablen');
     const state = this.states[stateName];
 
        const variableKey = werte.data[variableName].nodeId.value;

@@ -55,21 +55,6 @@ const BIT_POSITIONS = {
     Lock_On_Off_Status_of_ShutDown_Button: 13,
 
     Lock_On_Off_Status_of_RampOn_Button: 1
-
-
-    /*
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << 8); // Setzt den "Haken"
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << 12) // Lock Condition von Auto Stop (Button wird anklickbar und gräulich)
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << 9); // Lock Conditon von Auto Start (Button wird anklickbar und gräulich
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << 13); // Macht AutoStop "Blau
-      } else if (!sharedState.feedingautostartButtons.autoStartFeeder) {
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << 8); // Setzt das "X"
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << 13);
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << 10);
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << 12) // Lock Condition von Auto Stop (Button wird anklickbar und gräulich)
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << 9); // Lock Conditon von Auto Start (Button wird anklickbar und gräulich
-       */
-
 };
 
 const buttonPushed = {
@@ -119,8 +104,8 @@ const Alarms_Warnings = {
             Warning_Torque_too_high_shutdown_timer_started: 10,
             Warning_Torque_too_low_shutdown_timer_started: 11,
                
-            Alarm_Torque_too_high_delay_shutdown_time_expired: 32,
-            Alarm_Torque_too_low_delay_shutdown_time_expired: 64
+            Alarm_Torque_too_high_delay_shutdown_time_expired: 5,
+            Alarm_Torque_too_low_delay_shutdown_time_expired: 6,
         }
     }
 

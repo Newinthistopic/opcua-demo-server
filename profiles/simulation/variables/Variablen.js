@@ -1,16 +1,10 @@
 
-var { SetGetlogic } = require('./../../../Setter_Getter_Logiken')
-const functions = require('./../../../funktionen');
-
-
-
+var { SetGetlogic } = require('../../../Setter_Getter_Logiken')
+const functions = require('../../../funktionen');
 
 function run1(addressSpace, device, opcua, verbose, serverValues,) {
 
-    var namespace2 = addressSpace.getNamespace('http://mynamespace-2/UA/');
-    var namespace3 = addressSpace.getNamespace('http://mynamespace-3/UA/');
-
-
+    var namespace3 = addressSpace.getNamespace('KME_Demo_Namespace3');
 
     var ppC_Compound_V3 = namespace3.addObject({
         organizedBy: device,
@@ -25,14 +19,11 @@ function run1(addressSpace, device, opcua, verbose, serverValues,) {
         nodeId: "s=DatablocksGlobal"
     });
 
-
     var PL_3100_Hmi = namespace3.addObject({
         organizedBy: datablocksGlobal,
         browseName: "PL_3100.Hmi",
         nodeId: "s=PL_3100.Hmi",
-
     })
-
 
     var SU3111_ZeExtruder_Hmi = namespace3.addObject({
         organizedBy: datablocksGlobal,
@@ -50,58 +41,48 @@ function run1(addressSpace, device, opcua, verbose, serverValues,) {
         dataType: opcua.DataType.Double,
         nodeId: "s=" + "\"SU3111_ZeExtruder.Config\""
     });
-
     var SU2110_Feeding_Hmi = namespace3.addObject({
         componentOf: datablocksGlobal,
         browseName: "SU2110_Feeding.Hmi",
         dataType: opcua.DataType.Double,
         nodeId: "s=" + "\"SU2110_Feeding.Hmi\""
     });
-
     var SU2110_Feeding_Parameter = namespace3.addObject({
         componentOf: datablocksGlobal,
         browseName: "SU2110_Feeding.Parameter",
         dataType: opcua.DataType.Double,
         nodeId: "s=" + "\"SU2110_Feeding.Parameter\""
     });
-
     var SU1000_Line_Hmi = namespace3.addObject({
         componentOf: datablocksGlobal,
         browseName: "SU1000_Line.Hmi",
         dataType: opcua.DataType.Double,
         nodeId: "s=" + "\"SU1000_Line.Hmi\""
     });
-
     var SU1000_Line_Parameter = namespace3.addObject({
         componentOf: datablocksGlobal,
         browseName: "SU1000_Line.Parameter",
         dataType: opcua.DataType.Double,
         nodeId: "s=" + "\"SU1000_Line.Parameter\""
     });
-
-
     var SU3100_Plastification_Hmi = namespace3.addObject({
         componentOf: datablocksGlobal,
         browseName: "SU3000_Plastification.Hmi",
         dataType: opcua.DataType.Double,
         nodeId: "s=" + "\"SU3000_Plastification.Hmi\""
     });
-
-
     var SU3100_Plastification_Parameter = namespace3.addObject({
         componentOf: datablocksGlobal,
         browseName: "SU3000_Plastification.Parameter",
         dataType: opcua.DataType.Double,
         nodeId: "s=" + "\"SU3000_Plastification.Parameter\""
     });
-
     var SU3141_DiverterValve_Hmi = namespace3.addObject({
         componentOf: datablocksGlobal,
         browseName: "SU3141_DiverterValve.Hmi",
         dataType: opcua.DataType.Double,
         nodeId: "s=" + "\"SU3141_DiverterValve.Hmi\""
     });
-
     var SU3141_DiverterValve_Parameter = namespace3.addObject({
         componentOf: datablocksGlobal,
         browseName: "SU3141_DiverterValve.Parameter",
@@ -1329,27 +1310,11 @@ function run1(addressSpace, device, opcua, verbose, serverValues,) {
     // SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi //
     // SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi //
     // SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi //
-    // SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi //
-    // SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi //
-    // SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi //
-    // SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi //
-    // SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi //
-    // SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi //
-    // SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi //
-    // SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi //
-    // SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi //
-    // SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi //
-    // SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi //
-    // SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi SU2110_Feeding_Hmi //
-
-
-
+ 
     var SU2110_Feeding_Hmi_udtCmEstop = functions.createCustomVariable(undefined, "SU2110_Feeding_Hmi_udtCmEstop", SU2110_Feeding_Hmi, "udtCmEstop", "SU2110_Feeding.Hmi", "udtCmEstop", undefined, undefined, undefined, undefined, undefined)
 
-    
-    for (var i = 0; i < 2; i++) {
+        for (var i = 0; i < 2; i++) {
        
-
         data[i].SU2110_Feeding_Hmi_udtCmEstopLoop = functions.createCustomVariable(i, "SU2110_Feeding_Hmi_udtCmEstopLoop", SU2110_Feeding_Hmi_udtCmEstop, i.toString(), "SU2110_Feeding.Hmi", "udtCmEstop", undefined, undefined, undefined, undefined, undefined)
         data[i].SU2110_Feeding_Hmi_udtCmEstop_dwStat = functions.createCustomVariable(i, "SU2110_Feeding_Hmi_udtCmEstop_dwStat", data[i].SU2110_Feeding_Hmi_udtCmEstopLoop, "dwStat", "SU2110_Feeding.Hmi", "udtCmEstop", "dwStat", undefined, undefined, SetGetlogic.SU2110_Feeding_Hmi_udtCmEstop_dwStatGet, SetGetlogic.SU2110_Feeding_Hmi_udtCmEstop_dwStatSet)
         data[i].SU2110_Feeding_Hmi_udtCmEstop_strTag = functions.createCustomVariable(i, "SU2110_Feeding_Hmi_udtCmEstop_strTag", data[i].SU2110_Feeding_Hmi_udtCmEstopLoop, "strTag", "SU2110_Feeding.Hmi", "udtCmEstop", "strTag", undefined, undefined, SetGetlogic.SU2110_Feeding_Hmi_udtCmEstop_strTagGet, SetGetlogic.SU2110_Feeding_Hmi_udtCmEstop_strTagSet)
@@ -1357,9 +1322,8 @@ function run1(addressSpace, device, opcua, verbose, serverValues,) {
 
     var SU2110_Feeding_Hmi_udtCmEstopMessages = functions.createCustomVariable(undefined, "SU2110_Feeding_Hmi_udtCmEstopMessages", SU2110_Feeding_Hmi, "udtCmEstopMessages", "SU2110_Feeding.Hmi", "udtCmEstopMessages", undefined, undefined, undefined, undefined, undefined)
     var SU2110_Feeding_Hmi_udtCmEstopMessages_wMessage = functions.createCustomVariable(undefined, "SU2110_Feeding_Hmi_udtCmEstopMessages_wMessage", SU2110_Feeding_Hmi_udtCmEstopMessages, "wMessage", "SU2110_Feeding.Hmi", "udtCmEstopMessages", "wMessage", undefined, undefined, SetGetlogic.SU2110_Feeding_Hmi_udtCmEstopMessages_wMessageGet, SetGetlogic.SU2110_Feeding_Hmi_udtCmEstopMessages_wMessageSet)
-
     var SU2110_Feeding_Hmi_udtEmFeeder = functions.createCustomVariable(undefined, "SU2110_Feeding_Hmi_udtEmFeeder", SU2110_Feeding_Hmi, "udtEmFeeder", "SU2110_Feeding.Hmi", "udtEmFeeder", undefined, undefined, undefined, undefined, undefined)
-    
+   
     for (var i = 1; i < 5; i++) {
         
 

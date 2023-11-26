@@ -1,5 +1,5 @@
 var sharedState = require('./sharedState');
-const funktionen = require('./../opcua-demo-server/funktionen');
+const funktionen = require('./funktionen');
 
 
 // Globale Zustandsvariable
@@ -12,7 +12,7 @@ function Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues) {
         return;
     }
 
-    var werte = require('./profiles/simulation/variables/Variabeln');
+    var werte = require('./profiles/simulation/variables/Variablen');
     let startValue = serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_Set.nodeId.value];
     let timerValue = startValue;
 
