@@ -1,22 +1,27 @@
-var {serverValues, opcua, namespace3} = require('./../opcua-demo-server/server');
+var { serverValues, opcua, namespace3 } = require('./../opcua-demo-server/server');
 
 var sharedState = require('./Zustände');
+
+
+
+function createObjectDouble(organizedByValue, browseName) {
+  return namespace3.addObject({
+    organizedBy: organizedByValue,
+    browseName: browseName,
+    dataType: opcua.DataType.Double,
+    nodeId: "ns=3;s=\"" + browseName + "\""
+  });
+}
+
 
 function createCustomVariableFloat(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
   var nodeId = `"ns=3;s=\"${part1}\".\"${part2}\"`;
 
-  if (i !== undefined) {
-    nodeId += `[${i}]`;
-  }
-  if (part3) {
-    nodeId += `.\"${part3}\"`;
-  }
-  if (part4) {
-    nodeId += `.\"${part4}\"`;
-  }
-  if (part5) {
-    nodeId += `.\"${part5}\"`;
-  }
+  if (i !== undefined) { nodeId += `[${i}]`;}
+  if (part3) { nodeId += `.\"${part3}\"`;}
+  if (part4) { nodeId += `.\"${part4}\"`;}
+  if (part5) { nodeId += `.\"${part5}\"`;}
+
   var newVariable = {};
   newVariable[variableName] = namespace3.addVariable({
     componentOf: componentOf,
@@ -28,13 +33,10 @@ function createCustomVariableFloat(i, variableName, componentOf, browseName, par
         var nameNodeId = {};
         nameNodeId[variableName + "NodeId"] = this.nodeId.value;
 
-
         if (customGetLogic) {
           customGetLogic(i, nameNodeId, serverValues);
         }
-
         return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nameNodeId[variableName + "NodeId"]] });
-
       },
       set: function (variant) {
         var nameNodeId = {};
@@ -47,10 +49,8 @@ function createCustomVariableFloat(i, variableName, componentOf, browseName, par
       }
     },
   });
-
   return newVariable[variableName];
 }
-
 
 
 function createCustomVariableString(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
@@ -405,14 +405,14 @@ const checkedItemsReady = Array(13).fill(false); // Alle Prozesszonen sind auf R
 const checkedItemsOff = Array(13).fill(false); // Alle Prozesszonen sind auf Off
 function dwStatStartWizzard(i, nameNodeId, serverValues) {
   var werte = require('./profiles/simulation/variables/Variablen');
-  
+
   let rSetTolMaxMax = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSetTolMaxMax.nodeId.value];
- 
+
   let rAct = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   let rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value];
   let rTempCooldown = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempCooldown_Set.nodeId.value];
   let rTempRelease = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempRel_Set.nodeId.value];
- 
+
   const EierUhrEinstellZeit = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_udTimeRel.nodeId.value];
   let EierUhrStartWert = EierUhrEinstellZeit
   const machine = new StateMachine();
@@ -583,8 +583,8 @@ function PIDUP(i, nameNodeId, serverValues, source) {
   const Ki = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value];
   const Kd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value];
   const dt = 0.01
-  const T1 = 105 
-  const T2 = 100 
+  const T1 = 105
+  const T2 = 100
   const K1 = 1
   const K2 = 1
   let rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
@@ -632,10 +632,10 @@ function PIDUP(i, nameNodeId, serverValues, source) {
 
       lastError = error;
 
-  // Begrenzung des Wertes von u zwischen -100 und 100
-u_begrenzt = Math.max(-100, Math.min(u, 100));
+      // Begrenzung des Wertes von u zwischen -100 und 100
+      u_begrenzt = Math.max(-100, Math.min(u, 100));
 
-// Wert wird der HMI zugewiesen
+      // Wert wird der HMI zugewiesen
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = u_begrenzt
 
       // 1.Glied PT1 der Reglestrecke
@@ -714,13 +714,13 @@ function PIDCOOLDOWN(i, nameNodeId, serverValues, source) {
 
       lastError = error;
 
-// Begrenzung des Wertes von u zwischen -100 und 100
-u_begrenzt = Math.max(-100, Math.min(u, 100));
+      // Begrenzung des Wertes von u zwischen -100 und 100
+      u_begrenzt = Math.max(-100, Math.min(u, 100));
 
-// Wert wird der HMI zugewiesen
+      // Wert wird der HMI zugewiesen
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = u_begrenzt
-    
-      
+
+
 
       // 1.Glied PT1 der Reglestrecke
       let dy1 = (K1 * u - rAct1) / T1 * dt;
@@ -809,9 +809,9 @@ function PIDSHUTDOWN(i, nameNodeId, serverValues) {
 
 function simulateScrewSpeed(i, nameNodeId, serverValues) {
   var werte = require('./profiles/simulation/variables/Variablen');
- 
+
   function simulateScrewRamp() {
-    
+
     let x0 = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value]; // Startwert
     let xf = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSet.nodeId.value]; // Endwert bzw. Setwert
     let rampTime = serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewRampTime_Set.nodeId.value];
@@ -819,34 +819,34 @@ function simulateScrewSpeed(i, nameNodeId, serverValues) {
     let nominalTorque = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewTorqueNom_Set.nodeId.value];
     let maxDrehzahl = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMax_Set.nodeId.value];
     let Durchsatzgesamt = serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughputTotal_rAct.nodeId.value];
-       let specificRate_Set = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rSet.nodeId.value]
-   
+    let specificRate_Set = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rSet.nodeId.value]
+
     let t = 0;
     let increment = 0.1 / rampTime;  // basierend auf einem 100ms Update-Intervall
     // Volumen der Schnecke 
     const screwVolume = 3;
 
-if(sharedState.SpeedCalculationSpecRateisOn){
-  console.log("if(sharedState.SpeedCalculationSpecRateisOn){")
-    // Wenn Anfangs auf Spec.Rate geschaltet wird und der Gesamtdurchsatz null ist, dann wird xf auf die minimale Drehzahl gestellt.
-    if (Durchsatzgesamt === 0) {
-      xf = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMin.nodeId.value];
-    } else {
-      xf = Durchsatzgesamt / specificRate_Set;
+    if (sharedState.SpeedCalculationSpecRateisOn) {
+      console.log("if(sharedState.SpeedCalculationSpecRateisOn){")
+      // Wenn Anfangs auf Spec.Rate geschaltet wird und der Gesamtdurchsatz null ist, dann wird xf auf die minimale Drehzahl gestellt.
+      if (Durchsatzgesamt === 0) {
+        xf = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMin.nodeId.value];
+      } else {
+        xf = Durchsatzgesamt / specificRate_Set;
+      }
     }
-}
- 
+
     const normalizedTime = t;  // Da t von 0 bis 1 geht, ist es bereits normalisiert
     let currentSpeed = x0 + (xf - x0) / (1 + Math.exp(-roundness * (normalizedTime - 0.5)));
 
     // Geschwindigkeit wird der HMI zugewiesen
     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value] = currentSpeed;
-  
+
     let drehmoment = (currentSpeed / maxDrehzahl) * nominalTorque;
     let prozentDrehmoment = (drehmoment / nominalTorque) * 100
     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] = prozentDrehmoment;
 
-   
+
     // Drehmomentdichte berechnen
     let torqueDensity = drehmoment / screwVolume;
     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_rAct.nodeId.value] = torqueDensity;
@@ -858,8 +858,8 @@ if(sharedState.SpeedCalculationSpecRateisOn){
 
     // Prüfen, ob der Unterschied zum Setwert kleiner als 0,01 ist
     if (Math.abs(currentSpeed - xf) < 0.1) {
-     
-     // Durch das Inkrement wird der Wert nie ganz auf den SetWert laufen, daher wird am Ende nochmal der Wert aktualisiert
+
+      // Durch das Inkrement wird der Wert nie ganz auf den SetWert laufen, daher wird am Ende nochmal der Wert aktualisiert
       serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value] = xf
       clearInterval(intervalId);
     } else if ((xf > x0 && currentSpeed >= xf) || (xf < x0 && currentSpeed <= xf)) {
@@ -1018,9 +1018,9 @@ function simulateFeederFillLevel(i, nameNodeId, serverValues) {
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value] = currentLevel;
     }
   }
-    let intervalId = setInterval(updateFeederWeight, 60000); 
-    intervalIds.updateFeederWeight[i] = intervalId;
-  }
+  let intervalId = setInterval(updateFeederWeight, 60000);
+  intervalIds.updateFeederWeight[i] = intervalId;
+}
 
 
 function simulateFeederLineModeRamp(i, nameNodeId, serverValues) {
@@ -1260,7 +1260,7 @@ function updatedwstat(i, NameVariabel) {
 
     if (rSetTolMin === 0 && rAct < rSetTolMinMin && rAct < rSetTolMax && rAct < rSetTolMaxMax) {
       dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
-      dwStat |= (1 <<sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax); // ROT
+      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax); // ROT
       //console.log("erste Stufe")
     }
 
@@ -1335,11 +1335,11 @@ class StateMachine {
   constructor() {
     this.states = {
       IDLE: { name: "IDLE", bit: (1 << sharedState.BIT_POSITIONS.statemachine.Idle) },
-      RUNNING: { name: "RUNNING", bit: (1 <<  sharedState.BIT_POSITIONS.statemachine.Running) },
-      STOPPED: { name: "STOPPED", bit: (1 <<  sharedState.BIT_POSITIONS.statemachine.Stopped) },
+      RUNNING: { name: "RUNNING", bit: (1 << sharedState.BIT_POSITIONS.statemachine.Running) },
+      STOPPED: { name: "STOPPED", bit: (1 << sharedState.BIT_POSITIONS.statemachine.Stopped) },
       E_STOP_PRESSED: { name: "E-STOP-PRESSED", bit: (1 << sharedState.BIT_POSITIONS.statemachine.E_Stop_Pressed) },
-      E_STOP_RELEASED: { name: "E-STOP-RELEASED", bit: (1 <<  sharedState.BIT_POSITIONS.statemachine.E_Stop_Released) },
-      PREHEATING: { name: "PREHEATING", bit: (1 <<  sharedState.BIT_POSITIONS.statemachine.Preheating) }
+      E_STOP_RELEASED: { name: "E-STOP-RELEASED", bit: (1 << sharedState.BIT_POSITIONS.statemachine.E_Stop_Released) },
+      PREHEATING: { name: "PREHEATING", bit: (1 << sharedState.BIT_POSITIONS.statemachine.Preheating) }
     };
   }
   setState(variableName, stateName) {
@@ -1360,7 +1360,7 @@ class StateMachineNavigationBar {
   constructor() {
     this.states = {
       STOPPED: { name: "STOPPED", bit: (1 << sharedState.BIT_POSITIONS.statemachine_navigationbar.Stopped) },
-      RUNNING: { name: "RUNNING", bit: (1 <<sharedState.BIT_POSITIONS.statemachine_navigationbar.Running) },
+      RUNNING: { name: "RUNNING", bit: (1 << sharedState.BIT_POSITIONS.statemachine_navigationbar.Running) },
       WARNING: { name: "WARNING", bit: (1 << sharedState.BIT_POSITIONS.statemachine_navigationbar.Warning) },
       ERROR: { name: "ERROR", bit: (1 << sharedState.BIT_POSITIONS.statemachine_navigationbar.Error) },
       CRITICAL: { name: "CRITICAL", bit: (1 << sharedState.BIT_POSITIONS.statemachine_navigationbar.Critical) }
@@ -1371,7 +1371,7 @@ class StateMachineNavigationBar {
     var werte = require('./profiles/simulation/variables/Variablen');
     const state = this.states[stateName];
 
-       const variableKey = werte.data[variableName].nodeId.value;
+    const variableKey = werte.data[variableName].nodeId.value;
 
     if (typeof serverValues[variableKey] !== 'undefined') {
       serverValues[variableKey] = state.bit;
@@ -1385,6 +1385,7 @@ class StateMachineNavigationBar {
 module.exports = {
   createCustomVariableFloat: createCustomVariableFloat,
   initial: initial,
+  createObjectDouble: createObjectDouble,
   createVariableforTime: createVariableforTime,
   createCustomVariableUint32: createCustomVariableUint32,
   createCustomVariableUint64: createCustomVariableUint64,

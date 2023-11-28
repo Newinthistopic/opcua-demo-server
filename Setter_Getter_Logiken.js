@@ -23,7 +23,7 @@ const SetGetlogic = {
     const machine = new funktionen.StateMachine();
 
     setTimeout(() => {
-      var werte = require('./profiles/simulation/variables/Variablen');
+    
       if (sharedState.ExtruderisOn) { // Extruder Button on, daher State Running
         machine.setState('SU3111_ZeExtruder_Hmi_udtUm_udtModState_dwStatus', 'RUNNING');
       }
