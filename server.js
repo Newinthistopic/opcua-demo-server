@@ -1,16 +1,12 @@
-console.log("OPC UA Server  ");
 console.log('Starting... please wait!');
 
-const fs = require('fs');
 const opcua = require("node-opcua");
-const certificateManager = new opcua.OPCUACertificateManager({ automaticallyAcceptUnknownCertificate: true, rootFolder: "./certs", });
 const path = require('path');
+const certificateManager = new opcua.OPCUACertificateManager({ automaticallyAcceptUnknownCertificate: true, rootFolder: "./certs", });
 
-// Pfad zur Konfigurationsdatei
-var configPath = path.join(__dirname, 'profiles', 'simulation', 'config.json');
-var config = require(configPath);
+const config = require(path.join(__dirname, 'profiles', 'simulation', 'config.json'));
 
-var serverValues = {}; // Holds all server values
+
 
 (async () => {
     /*** SERVER INIT ***/
@@ -42,6 +38,9 @@ var serverValues = {}; // Holds all server values
             nodeId: "ns=2;s=5001",
         }
     );
+
+    var serverValues = {}; // Holds all server values
+
     module.exports = {
         namespace3: namespace3,
         opcua: opcua,
@@ -49,7 +48,7 @@ var serverValues = {}; // Holds all server values
     };
     /*** VARIABLES ***/
     var myModule = require('./profiles/simulation/variables/Variablen')
-    myModule.run1(addressSpace, device)
+    myModule.run1(addressSpace, device,namespace3)
 
     /*** START SERVER ***/
     await server.start();

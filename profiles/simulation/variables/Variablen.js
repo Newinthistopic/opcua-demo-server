@@ -2,9 +2,9 @@
 var { SetGetlogic } = require('../../../Setter_Getter_Logiken')
 const functions = require('../../../funktionen');
 
-function run1(addressSpace, device, ) {
+function run1(addressSpace, device) {
 
-    var namespace3 = addressSpace.getNamespace('KME_Demo_Namespace3');
+    var namespace3 = addressSpace.getNamespace('KME_Demo_Namespace3'); // Mit dieser Funktion wird auf die Namespace zugegriffen, da diese zuvor ind der Server.js definiert wurde
 
     var ppC_Compound_V3 = namespace3.addObject({
         organizedBy: device,
@@ -12,7 +12,6 @@ function run1(addressSpace, device, ) {
         nodeId: "s=PLC",
         description: "The PLC instance which supports you with OPC UA functionality"
     })
-
     var datablocksGlobal = namespace3.addObject({
         organizedBy: ppC_Compound_V3,
         browseName: "DatablocksGlobal",

@@ -17,11 +17,10 @@ function createObjectDouble(organizedByValue, browseName) {
 function createCustomVariableFloat(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
   var nodeId = `"ns=3;s=\"${part1}\".\"${part2}\"`;
 
-  if (i !== undefined) { nodeId += `[${i}]`;}
-  if (part3) { nodeId += `.\"${part3}\"`;}
-  if (part4) { nodeId += `.\"${part4}\"`;}
-  if (part5) { nodeId += `.\"${part5}\"`;}
-
+  if (i !== undefined) { nodeId += `[${i}]`; }
+  if (part3) { nodeId += `.\"${part3}\"`; }
+  if (part4) { nodeId += `.\"${part4}\"`; }
+  if (part5) { nodeId += `.\"${part5}\"`; }
   var newVariable = {};
   newVariable[variableName] = namespace3.addVariable({
     componentOf: componentOf,
@@ -355,33 +354,46 @@ function createCustomVariableUint64(i, variableName, componentOf, browseName, pa
   return newVariable[variableName];
 }
 
-
+// Definition der Funktion 'initial' mit Parametern für den Variablennamen, 
+// einen Initialwert, benutzerdefinierte Werte, Index, Node-ID und Serverwerte
 var initial = function (variableName, initialValue, customValues, i, nameNodeId, serverValues) {
+  
+  // Initialisieren eines Arrays zum Speichern der Node-IDs
   var nodeIdInitial = [];
-  if (nameNodeId[variableName + "NodeId"] !== undefined) {
-    nodeIdInitial[i] = nameNodeId[variableName + "NodeId"];
-  } else {
 
-    return; // Beenden Sie die Ausführung der Funktion
-  }
+  // Direktes Speichern der Node-ID im nodeIdInitial-Array an der Position i
+  nodeIdInitial[i] = nameNodeId[variableName + "NodeId"];
+
+  // Prüfung, ob die Node-ID bereits in serverValues vorhanden ist
   if (!(nameNodeId[variableName + "NodeId"] in serverValues)) {
+    // Wenn die Node-ID nicht in serverValues ist, wird der folgende Block ausgeführt
+
+    // Durchlaufen aller Indizes von 0 bis 13
     for (let index = 0; index <= 13; index++) {
+      // Überprüfen, ob die Node-ID für den aktuellen Index definiert ist
       if (nodeIdInitial[index] !== undefined) {
+        // Setzen des Initialwerts für die Node-ID im serverValues-Objekt
         serverValues[nodeIdInitial[index]] = initialValue;
       }
     }
-    // Setze benutzerdefinierte Werte für bestimmte Indizes
+    // Durchlaufen der benutzerdefinierten Werte
     for (const [index, value] of Object.entries(customValues)) {
-      if (nodeIdInitial[index] !== undefined && value !== undefined) { // Prevent setting undefined keys in serverValues
+      // Überprüfen, ob ein Wert für den aktuellen Index definiert ist
+      if (nodeIdInitial[index] !== undefined && value !== undefined) {
+        // Setzen des benutzerdefinierten Werts für die Node-ID im serverValues-Objekt
         serverValues[nodeIdInitial[index]] = value;
       }
     }
-  }
+  } 
+  // Wenn die Node-ID bereits in serverValues ist, wird der obige Block übersprungen,
+  // und es werden keine Änderungen an serverValues vorgenommen.
 };
+
+
 
 var initialSingleValue = function (variableName, initialValue, nameNodeId, serverValues) {
   var nodeIdInitial;
-  // console.log(typeof initialValue); // Fügt eine Konsolenausgabe hinzu, um den Datentyp von initialValue zu überprüfen
+ 
 
   // Überprüfe, ob die Node-ID für den gegebenen Variablennamen existiert.
   if (nameNodeId[variableName + "NodeId"] !== undefined) {

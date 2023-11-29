@@ -4,7 +4,7 @@ const alarme_warnungen_funktionen = require('./alarme_warnungen_funktionen');
 
 var sharedState = require('./Zustände');
 
-
+const serverValues = require('./../opcua-demo-server/server'); 
 
 const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtUmGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm", undefined, nameNodeId, serverValues); },
@@ -67,7 +67,7 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmUltraGluideExt_udtIntLockSwitch_strTagSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmUltraGluideExt_udtIntLockSwitch_strTag", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrlGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrlSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl", undefined, {}, i, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStatGet: function (i, nameNodeId, serverValues) {
+  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStatGet: function (i, nameNodeId) {
     funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat", 537923341, nameNodeId, serverValues);
 
     setTimeout(function () {
@@ -557,11 +557,9 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSetGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSet", 100, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSetSet: function (i, nameNodeId, serverValues) {
     funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSet", undefined, nameNodeId, serverValues);
-console.log("fsdfsdfsd")
     // Der Extruder muss an sein, damit ein neu gewählter Set Wert die Funktion auslöst
     if (sharedState.ExtruderisOn && !sharedState.ExtruderisOff) { // Main Drive is On
-      console.log("dasdasdsadadasdas")
-      funktionen.simulateScrewSpeed(i, nameNodeId, serverValues);
+           funktionen.simulateScrewSpeed(i, nameNodeId, serverValues);
     }
   },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSetRecGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSetRec", undefined, nameNodeId, serverValues); },

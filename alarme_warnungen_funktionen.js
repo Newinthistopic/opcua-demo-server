@@ -9,6 +9,7 @@ function Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues) {
     if (isTimerRunning) {
                return;
     }
+
     var werte = require('./profiles/simulation/variables/Variablen');
     let startValue = serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_Set.nodeId.value];
     let timerValue = startValue;
@@ -17,20 +18,18 @@ function Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues) {
         console.log("Timer für Index " + i + ": ", timerValue);
         timerValue--;
 
-        // Timer beendet oder Bedingungen geändert
+        // 1.Abbruchbedingung
         if ( !sharedState.status_Alarms_Warnings.ExtruderDriveControl.status_Warning_Torque_too_low_shutdown_timer_started && !sharedState.status_Alarms_Warnings.ExtruderDriveControl.status_Warning_Torque_too_high_shutdown_timer_started) {
             clearInterval(intervalId);
             isTimerRunning = false;
-            console.log("Timer für Index " + i + " abgelaufen oder Bedingungen geändert.");
-                  
-        }
+                   }
 
+                   //2.Abbruchbedingung
        if(timerValue <= 0){
         clearInterval(intervalId);
         isTimerRunning = true;
         isTimerRunning = false;
-        console.log("Timer abgelaufen, Extruder fährt runter")
-
+       
         sharedState.ExtruderisOff=true; 
         sharedState.ExtruderisOn=false;
 
@@ -42,14 +41,14 @@ function Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues) {
         sharedState.feeders[i].FeederisRunning = false;
         sharedState.feeders[i].FeederisOff = true;
     }
-    
-      // Das ist die Abruchbedingung für alle Funktionen, die zum Feeder gehören.
+          // Das ist die Abruchbedingung für alle Funktionen, die zum Feeder gehören.
       sharedState.intervalIds.stopSimulateFeederSingle = true;
       sharedState.intervalIds.stopSimulateFeederWeight = true;
       sharedState.intervalIds.stopSimulateThroughputRampLine = true;
       sharedState.intervalIds.stopAdjustThroughput = true;
       sharedState.intervalIds.stopSimulateLineMode = true;
 
+      // Abbruchbedingungen werden wieder auf false gesetzt
       setTimeout(function () {
         sharedState.intervalIds.stopSimulateFeederSingle = false;
         sharedState.intervalIds.stopSimulateFeederWeight = false;
