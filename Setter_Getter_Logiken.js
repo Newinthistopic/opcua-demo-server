@@ -516,7 +516,7 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwCtrlGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwCtrlSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStatGet: function (i, nameNodeId, serverValues) {
-    funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat", 26653, nameNodeId, serverValues);
+    funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat", 27677, nameNodeId, serverValues);
 
     setTimeout(() => {
       var werte = require('./profiles/simulation/variables/Variablen');
@@ -653,7 +653,7 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_dwCtrlGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_dwCtrl", 0, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_dwCtrlSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_dwCtrl", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_dwStatGet: function (i, nameNodeId, serverValues) {
-    funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_dwStat", 1880146909, nameNodeId, serverValues);
+    funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_dwStat", 1880147933, nameNodeId, serverValues);
 
     setTimeout(function () {
       funktionen.updatedwstat(undefined, "SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque");
@@ -707,7 +707,7 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_dwCtrlGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_dwCtrlSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_dwStatGet: function (i, nameNodeId, serverValues) {
-    funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_dwStat", 1048589, nameNodeId, serverValues);
+    funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_dwStat",1049613, nameNodeId, serverValues);
     setTimeout(function () {
       funktionen.updatedwstat(undefined, "SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity", undefined);
     }, 1);
@@ -760,7 +760,7 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_dwCtrlGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_dwCtrl", 0, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_dwCtrlSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_dwCtrl", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_dwStatGet: function (i, nameNodeId, serverValues) {
-    funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_dwStat", 1048589, nameNodeId, serverValues);
+    funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_dwStat", 1049613, nameNodeId, serverValues);
     setTimeout(function () {
       funktionen.updatedwstat(undefined, "SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower", undefined)
     }, 1);
@@ -1142,7 +1142,7 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_dwCtrlGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_dwCtrlSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_dwStatGet: function (i, nameNodeId, serverValues) {
-    funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_dwStat", 13, {}, i, nameNodeId, serverValues);
+    funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_dwStat", 1037, {}, i, nameNodeId, serverValues);
     setTimeout(function () {
       funktionen.updatedwstat(i, "SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress")
     }, 1);
@@ -1210,7 +1210,7 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtCmMeltTemp_rMeltTemp_dwCtrlGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltTemp_rMeltTemp_dwCtrl", 0, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtCmMeltTemp_rMeltTemp_dwCtrlSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltTemp_rMeltTemp_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtCmMeltTemp_rMeltTemp_dwStatGet: function (i, nameNodeId, serverValues) {
-    funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltTemp_rMeltTemp_dwStat", 1048589, {}, i, nameNodeId, serverValues);
+    funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltTemp_rMeltTemp_dwStat", 1049613, {}, i, nameNodeId, serverValues);
     setTimeout(function () {
       funktionen.updatedwstat(i, "SU3111_ZeExtruder_Hmi_udtCmMeltTemp_rMeltTemp", undefined)
     }, 1);
@@ -1408,7 +1408,7 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwCtrlGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwCtrlSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStatGet: function (i, nameNodeId, serverValues) {
-    funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat", 33554445, {}, i, nameNodeId, serverValues);
+    funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat", 33555469, {}, i, nameNodeId, serverValues);
     setTimeout(function () {
       funktionen.updatedwstat(i, "SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp");
     }, 1);
@@ -1499,8 +1499,10 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmPz_rSteelTemp_rSetTolMinSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_rSteelTemp_rSetTolMin", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmPz_rSteelTemp_rSetTolMinMinGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_rSteelTemp_rSetTolMinMin", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmPz_rSteelTemp_rSetTolMinMinSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_rSteelTemp_rSetTolMinMin", undefined, {}, i, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCvGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv", 0, {}, i, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCvSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv", undefined, {}, i, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtEmPz_rPzCvGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzCv",  undefined, {}, i, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtEmPz_rPzCvSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzCv",  undefined, {}, i, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtEmPz_rPzCv_rActGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzCv_rAct", 0, {}, i, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtEmPz_rPzCv_rActSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzCv_rAct", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTimeGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTime", 15, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTimeSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTime", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtCmPzPidGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmPzPid", 1, {}, i, nameNodeId, serverValues); },
@@ -2108,7 +2110,7 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Config_udtUm_udEmPzNumb_MaxSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Config_udtUm_udEmPzNumb_Max", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtUm_udEmPzNumb_MinGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Config_udtUm_udEmPzNumb_Min", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtUm_udEmPzNumb_MinSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Config_udtUm_udEmPzNumb_Min", undefined, {}, i, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Config_udtUm_udEmPzNumb_SetGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Config_udtUm_udEmPzNumb_Set", 1, {}, i, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Config_udtUm_udEmPzNumb_SetGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Config_udtUm_udEmPzNumb_Set", 13,  nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtUm_udEmPzNumb_SetSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Config_udtUm_udEmPzNumb_Set", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrlGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrlSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl", undefined, {}, i, nameNodeId, serverValues); },
@@ -3415,7 +3417,7 @@ const SetGetlogic = {
     const machine = new funktionen.StateMachine()
     setTimeout(function () {
       // Setzt die State Machine vom Feeder auf On
-      if (sharedState.FeedingisOn) {
+      if (sharedState.FeedingisOn) { // Status FeedingisOn ist ein Zustand für das gesamte Feedersystem. Ist ein Feeder an, so wird FeedingisOn auf true gesetzt
         machine.setState("SU2110_Feeding_Hmi_udtUm_udtModState_dwStatus", "RUNNING")
       }
       // Setzt die State Machine vom Feeder auf Off
@@ -4190,7 +4192,7 @@ const SetGetlogic = {
   SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_dwCtrlGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_dwCtrl", undefined, nameNodeId, serverValues); },
   SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_dwCtrlSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_dwCtrl", undefined, nameNodeId, serverValues); },
   SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_dwStatGet: function (i, nameNodeId, serverValues) {
-    funktionen.initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_dwStat", undefined, nameNodeId, serverValues);
+    funktionen.initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_dwStat", 1037, nameNodeId, serverValues);
 
   },
   SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_dwStatSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_dwStat", undefined, nameNodeId, serverValues); },

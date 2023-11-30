@@ -1198,7 +1198,6 @@ function GearboxOilLubricationFollowUpTimer() {
       }, 150);
     }
   }
-
   // Starten des Timers, der die 'startOilLubWatchFollowUp'-Funktion jede Sekunde ausführt.
   let intervalId = setInterval(startOilLubWatchFollowUp, 1000); // Speichern der Interval-ID zur späteren Referenz.
 }
@@ -1230,8 +1229,7 @@ function GearboxOilLubricationTimerPreRun() {
     }
   }
   // Starten des Timers, der die 'startOilLubUhr'-Funktion alle 1000 Millisekunden (1 Sekunde) ausführt.
-  // 'intervalId' dient zur Referenzierung und Kontrolle des Intervalls.
-  let intervalId = setInterval(startOilLubUhr, 1000);
+    let intervalId = setInterval(startOilLubUhr, 1000);
 }
 
 

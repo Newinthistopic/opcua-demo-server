@@ -47,8 +47,10 @@ function Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues) {
       for (let i = 1; i <= 4; i++) {
         sharedState.feeders[i].FeederisRunning = false;
         sharedState.feeders[i].FeederisOff = true;
+        // Dieser Zustand ist für den gesamten Feeder. Ist ein Feeder an, so wird der Zustand auf true gesetzt, sind alle Feeder aus, so wird der Zustand auf false gesetzt
+      sharedState.FeedingisOn=false;
       }
-
+      
       // Setzen der Abbruchbedingungen für die Feeder-Funktionen.
       sharedState.intervalIds.stopSimulateFeederSingle = true;
       sharedState.intervalIds.stopSimulateFeederWeight = true;
