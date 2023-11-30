@@ -356,14 +356,21 @@ function createCustomVariableUint64(i, variableName, componentOf, browseName, pa
 
 // Definition der Funktion 'initial' mit Parametern für den Variablennamen, 
 // einen Initialwert, benutzerdefinierte Werte, Index, Node-ID und Serverwerte
-var initial = function (variableName, initialValue, customValues, i, nameNodeId, serverValues) {
-  
+function initial(variableName, initialValue, customValues, i, nameNodeId, serverValues) {
+
   // Initialisieren eines Arrays zum Speichern der Node-IDs
   var nodeIdInitial = [];
 
-  // Direktes Speichern der Node-ID im nodeIdInitial-Array an der Position i
-  nodeIdInitial[i] = nameNodeId[variableName + "NodeId"];
-
+  // Überprüfen, ob die Node-ID der Variable im nameNodeId-Objekt existiert
+  if (nameNodeId[variableName + "NodeId"] !== undefined) {
+    // Speichern der Node-ID im nodeIdInitial-Array an der Position i
+    // Dies wird verwendet, um später auf die spezifische Node-ID zuzugreifen
+    nodeIdInitial[i] = nameNodeId[variableName + "NodeId"];
+  } else {
+    // Beenden der Funktion, falls die Node-ID nicht definiert ist
+    // Dies verhindert, dass die Funktion mit ungültigen Daten arbeitet
+    return;
+  }
   // Prüfung, ob die Node-ID bereits in serverValues vorhanden ist
   if (!(nameNodeId[variableName + "NodeId"] in serverValues)) {
     // Wenn die Node-ID nicht in serverValues ist, wird der folgende Block ausgeführt
@@ -373,41 +380,54 @@ var initial = function (variableName, initialValue, customValues, i, nameNodeId,
       // Überprüfen, ob die Node-ID für den aktuellen Index definiert ist
       if (nodeIdInitial[index] !== undefined) {
         // Setzen des Initialwerts für die Node-ID im serverValues-Objekt
+        // Dies ist der Standardwert, der für alle Indizes gesetzt wird, falls keine benutzerdefinierten Werte angegeben sind
         serverValues[nodeIdInitial[index]] = initialValue;
       }
     }
-    // Durchlaufen der benutzerdefinierten Werte
+    // Durchlaufen der benutzerdefinierten Werte, falls vorhanden
     for (const [index, value] of Object.entries(customValues)) {
       // Überprüfen, ob ein Wert für den aktuellen Index definiert ist
       if (nodeIdInitial[index] !== undefined && value !== undefined) {
         // Setzen des benutzerdefinierten Werts für die Node-ID im serverValues-Objekt
+        // Dies überschreibt den Standardwert aus dem vorherigen Schritt, falls ein benutzerdefinierter Wert vorhanden ist
         serverValues[nodeIdInitial[index]] = value;
       }
     }
-  } 
-  // Wenn die Node-ID bereits in serverValues ist, wird der obige Block übersprungen,
-  // und es werden keine Änderungen an serverValues vorgenommen.
+  }
 };
 
 
 
-var initialSingleValue = function (variableName, initialValue, nameNodeId, serverValues) {
-  var nodeIdInitial;
- 
+// Definition der Funktion 'initialSingleValue'.
+// Diese Funktion wird verwendet, um einen Anfangswert für eine spezifische Node-ID zu setzen.
+function initialSingleValue(variableName, initialValue, nameNodeId, serverValues) {
 
-  // Überprüfe, ob die Node-ID für den gegebenen Variablennamen existiert.
+  // Variable zur Speicherung der Node-ID.
+  var nodeIdInitial;
+
+  // Überprüfung, ob eine Node-ID für den angegebenen Variablennamen existiert.
+  // Hier wird der Variablenname dynamisch aus dem Parameter 'variableName' und dem String 'NodeId' zusammengesetzt.
+  // Beispiel: Wenn 'variableName' = "Temperatur" ist, wird nach 'nameNodeId["TemperaturNodeId"]' gesucht.
   if (nameNodeId[variableName + "NodeId"] !== undefined) {
+    // Wenn die Node-ID existiert (nicht 'undefined'), wird sie in 'nodeIdInitial' gespeichert.
+    // Dies ist der Schlüssel, der später verwendet wird, um den Wert in 'serverValues' zu setzen.
     nodeIdInitial = nameNodeId[variableName + "NodeId"];
   } else {
-    // Beende die Ausführung der Funktion, wenn die Node-ID nicht existiert
+    // Beendet die Funktion vorzeitig, wenn keine Node-ID für den angegebenen Variablennamen existiert.
+    // Dies verhindert, dass die Funktion mit einer ungültigen Node-ID arbeitet, was zu Fehlern führen könnte.
     return;
   }
-
-  // Setze den initialen Wert, wenn die Node-ID noch nicht in serverValues vorhanden ist
+  // Überprüfung, ob die Node-ID bereits in 'serverValues' vorhanden ist.
+  // Der 'in'-Operator prüft, ob ein bestimmter Schlüssel in einem Objekt existiert.
   if (!(nodeIdInitial in serverValues)) {
+    // Wenn die Node-ID noch nicht in 'serverValues' existiert, wird der 'initialValue' für diese Node-ID gesetzt.
+    // 'serverValues[nodeIdInitial]' setzt den Wert für die spezifische Node-ID.
     serverValues[nodeIdInitial] = initialValue;
   }
+  // Wenn die Node-ID bereits in 'serverValues' vorhanden ist, wird dieser Block übersprungen und nichts weiter unternommen,
+  // um zu verhindern, dass bereits festgelegte Werte überschrieben werden.
 };
+
 
 
 var wasBelow100 = Array(13).fill(true);  // Am Anfang, außerhalb der Funktion
@@ -818,71 +838,58 @@ function PIDSHUTDOWN(i, nameNodeId, serverValues) {
   calculateNextValue();
 }
 
-
-function simulateScrewSpeed(i, nameNodeId, serverValues) {
+// Definition der Funktion 'simulateScrewSpeed', die zur Simulation der Drehzahl eines Extruders dient.
+function simulateScrewSpeed() {
+  // Importieren der Variablendefinitionen aus einer externen Datei für Zugriff auf verschiedene Variablenwerte.
   var werte = require('./profiles/simulation/variables/Variablen');
 
+  // Innere Funktion 'simulateScrewRamp', die die schrittweise Anpassung der Drehzahl simuliert.
   function simulateScrewRamp() {
-
+    // Abfragen des aktuellen und des Zielwerts der Drehzahl aus dem serverValues-Objekt.
     let x0 = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value]; // Startwert
-    let xf = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSet.nodeId.value]; // Endwert bzw. Setwert
+    let xf = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSet.nodeId.value]; // Zielwert
+
+    // Weitere relevante Werte für die Drehzahlrampen-Simulation.
     let rampTime = serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewRampTime_Set.nodeId.value];
     let roundness = serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewRampRoundTime_Set.nodeId.value];
-    let nominalTorque = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewTorqueNom_Set.nodeId.value];
-    let maxDrehzahl = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMax_Set.nodeId.value];
     let Durchsatzgesamt = serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughputTotal_rAct.nodeId.value];
-    let specificRate_Set = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rSet.nodeId.value]
+    let specificRate_Set = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rSet.nodeId.value];
 
+    // Initialisierung der Zeitvariablen und Festlegung des Inkrements basierend auf der Rampenzeit.
     let t = 0;
-    let increment = 0.1 / rampTime;  // basierend auf einem 100ms Update-Intervall
-    // Volumen der Schnecke 
-    const screwVolume = 3;
+    let increment = 0.1 / rampTime; // Inkrement basiert auf einem 100ms Update-Intervall.
 
+    // Anpassen der Zielgeschwindigkeit xf basierend auf dem Gesamtdurchsatz und der spezifischen Rate.
     if (sharedState.SpeedCalculationSpecRateisOn) {
-      console.log("if(sharedState.SpeedCalculationSpecRateisOn){")
-      // Wenn Anfangs auf Spec.Rate geschaltet wird und der Gesamtdurchsatz null ist, dann wird xf auf die minimale Drehzahl gestellt.
-      if (Durchsatzgesamt === 0) {
+      if (Durchsatzgesamt === 0 && sharedState.ExtruderisOn) {
+        // Wenn der Gesamtdurchsatz null ist und der Extruder läuft, wird xf auf die minimale Drehzahl gesetzt.
         xf = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMin.nodeId.value];
       } else {
+        // Andernfalls wird xf basierend auf dem Gesamtdurchsatz und der spezifischen Rate berechnet.
         xf = Durchsatzgesamt / specificRate_Set;
       }
     }
-
-    const normalizedTime = t;  // Da t von 0 bis 1 geht, ist es bereits normalisiert
+    // Normalisierung der Zeit und Berechnung der aktuellen Drehzahl anhand einer sigmoiden Funktion.
+    const normalizedTime = t;
     let currentSpeed = x0 + (xf - x0) / (1 + Math.exp(-roundness * (normalizedTime - 0.5)));
-
-    // Geschwindigkeit wird der HMI zugewiesen
+    // Zuweisung der berechneten Drehzahl an die HMI.
     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value] = currentSpeed;
 
-    let drehmoment = (currentSpeed / maxDrehzahl) * nominalTorque;
-    let prozentDrehmoment = (drehmoment / nominalTorque) * 100
-    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] = prozentDrehmoment;
-
-
-    // Drehmomentdichte berechnen
-    let torqueDensity = drehmoment / screwVolume;
-    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_rAct.nodeId.value] = torqueDensity;
-
-    // Berechnung der spezifischen Energie
-    let specificEnergy = (prozentDrehmoment / 100) * currentSpeed * 60 / Durchsatzgesamt;
-    serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_rAct.nodeId.value] = (isFinite(specificEnergy) && specificEnergy !== undefined) ? specificEnergy : null; // Muss gemacht werden, damit Act Wert NaN anzeigt, wenn der Durchsatz Null ist dann wird hier durch null geteilt
-
-
-    // Prüfen, ob der Unterschied zum Setwert kleiner als 0,01 ist
+    // Überprüfung, ob der Unterschied zum Zielwert klein genug ist, um die Simulation zu beenden.
+    // 1. Abbruchbedingung: Wenn der Unterschied kleiner als ein definierter Schwellenwert ist.
     if (Math.abs(currentSpeed - xf) < 0.1) {
-
-      // Durch das Inkrement wird der Wert nie ganz auf den SetWert laufen, daher wird am Ende nochmal der Wert aktualisiert
-      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value] = xf
-      clearInterval(intervalId);
-    } else if ((xf > x0 && currentSpeed >= xf) || (xf < x0 && currentSpeed <= xf)) {
-      // Durch das Inkrement wird der Wert nie ganz auf den SetWert laufen, daher wird am Ende nochmal der Wert aktualisiert
-      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value] = xf
-      clearInterval(intervalId);
+      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value] = xf;
+      clearInterval(intervalId); // Beenden der periodischen Ausführung der Funktion.
+    } 
+    // 2. Abbruchbedingung: Wenn die aktuelle Geschwindigkeit den Zielwert erreicht oder überschreitet.
+    else if ((xf > x0 && currentSpeed >= xf) || (xf < x0 && currentSpeed <= xf)) {
+      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value] = xf;
+      clearInterval(intervalId); // Beenden der periodischen Ausführung der Funktion.
     }
-
-    t += increment;  // Zeit inkrementieren
+    // Inkrementieren der Zeitvariablen für den nächsten Durchlauf der Simulation.
+    t += increment;
   }
-
+  // Starten der periodischen Ausführung von 'simulateScrewRamp' im 100-Millisekunden-Intervall.
   let intervalId = setInterval(simulateScrewRamp, 100);
 }
 
@@ -896,7 +903,7 @@ let intervalIds = {
 };
 
 function simulateFeederSingleMode(i, nameNodeId, serverValues) { // Single Mode
-  console.log("startfeeder")
+  
   var werte = require('./profiles/simulation/variables/Variablen');
 
   let currentThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
@@ -1158,54 +1165,75 @@ function PercentagedistributionFeederLineMode() {
   }
 }
 
-function GearboxOilLubricationFollowUpTimer(i, nameNodeId, serverValues) {
+// Definition der Funktion 'GearboxOilLubricationFollowUpTimer' für die Nachlaufzeit der Getriebeölschmierung.
+function GearboxOilLubricationFollowUpTimer() {
+  // Protokollierung in der Konsole, dass die Funktion ausgeführt wird.
   console.log("In der Funktion GearboxOilLubricationFollowUpTimer");
+
+  // Importieren der Variablendefinitionen aus einer externen Datei.
   var werte = require('./profiles/simulation/variables/Variablen');
 
-  // Startwert aus Expert Settings (Config)
+  // Abrufen des Startwerts für den FollowUp-Timer aus den Konfigurationseinstellungen.
   let currentValue = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Set.nodeId.value];
 
+  // Innere Funktion 'startOilLubWatchFollowUp', die die Zeit für die Nachlaufzeit überwacht.
   function startOilLubWatchFollowUp() {
-    // Wert um 1 verringern
+    // Verringerung des aktuellen Timer-Werts um 1.
     currentValue--;
 
-    // Aktualisierten Wert in serverValues speichern
+    // Aktualisierung des verringerten Werts im 'serverValues'-Objekt.
     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value] = currentValue;
 
-    // Abbruchbedingung, wenn currentValue kleiner oder gleich 0 ist
+    // Überprüfung, ob der Timer-Wert 0 oder kleiner erreicht hat.
     if (currentValue <= 0) {
+      // Beenden des Timers, wenn der Wert 0 oder kleiner erreicht wird.
       clearInterval(intervalId);
+
+      // Setzen des Zustands, dass die FollowUp-Zeit abgelaufen ist.
       sharedState.GearOilRemainTimeFollowUpExpired = true;
+
+      // Kurze Verzögerung nach dem Ablauf des Timers, um den Zustand zurückzusetzen.
+      setTimeout(function () {
+        sharedState.GearOilRemainTimeFollowUpExpired = false;
+      }, 150);
     }
   }
 
-  let intervalId = setInterval(startOilLubWatchFollowUp, 1000); // Speichern der Interval-ID
+  // Starten des Timers, der die 'startOilLubWatchFollowUp'-Funktion jede Sekunde ausführt.
+  let intervalId = setInterval(startOilLubWatchFollowUp, 1000); // Speichern der Interval-ID zur späteren Referenz.
 }
 
 
-function GearboxOilLubricationTimerPreRun(i, nameNodeId, serverValues) {
-  console.log("In der Funktion GearboxOilLubricationTimerPreRun");
+
+// Definition der Funktion 'GearboxOilLubricationTimerPreRun' zur Verwaltung des PreRun-Timers für die Getriebeölschmierung.
+function GearboxOilLubricationTimerPreRun() {
+  
+  // Importieren der Variablendefinitionen aus einer externen Datei.
   var werte = require('./profiles/simulation/variables/Variablen');
 
-  // Startwert aus dem ServerValues-Objekt abrufen
+  // Abrufen des Startwerts für den PreRun-Timer aus dem 'serverValues'-Objekt.
   let currentValue = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Set.nodeId.value];
 
+  // Definition der inneren Funktion 'startOilLubUhr' zur Verringerung des Timer-Werts.
   function startOilLubUhr() {
-    // Wert um 1 verringern
+    // Verringerung des aktuellen Timer-Werts um 1.
     currentValue--;
 
-    // Aktualisierten Wert in serverValues speichern
+    // Aktualisierung des verringerten Werts im 'serverValues'-Objekt.
     serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime.nodeId.value] = currentValue;
 
-    // Abbruchbedingung, wenn currentValue kleiner oder gleich 0 ist
+    // Überprüfung, ob der Timer-Wert 0 oder kleiner erreicht hat.
     if (currentValue <= 0) {
+      // Wenn ja, wird das Interval gestoppt und der Zustand entsprechend aktualisiert.
       clearInterval(intervalId);
       sharedState.GearOilRemainPreRunTimeExpired = true;
     }
   }
-
-  let intervalId = setInterval(startOilLubUhr, 1000); // Speichern der Interval-ID, Intervall alle 500 Millisekunden
+  // Starten des Timers, der die 'startOilLubUhr'-Funktion alle 1000 Millisekunden (1 Sekunde) ausführt.
+  // 'intervalId' dient zur Referenzierung und Kontrolle des Intervalls.
+  let intervalId = setInterval(startOilLubUhr, 1000);
 }
+
 
 
 

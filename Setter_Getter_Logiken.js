@@ -1,10 +1,10 @@
-const funktionen = require('./../opcua-demo-server/funktionen'); 
+const funktionen = require('./../opcua-demo-server/funktionen');
 
-const alarme_warnungen_funktionen = require('./alarme_warnungen_funktionen'); 
+const alarme_warnungen_funktionen = require('./alarme_warnungen_funktionen');
 
 var sharedState = require('./Zustände');
 
-const serverValues = require('./../opcua-demo-server/server'); 
+const serverValues = require('./../opcua-demo-server/server');
 
 const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtUmGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm", undefined, nameNodeId, serverValues); },
@@ -23,7 +23,7 @@ const SetGetlogic = {
     const machine = new funktionen.StateMachine();
 
     setTimeout(() => {
-    
+
       if (sharedState.ExtruderisOn) { // Extruder Button on, daher State Running
         machine.setState('SU3111_ZeExtruder_Hmi_udtUm_udtModState_dwStatus', 'RUNNING');
       }
@@ -67,13 +67,14 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmUltraGluideExt_udtIntLockSwitch_strTagSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmUltraGluideExt_udtIntLockSwitch_strTag", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrlGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrlSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl", undefined, {}, i, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStatGet: function (i, nameNodeId) {
+  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStatGet: function (i, nameNodeId, serverValues) {
     funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat", 537923341, nameNodeId, serverValues);
 
     setTimeout(function () {
       var werte = require('./profiles/simulation/variables/Variablen');
       // Erste Bedingung (Taste Spec.Rate)
       if (sharedState.SpeedCalculationSpecRateisOn) {
+
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.TargetScrewSpeedCalculation_direct_specRate);
       }
       // Zweite Bedingung (Taste Direct)
@@ -86,7 +87,7 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStatSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwCtrlGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwCtrl", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwCtrlSet: function (i, nameNodeId, serverValues) {
-    funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwCtrl", undefined, {}, nameNodeId, serverValues);
+    funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwCtrl", undefined, nameNodeId, serverValues);
 
     var werte = require('./profiles/simulation/variables/Variablen');
     // Erste Bedingung (Taste Spec.Rate)
@@ -94,16 +95,18 @@ const SetGetlogic = {
       sharedState.SpeedCalculationDirectisOn = false;
       sharedState.SpeedCalculationSpecRateisOn = true;
 
+
       if (sharedState.ExtruderisOn && !sharedState.ExtruderisOff) { // Funktion wird nur gestarten wenn der Extruder an ist. 
-        funktionen.simulateScrewSpeed(i, nameNodeId, serverValues); // Startet die Funktion, damit falls die Target Speed Calculation geändert wird
+        funktionen.simulateScrewSpeed(); // Startet die Funktion, damit falls die Target Speed Calculation geändert wird
       }
     }
     // Zweite Bedingung (Taste Direct)
     if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwCtrl.nodeId.value] === sharedState.buttonPushed.Speed_calculation_with_absolut_speed) {
       sharedState.SpeedCalculationDirectisOn = true;
       sharedState.SpeedCalculationSpecRateisOn = false;
+
       if (sharedState.ExtruderisOn) { // Funktion wird nur gestarten wenn der Extruder an ist. 
-        funktionen.simulateScrewSpeed(i, nameNodeId, serverValues); // Startet die Funktion, damit falls die Target Speed Calculation geändert wird
+        funktionen.simulateScrewSpeed(); // Startet die Funktion, damit falls die Target Speed Calculation geändert wird
       }
     }
 
@@ -118,32 +121,26 @@ const SetGetlogic = {
       if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] < serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Set.nodeId.value] && sharedState.ExtruderisOn) {
         // Setzen des Warnungsbits
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] |= (1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning_Torque_too_low_shutdown_timer_started);
-sharedState.status_Alarms_Warnings.ExtruderDriveControl.status_Warning_Torque_too_low_shutdown_timer_started=true;
-alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues);
+        sharedState.status_Alarms_Warnings.ExtruderDriveControl.status_Warning_Torque_too_low_shutdown_timer_started = true;
+        alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues);
       } else {
         // Zurücksetzen des Warnungsbits
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] &= ~(1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning_Torque_too_low_shutdown_timer_started) && sharedState.ExtruderisOn;
-        sharedState.status_Alarms_Warnings.ExtruderDriveControl.status_Warning_Torque_too_low_shutdown_timer_started=false;
+        sharedState.status_Alarms_Warnings.ExtruderDriveControl.status_Warning_Torque_too_low_shutdown_timer_started = false;
       }
-
-
 
       // Wenn ScrewTorque Act über rScrewTorqueHH_Set, so wird die Warnung Torque to High angezeigt
       if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] > serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Set.nodeId.value]) {
         // Setzen des Warnungsbits
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] |= (1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning.Warning_Torque_too_high_shutdown_timer_started);
-
-        sharedState.status_Alarms_Warnings.ExtruderDriveControl.status_Warning_Torque_too_high_shutdown_timer_started=true;
-
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] |= (1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning_Torque_too_high_shutdown_timer_started);
+        sharedState.status_Alarms_Warnings.ExtruderDriveControl.status_Warning_Torque_too_high_shutdown_timer_started = true;
+        alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues);
       } else {
         // Zurücksetzen des Warnungsbits
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] &= ~(1 << sharedState.Alarms_Warnings.ExtruderDriveControl.Warning_Torque_too_high_shutdown_timer_started);
-        sharedState.status_Alarms_Warnings.ExtruderDriveControl.status_Warning_Torque_too_high_shutdown_timer_started=false
+        sharedState.status_Alarms_Warnings.ExtruderDriveControl.status_Warning_Torque_too_high_shutdown_timer_started = false
 
       }
-
-
-
 
     }, 1);
 
@@ -158,22 +155,22 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtIntLockSwitch_strTagSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtIntLockSwitch_strTag", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStopGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStopSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop", undefined, {}, i, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrlGet: function (i, nameNodeId, serverValues) { 
-    funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl", undefined, nameNodeId, serverValues); 
-  
+  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrlGet: function (i, nameNodeId, serverValues) {
+    funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl", undefined, nameNodeId, serverValues);
+
     setTimeout(function () {
       var werte = require('./profiles/simulation/variables/Variablen');
-    //Extruder ist an
-    if(sharedState.ExtruderisOn && !sharedState.ExtruderisOff){
-      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.MainDrive_On_Off); // Main drive is running
-    }
+      //Extruder ist an
+      if (sharedState.ExtruderisOn && !sharedState.ExtruderisOff) {
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.MainDrive_On_Off); // Main drive is running
+      }
 
-    // Extruder ist Aus
-    if(sharedState.ExtruderisOff && !sharedState.ExtruderisOn){
+      // Extruder ist Aus
+      if (sharedState.ExtruderisOff && !sharedState.ExtruderisOn) {
 
-      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.MainDrive_On_Off); // Main drive is off
-    }
-  }, 1);
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.MainDrive_On_Off); // Main drive is off
+      }
+    }, 1);
   },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrlSet: function (i, nameNodeId, serverValues) {
     funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl", undefined, nameNodeId, serverValues);
@@ -182,18 +179,18 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
       sharedState.ExtruderisOn = true
       sharedState.ExtruderisOff = false
 
-      
-      funktionen.simulateScrewSpeed(i, nameNodeId, serverValues)
+      funktionen.simulateScrewSpeed()
     }
 
     if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl.nodeId.value] === sharedState.buttonPushed.ExtruderOff) { // Start Extruder Button off
 
 
-    
+
       sharedState.ExtruderisOn = false
       sharedState.ExtruderisOff = true
-      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSet.nodeId.value] = 0 // Endwert bzw. Setwert
-      funktionen.simulateScrewSpeed(i, nameNodeId, serverValues)
+      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSet.nodeId.value] = 0// Endwert bzw. Setwert
+     // serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rSet.nodeId.value]  = 0// Endwert bzw. Setwert
+      funktionen.simulateScrewSpeed()
 
       for (let i = 1; i <= 4; i++) {
         serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = 0;
@@ -528,7 +525,7 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
 
       //Berechnung des Target Speed ist im Spec Rate Modus
       if (sharedState.SpeedCalculationSpecRateisOn) {
-        console.log("sharedState.SpeedCalculationSpecRateisOn")
+
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Setpoint_value_is_visible);
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Setpoint_input_of_Hmi_is_active);
       }
@@ -559,7 +556,7 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
     funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSet", undefined, nameNodeId, serverValues);
     // Der Extruder muss an sein, damit ein neu gewählter Set Wert die Funktion auslöst
     if (sharedState.ExtruderisOn && !sharedState.ExtruderisOff) { // Main Drive is On
-           funktionen.simulateScrewSpeed(i, nameNodeId, serverValues);
+      funktionen.simulateScrewSpeed();
     }
   },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSetRecGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSetRec", undefined, nameNodeId, serverValues); },
@@ -636,7 +633,7 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
 
     // Es wird geprüft, ob ie Spec.rate Taste gedrückt ist und der Extruder Button auf On steht, damit die Funktion ausgeführt wird
     if (sharedState.SpeedCalculationSpecRateisOn && sharedState.ExtruderisOn) {
-      funktionen.simulateScrewSpeed(i, nameNodeId, serverValues);
+      funktionen.simulateScrewSpeed();
     }
   },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rSetRecGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rSetRec", undefined, nameNodeId, serverValues); },
@@ -664,7 +661,22 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
 
   },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_dwStatSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_dwStat", undefined, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rActGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct", 0, {}, i, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rActGet: function (i, nameNodeId, serverValues) {
+    funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct", 0, {}, i, nameNodeId, serverValues);
+
+    setTimeout(function () {
+      var werte = require('./profiles/simulation/variables/Variablen');
+
+      let nominalTorque = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewTorqueNom_Set.nodeId.value];
+      let maxDrehzahl = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMax_Set.nodeId.value];
+      let currentSpeed = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value]
+
+      let drehmoment = (currentSpeed / maxDrehzahl) * nominalTorque;
+      let prozentDrehmoment = (drehmoment / nominalTorque) * 100
+      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] = prozentDrehmoment;
+    }, 1000)
+
+  },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rActSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rActRecGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rActRec", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rActRecSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rActRec", undefined, nameNodeId, serverValues); },
@@ -702,7 +714,22 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
 
   },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_dwStatSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_dwStat", undefined, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_rActGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_rAct", 0, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_rActGet: function (i, nameNodeId, serverValues) {
+    funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_rAct", 0, nameNodeId, serverValues);
+    setTimeout(function () {
+
+      var werte = require('./profiles/simulation/variables/Variablen');
+      // Volumen der Schnecke 
+      const screwVolume = 3;
+
+      let drehmoment = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value]
+
+      // Drehmomentdichte berechnen
+      let torqueDensity = drehmoment / screwVolume;
+      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_rAct.nodeId.value] = isFinite(torqueDensity) ? torqueDensity : null;
+    }, 1);
+
+  },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_rActSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_rAct", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_rActRecGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_rActRec", 0, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_rActRecSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_rActRec", undefined, nameNodeId, serverValues); },
@@ -785,7 +812,20 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_dwCtrlSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_dwStatGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_dwStat", 1070089, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_dwStatSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_dwStat", undefined, nameNodeId, serverValues); },
-  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_rActGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_rAct", 0, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_rActGet: function (i, nameNodeId, serverValues) {
+    funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_rAct", 0, nameNodeId, serverValues);
+
+    setTimeout(function () {
+      var werte = require('./profiles/simulation/variables/Variablen');
+      let currentSpeed = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value];
+      let prozentDrehmoment = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value];
+      let Durchsatzgesamt = serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughputTotal_rAct.nodeId.value];
+
+      // Berechnung der spezifischen Energie
+      let specificEnergy = (prozentDrehmoment / 100) * currentSpeed * 60 / Durchsatzgesamt;
+      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_rAct.nodeId.value] = (isFinite(specificEnergy) && specificEnergy !== undefined) ? specificEnergy : null; // Muss gemacht werden, damit Act Wert NaN anzeigt, wenn der Durchsatz Null ist dann wird hier durch null geteilt
+    }, 1);
+  },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_rActSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_rAct", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_rActRecGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_rActRec", 0, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_rActRecSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_rActRec", undefined, nameNodeId, serverValues); },
@@ -968,7 +1008,7 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.GearOilLubrication_Button_is_On_Off); // Ölschmierung Off Button
 
         if (sharedState.GearOilRemainPreRunTimeExpired) { // Wenn die Uhr von RemainPreRunTime abgelaufen ist, so startet die Remain TimeFollowUp
-          console.log("hahahahahahahahahahha")
+        
           funktionen.GearboxOilLubricationFollowUpTimer(i, nameNodeId, serverValues)
           sharedState.GearOilRemainPreRunTimeExpired = false; // Setzt die RemainPreRunTime wieder auf false, damit der Startwert wieder angezeigt wird
         }
@@ -1055,10 +1095,10 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
     funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime", 15, nameNodeId, serverValues);
     setTimeout(function () {
       var werte = require('./profiles/simulation/variables/Variablen');
-      // Wenn die Zeit von FollowUp von der Ölschmierung abgelaufen ist, so wird die Zeit wieder zurückgesetzt
+      // Wenn die Zeit von FollowUp Time von der Ölschmierung abgelaufen ist, so wird die Zeit wieder zurückgesetzt
       if (sharedState.GearOilRemainTimeFollowUpExpired) {
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime.nodeId.value] = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Set.nodeId.value]
-        sharedState.GearOilRemainTimeFollowUpExpired = false;
+                serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime.nodeId.value] = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Set.nodeId.value]
+    
       }
     }, 1);
   },
@@ -1068,13 +1108,12 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
 
     setTimeout(function () {
       var werte = require('./profiles/simulation/variables/Variablen');
-      // Nach dem Starten des Servers wird sharedState.InitialValueRemainTimeFollowUp initialisiert und den Wert von udActRemainTimeFollowUp zugewiesen. Dies dient als Speicher zum Resetten
-      if (sharedState.InitialValueRemainTimeFollowUp === null) {
-        sharedState.InitialValueRemainTimeFollowUp = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value];
-      }
+  
       // Die Zeit FollowUpTime von der Ölschmierung ist abgelaufen, daher wird diese  resettet
       if (sharedState.GearOilRemainTimeFollowUpExpired) {
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value] = sharedState.InitialValueRemainTimeFollowUp
+             serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value] = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Set.nodeId.value]
+      
+       
       }
     }, 1);
 
@@ -2929,7 +2968,7 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
   },
   SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrlSet: function (i, nameNodeId, serverValues) {
     funktionen.initial("SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl", undefined, {}, i, nameNodeId, serverValues);
-    
+
     var werte = require('./profiles/simulation/variables/Variablen');
 
     // sobald ein Bit auf On gesetzt ist, wird der Status FeedingisOn auf true gesetzt
@@ -2948,27 +2987,27 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
     ) {
       sharedState.FeedingisOn = false;
     }
-   
+
     // Setzt FeederisRunning auf false, sobald der off Button gedrückt wird
     if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl.nodeId.value] === sharedState.buttonPushed.FeederOff) { // Off Button
 
       sharedState.feeders[i].FeederisRunning = false;
-    sharedState.feeders[i].FeederisOff = true;
+      sharedState.feeders[i].FeederisOff = true;
 
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active); // Tolerance Monitoring Off
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = 0;// Wenn der Button auf Off gedrückt, wird so fährt der Feeder runter auf Null
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = 0;// Wenn der Button auf Off gedrückt, wird so fährt der Feeder runter auf Null
       sharedState.simulateFeederWeightisRunning = false;
-     
+
     }
 
     // Setzt FeederisRunning auf true, sobald der on Button gedrückt wird
     if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl.nodeId.value] === sharedState.buttonPushed.FeederOn) {  // On Button
-      
-     sharedState.feeders[i].FeederisRunning = true;
-     sharedState.feeders[i].FeederisOff = false;
-      
-     
+
+      sharedState.feeders[i].FeederisRunning = true;
+      sharedState.feeders[i].FeederisOff = false;
+
+
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active);// Tolerance Monitoring On
       funktionen.simulateFeederFillLevel(i, nameNodeId, serverValues);
       sharedState.simulateFeederWeightisRunning = true;
@@ -2983,13 +3022,13 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
         funktionen.simulateFeederSingleMode(i, nameNodeId, serverValues);
       }
     }
-   
+
   },
   SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStatGet: function (i, nameNodeId, serverValues) {
     funktionen.initial("SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat", 1033, {}, i, nameNodeId, serverValues);
-  
 
-  
+
+
     setTimeout(function () {
       var werte = require('./profiles/simulation/variables/Variablen');
 
@@ -3018,11 +3057,11 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
           serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active); // Tolerance Monitoring Off
         }
       }
- 
+
       // Wenn ein FeederisRunning auf true steht, so wird der on Button schwarz
-     for (let i = 1; i <= 4; i++) {
+      for (let i = 1; i <= 4; i++) {
         if (sharedState.feeders[i].FeederisRunning && !sharedState.feeders[i].FeederisOff) {
-         
+
           serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Status_feeder_is_On_Off); // Setzt Status feeder auf "on"
         }
       }
@@ -3150,7 +3189,7 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
         serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Status_Auto_Start_On);
       }
 
-  
+
     }, 1)
   },
 
@@ -3247,7 +3286,8 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
   SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rOpMinGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rOpMin", 0, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rOpMinSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rOpMin", undefined, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSet", 100, nameNodeId, serverValues); },
-  SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetSet: function (i, nameNodeId, serverValues) {funktionen.initial("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSet", undefined, {}, i, nameNodeId, serverValues);
+  SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetSet: function (i, nameNodeId, serverValues) {
+    funktionen.initial("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSet", undefined, {}, i, nameNodeId, serverValues);
   },
   SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetRecGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetRec", undefined, nameNodeId, serverValues); },
   SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetRecSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rSetRec", undefined, nameNodeId, serverValues); },
@@ -4261,7 +4301,7 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
       // Wenn FeederRamp Mode aktiv ist, so wird on Button grau
       if (sharedState.FeederRampModeisOn) {
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << 2)
-      
+
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << 9)
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << 10)
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << 11)
@@ -4403,7 +4443,7 @@ alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId,
   SU3100_Plastification_Hmi_udtPc_udtModState_dwUnitNavigationStatusGet: function (i, nameNodeId, serverValues) {
     funktionen.initialSingleValue("SU3100_Plastification_Hmi_udtPc_udtModState_dwUnitNavigationStatus", 16, nameNodeId, serverValues);
 
-    
+
     const machine = new funktionen.StateMachineNavigationBar();
     setTimeout(function () {
       var werte = require('./profiles/simulation/variables/Variablen');

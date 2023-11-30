@@ -1,5 +1,4 @@
 
-let InitialValueRemainTimeFollowUp = null;
 
 
 const BIT_POSITIONS = {
@@ -194,7 +193,7 @@ module.exports = {
     GearOilRemainPreRunTimeExpired: false,
     GearOilRemainTimeFollowUpExpired: false,
 
-    InitialValueRemainTimeFollowUp: InitialValueRemainTimeFollowUp
+  
 
 
 };
