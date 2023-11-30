@@ -880,7 +880,7 @@ function simulateScrewSpeed() {
     if (Math.abs(currentSpeed - xf) < 0.1) {
       serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value] = xf;
       clearInterval(intervalId); // Beenden der periodischen Ausführung der Funktion.
-    } 
+    }
     // 2. Abbruchbedingung: Wenn die aktuelle Geschwindigkeit den Zielwert erreicht oder überschreitet.
     else if ((xf > x0 && currentSpeed >= xf) || (xf < x0 && currentSpeed <= xf)) {
       serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rAct.nodeId.value] = xf;
@@ -893,7 +893,7 @@ function simulateScrewSpeed() {
   let intervalId = setInterval(simulateScrewRamp, 100);
 }
 
-//FEEDER//////////////
+// Globales Objekt zur Verwaltung von Intervall-IDs für verschiedene Feeder-Modi.
 let intervalIds = {
   simulateFeederSingle: [],
   simulateFeederLine: [],
@@ -902,148 +902,185 @@ let intervalIds = {
   updateFeederWeight: []
 };
 
-function simulateFeederSingleMode(i, nameNodeId, serverValues) { // Single Mode
-  
+// Definition der Funktion simulateFeederSingleMode für einen einzelnen Feeder.
+function simulateFeederSingleMode(i, nameNodeId, serverValues) {
+  // Prüft, ob für den angegebenen Feeder (identifiziert durch 'i') bereits ein Intervall läuft.
+  if (intervalIds.simulateFeederSingle[i]) {
+    // Wenn ja, gibt eine Meldung in der Konsole aus und verlässt die Funktion.
+    console.log("Intervall für Feeder " + i + " läuft bereits. Keine neue Erstellung.");
+    return;  // Verhindert das mehrfache Starten des gleichen Intervalls für denselben Feeder.
+  }
+  // Importiert Variablen aus einer externen Datei.
   var werte = require('./profiles/simulation/variables/Variablen');
 
+  // Holt den aktuellen Durchsatz des Feeders aus den Serverdaten.
   let currentThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
-
+  // Innere Funktion zur Simulation des einzelnen Feeders.
   function simulateFeederSingle() {
-
-    // 1. Abbruchbedingung
+    // Prüft, ob ein globaler Stoppbefehl für alle Feeder im Single Mode vorliegt.
     if (sharedState.intervalIds.stopSimulateFeederSingle) {
-
-      console.log("stopen der Fuktion start Feeder");
+      // Durchläuft alle Intervall-IDs und stoppt jedes Intervall.
       for (let id of intervalIds.simulateFeederSingle) {
-        clearInterval(id);
+        clearInterval(id);  // Beendet das Intervall.
       }
-      intervalIds.simulateFeederSingle = [];  // Leeren des Arrays
-      return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
+      intervalIds.simulateFeederSingle = [];  // Setzt das Array zurück.
+      return;  // Beendet die Ausführung der inneren Funktion.
     }
+    // Ermittelt den Ziel-Durchsatz aus den Serverdaten.
     let setThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value];
+    // Bestimmt die Richtung der Anpassung: Erhöhen oder Verringern.
     let direction = (setThroughput > currentThroughput) ? 1 : -1;
-
+    // Berechnet das Inkrement für die Durchsatzanpassung.
     let inkrement = 1.135 * direction;
+    // Aktualisiert den aktuellen Durchsatz basierend auf dem Inkrement.
     currentThroughput += inkrement;
-
-    // 2. Abbruchbedingung
+    // Prüft, ob der Feeder ausgeschaltet ist.
     if (sharedState.feeders[i].FeederisOff) {
-
-      clearInterval(intervalIds.simulateFeederSingle[i]);
+      clearInterval(intervalIds.simulateFeederSingle[i]);  // Stoppt das spezifische Intervall für diesen Feeder.
+      intervalIds.simulateFeederSingle[i] = null;  // Entfernt die Referenz auf das Intervall.
     }
-    // 3. Abbruchbedingung
+    // Prüft, ob der aktuelle Durchsatz den Zielwert erreicht hat.
     if ((direction === 1 && currentThroughput >= setThroughput) || (direction === -1 && currentThroughput <= setThroughput)) {
-      currentThroughput = setThroughput;
-      clearInterval(intervalIds.simulateFeederSingle[i]);
+      currentThroughput = setThroughput;  // Setzt den Durchsatz auf den Zielwert.
+      clearInterval(intervalIds.simulateFeederSingle[i]);  // Stoppt das Intervall.
+      intervalIds.simulateFeederSingle[i] = null;  // Entfernt die Referenz auf das Intervall.
     }
+    // Aktualisiert die Serverdaten mit dem neuen Durchsatz.
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput;
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = currentThroughput;
   }
-
+  // Startet das Intervall, das die simulateFeederSingle-Funktion regelmäßig aufruft.
   let intervalId = setInterval(simulateFeederSingle, 200);
+  // Speichert die Intervall-ID im globalen Objekt zur späteren Referenzierung.
   intervalIds.simulateFeederSingle[i] = intervalId;
 }
 
-//feeder Line Modus
-function simulateFeederLineMode(i, nameNodeId, serverValues) {
-  const werte = require('./profiles/simulation/variables/Variablen');
 
-  // Der Gesamtdurchsatz für die gesamte Linie
+// Definition der Funktion 'simulateFeederLineMode' für den Line Mode eines Feeders.
+function simulateFeederLineMode(i, nameNodeId, serverValues) {
+  // Prüft, ob bereits ein Intervall für den aktuellen Feeder (identifiziert durch 'i') läuft.
+  if (intervalIds.simulateFeederLine[i]) {
+    return;  // Beendet die Funktion frühzeitig.
+  }
+
+  // Importiert die Variablendefinitionen aus einer externen Datei.
+  var werte = require('./profiles/simulation/variables/Variablen');
+
+  // Holt den Gesamtdurchsatz für die Feederlinie aus den Server-Daten.
   let totalTargetThroughput = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value];
 
-  // Der aktuelle prozentuale Durchsatz für den spezifischen Feeder
+  // Bestimmt den aktuellen prozentualen Durchsatz des spezifischen Feeders.
   let currentFeederThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value];
 
+  // Innere Funktion, die den Durchsatz des Feeders im Line Mode simuliert.
   function simulateFeederLine() {
-
-    //1.  Abbruchbedingung
-    if (sharedState.intervalIds.stopsimulateLineMode) {
-      console.log("Abbruchbedingung stopSimulateThroughputRamp")
-      for (let id of intervalIds.simulateFeederLine) {
-        clearInterval(id);
-      }
-      intervalIds.simulateFeederLine = [];  // Leeren des Arrays
-      return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
-    }
-
-    // Errechne den Ziel-Durchsatz für diesen Feeder basierend auf dem gewünschten prozentualen Anteil
-    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value]
+    // Berechnet den Zieldurchsatz für den Feeder basierend auf dem Gesamtdurchsatz.
     let targetThroughputForFeeder = totalTargetThroughput * (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] / 100);
 
-
+    // Ermittelt die Richtung der Durchsatzänderung (Erhöhung oder Verringerung).
     let direction = (targetThroughputForFeeder > currentFeederThroughput) ? 1 : -1;
 
+    // Berechnet das Inkrement, um den Durchsatz anzupassen.
     let inkrement = 1.0 * direction;
     currentFeederThroughput += inkrement;
 
-
-    //2.  Abbruchbedingung
-    if (sharedState.feeders[i].FeederisOff) {
-      currentFeederThroughput = 0;
-      clearInterval(intervalIds.simulateFeederLine[i]);
+    // Prüft, ob ein globaler Stoppbefehl für den Line Mode vorliegt.
+    if (sharedState.intervalIds.stopsimulateLineMode) {
+      // Beendet alle Intervalle, wenn ein Stoppbefehl vorliegt.
+      for (let id of intervalIds.simulateFeederLine) {
+        clearInterval(id);
+      }
+      intervalIds.simulateFeederLine = [];  // Setzt das Array zurück.
+      return;  // Beendet die Ausführung der inneren Funktion.
     }
 
-    //3.  Abbruchbedingung
+    // Prüft, ob der Feeder ausgeschaltet ist.
+    if (sharedState.feeders[i].FeederisOff) {
+      currentFeederThroughput = 0;  // Setzt den Durchsatz auf Null.
+      clearInterval(intervalIds.simulateFeederLine[i]);  // Beendet das spezifische Intervall.
+      intervalIds.simulateFeederLine[i] = null;  // Entfernt die Referenz auf das Intervall.
+    }
+    // Prüft, ob der aktuelle Durchsatz den Zielwert erreicht hat.
     if ((direction === 1 && currentFeederThroughput >= targetThroughputForFeeder) ||
       (direction === -1 && currentFeederThroughput <= targetThroughputForFeeder)) {
-      currentFeederThroughput = targetThroughputForFeeder;
-      clearInterval(intervalIds.simulateFeederLine[i]);
+      currentFeederThroughput = targetThroughputForFeeder;  // Setzt den Durchsatz auf den Zielwert.
+      clearInterval(intervalIds.simulateFeederLine[i]);  // Beendet das Intervall.
+      intervalIds.simulateFeederLine[i] = null;  // Entfernt die Referenz auf das Intervall.
     }
-
-    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value] = (currentFeederThroughput / totalTargetThroughput) * 100
-    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value]
-
-    //Wert wird der HMI zugewiesen
-    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = Math.round(currentFeederThroughput);
-
+    // Aktualisiert die Werte in den Server-Daten für die HMI-Anzeige.
+    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value] = (currentFeederThroughput / totalTargetThroughput) * 100;  // Prozentualer Anteil am Gesamtdurchsatz.
+    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value];
+    serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = Math.round(currentFeederThroughput);  // Gerundeter Durchsatzwert.
   }
+  // Startet ein wiederkehrendes Intervall, das 'simulateFeederLine' ausführt.
   let intervalId = setInterval(simulateFeederLine, 100);
-  intervalIds.simulateFeederLine[i] = intervalId;
+  intervalIds.simulateFeederLine[i] = intervalId;  // Speichert die ID des Intervalls für spätere Referenzen.
 }
 
 
+// Globale Zählervariable
+let updateFeederWeightCount = 0;
 function simulateFeederFillLevel(i, nameNodeId, serverValues) {
 
+  // Überprüfen, ob bereits ein Intervall für diesen Feeder existiert
+  if (intervalIds.updateFeederWeight[i]) {
+    console.log("Intervall für Fill Level des Feeders " + i + " läuft bereits. Keine neue Erstellung.");
+    return;  // Vorzeitiges Verlassen der Funktion
+  }
   var werte = require('./profiles/simulation/variables/Variablen');
 
   function updateFeederWeight() {
-
-    // 1. Abbruchbedingung
-    if (sharedState.intervalIds.stopSimulateFeederWeight) {
-      console.log("Abbruchbedingung stopSimulateThroughputRamp")
-      for (let id of intervalIds.updateFeederWeight) {
-        clearTimeout(id);
-      }
-      intervalIds.updateFeederWeight = [];  // Leeren des Arrays
-      return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
-    }
-
+    console.log("Aufruf von updateFeederWeight für Feeder " + i);
     let ratePerInterval = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
     let currentLevel = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value];
 
     currentLevel -= ratePerInterval;
 
-    // Wert wird in der HMI zugewiesen
+    // Werte wird in der HMI zugewiesen
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rAct.nodeId.value] += ratePerInterval;
-
-    // Wert wird der HMI zugewiesen
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value] = currentLevel;
 
-    // 2. Abbruchbedingung
-    if (currentLevel <= 0 || serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] === 521) {
+    // 1. Abbruchbedingung, wenn der Button Stop Feeding im Pop Up gedrückt wird
+    if (sharedState.intervalIds.stopSimulateFeederWeight) {
+      for (let id of intervalIds.updateFeederWeight) {
+        clearInterval(id);
+      }
+      intervalIds.updateFeederWeight = [];  // Leeren des Arrays
+      return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
+    }
+    // 2. Abbruchbedingung , wenn Feeder Level unter oder gleich Null ist, oder wenn der Stop Button des Feeders gedrückt wird.
+    if (currentLevel <= 0) {
+
       clearInterval(intervalIds.updateFeederWeight[i]); // Stopp das Interval
-      currentLevel = 0;
+      intervalIds.updateFeederWeight[i] = null;
+      currentLevel = 0; // Wert erreicht nie ganz null, daher wird das nochmal zugewiesen. Bzw durch das Inkrement geht es dann unter Null
       //Wert wird der HMI zugewiesen
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value] = currentLevel;
     }
+
+    //3. Abbruchbedingung
+    if (sharedState.feeders[i].FeederisOff) {
+      clearInterval(intervalIds.updateFeederWeight[i]);
+      intervalIds.updateFeederWeight[i] = null;
+    }
+    // Zähler erhöhen
+    updateFeederWeightCount++;
+    // Konsolenausgabe mit aktuellem Level, Index und Zählerstand
+    // console.log("Aktueller Level: " + currentLevel.toFixed(2) + ", Index: " + i + ", Aufrufnummer: " + updateFeederWeightCount);
+
+
   }
-  let intervalId = setInterval(updateFeederWeight, 60000);
+
+  let intervalId = setInterval(updateFeederWeight, 600);
   intervalIds.updateFeederWeight[i] = intervalId;
 }
 
-
 function simulateFeederLineModeRamp(i, nameNodeId, serverValues) {
-  console.log(" in der funktion simulateFeederLineModeRamp")
+  // Überprüfen, ob bereits ein Intervall für diesen Feeder existiert
+  if (intervalIds.startsimulateLineModeRamp[i]) {
+    console.log("Intervall für Line Mode Ramp des Feeders " + i + " läuft bereits. Keine neue Erstellung.");
+    return;  // Vorzeitiges Verlassen der Funktion
+  }
   var werte = require('./profiles/simulation/variables/Variablen');
 
   // Zieldurchsatz kg/h bestimmen anhand vom Throughput Set
@@ -1051,14 +1088,10 @@ function simulateFeederLineModeRamp(i, nameNodeId, serverValues) {
   let througputSetPercLineMode = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value]
   let targetThroughput = throughputSet * througputSetPercLineMode / 100
 
-
   // Steigung der Rampe 
   let gradient = serverValues[werte.data.SU1000_Line_Parameter_udtLm_rThroughputRamp_Set.nodeId.value] / 60
-  console.log("gradient   " + gradient)
 
   function startsimulateLineModeRamp() {
-
-
 
     let currentThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
     // Bestimmt die Richtung, in die der Durchsatz verändert werden soll
@@ -1070,38 +1103,49 @@ function simulateFeederLineModeRamp(i, nameNodeId, serverValues) {
     // Aktualisiert den aktuellen Durchsatz mit dem Inkrement
     currentThroughput += increment;
 
-    // Wert wird in der HMI bei den Feedern angezeigt
+    // Wert wird in der HMI zugewiesen
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput;
 
-
-    // 1. Abbruchbedingung
+    // 1. Abbruchbedingung 
     if (sharedState.intervalIds.stopSimulateThroughputRampLine) {
       console.log("Abbruchbedingung stopSimulateThroughputRampLine")
       for (let id of intervalIds.startsimulateLineModeRamp) {
         clearInterval(id);
       }
       intervalIds.startsimulateLineModeRamp = [];  // Leeren des Arrays
-
       return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
     }
 
     // 2. Abbruchbedingung
     if (sharedState.FeederRampModeisOff) {
-      console.log("fsdfsdfsdfsdfsdfdsdfsfsdfsdfsdfsdfsdfsdfsdfsdf")
-      clearInterval(intervalIds.startsimulateLineModeRamp[1]);
-      intervalIds.startsimulateLineModeRamp = []
+      clearInterval(intervalIds.startsimulateLineModeRamp[i]);
+      intervalIds.startsimulateLineModeRamp[i] = null;
     }
 
-    //3. Abbruchbedingung
-    if ((direction === 1 && currentThroughput > targetThroughput) || (direction === -1 && currentThroughput < targetThroughput)) {
 
+
+    //3. Abbruchbedingung Wenn der aktuelle Wert größer oder gleich dem ZielWert ist
+    if ((direction === 1 && currentThroughput >= targetThroughput) || (direction === -1 && currentThroughput <= targetThroughput)) {
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = targetThroughput;
-      sharedState.FeederRampModeisOff = true;
-      sharedState.FeederRampModeisOn = false;
       clearInterval(intervalIds.startsimulateLineModeRamp[i]);
+      intervalIds.startsimulateLineModeRamp[i] = null;
+
+      // Überprüfen, ob alle anderen Feeders auch ihr Ziel erreicht haben
+      let allFeedersCompleted = true;
+      for (let j = 1; j <= 4; j++) {
+        if (intervalIds.startsimulateLineModeRamp[j]) {
+          allFeedersCompleted = false;
+          break;
+        }
+      }
+
+      // Wenn alle Feeders ihr Ziel erreicht haben
+      if (allFeedersCompleted) {
+        sharedState.FeederRampModeisOff = true;
+        sharedState.FeederRampModeisOn = false;
+      }
     }
   }
-
   let intervalId = setInterval(startsimulateLineModeRamp, 500);
   intervalIds.startsimulateLineModeRamp[i] = intervalId; // Speichern Sie intervalId im globalen intervalIds-Objekt
 }
@@ -1206,7 +1250,7 @@ function GearboxOilLubricationFollowUpTimer() {
 
 // Definition der Funktion 'GearboxOilLubricationTimerPreRun' zur Verwaltung des PreRun-Timers für die Getriebeölschmierung.
 function GearboxOilLubricationTimerPreRun() {
-  
+
   // Importieren der Variablendefinitionen aus einer externen Datei.
   var werte = require('./profiles/simulation/variables/Variablen');
 
@@ -1229,7 +1273,7 @@ function GearboxOilLubricationTimerPreRun() {
     }
   }
   // Starten des Timers, der die 'startOilLubUhr'-Funktion alle 1000 Millisekunden (1 Sekunde) ausführt.
-    let intervalId = setInterval(startOilLubUhr, 1000);
+  let intervalId = setInterval(startOilLubUhr, 1000);
 }
 
 
