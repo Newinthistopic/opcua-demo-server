@@ -13,7 +13,6 @@ function createObjectDouble(organizedByValue, browseName) {
   });
 }
 
-
 function createCustomVariableFloat(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
   var nodeId = `"ns=3;s=\"${part1}\".\"${part2}\"`;
 
@@ -430,16 +429,13 @@ function initialSingleValue(variableName, initialValue, nameNodeId, serverValues
 
 
 
-var wasBelow100 = Array(13).fill(true);  // Am Anfang, außerhalb der Funktion
-var timerWasOn = Array(13).fill(false);
-
+var wasBelowTempRelease = Array(13).fill(true);  // Am Anfang, außerhalb der Funktion
 const checkedItemsReady = Array(13).fill(false); // Alle Prozesszonen sind auf Ready
 const checkedItemsOff = Array(13).fill(false); // Alle Prozesszonen sind auf Off
 function dwStatStartWizzard(i, nameNodeId, serverValues) {
   var werte = require('./profiles/simulation/variables/Variablen');
 
   let rSetTolMaxMax = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSetTolMaxMax.nodeId.value];
-
   let rAct = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   let rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value];
   let rTempCooldown = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempCooldown_Set.nodeId.value];
@@ -447,115 +443,151 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
 
   const EierUhrEinstellZeit = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_udTimeRel.nodeId.value];
   let EierUhrStartWert = EierUhrEinstellZeit
-  const machine = new StateMachine();
-
 
   //********************************************************************************************************************************** */
-  //********************************************************************************************************************************** */
-  //********************************************************************************************************************************** */
-  //********************************************************************************************************************************** */
+  // Prüft, ob das System im Heizmodus ist.
   if (sharedState.HeatingisOn) {
 
     sharedState.ProzesszonesAreOff = false;
     if (rAct < rTempRelease) {
-      wasBelow100[i] = true;
+      wasBelowTempRelease[i] = true;
     }
-    if (rAct > rTempRelease && !wasBelow100[i]) {
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 6) // BIT 6 stellt auf Ready
-
+     // Wenn die aktuelle Temperatur überhalb des Freigabewerts liegt und nicht einmal drunter war.
+    if (rAct > rTempRelease && !wasBelowTempRelease[i]) {
+       // Aktualisiere verschiedene Statuswerte entsprechend
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired) // BIT 6 stellt auf Ready
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on) // BIT 9
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
     }
 
-    if (rAct < rSet && rAct < (rSet - rSetTolMaxMax) && wasBelow100[i]) {
+    // Weitere überprüfungen
+    if (rAct < rSet && rAct < (rSet - rSetTolMaxMax) && wasBelowTempRelease[i]) {
 
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 9) // BIT 9 stellt auf Active
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on) // BIT 9 stellt auf Active
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired)
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
     }
-    // geht nur rein, wenn es true ist, also rAct < 100
-    if (rAct > (rSet - rSetTolMaxMax) && wasBelow100[i] && !hasEierUhrFinished[i]) {
 
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 15)  // BIT 15 Show remain time on hmi
+    // Beindung , damit die EierUhr gestartet wird 
+    if (rAct > (rSet - rSetTolMaxMax) && wasBelowTempRelease[i] && !hasEierUhrFinished[i]) {
+
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Show_remain_time_on_hmi)  // BIT 15 Show remain time on hmi
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired) // BIT 6
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on) // BIT 9
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
       startTimerIconStartWizzard(i, function (index) {
-        serverValues[werte.data[index].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 6)  // Bit 6 stellt Icon auf Ready
+        serverValues[werte.data[index].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired)  // Bit 6 stellt Icon auf Ready
+        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on) //BIT 9
+        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Show_remain_time_on_hmi) // BIT 15
+        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
       });
     }
+
+    // Es wird geprüft, ob alle Icons, also alle Zonen auf Ready stehen, wenn ja, dann wird er Zustand gesetzt
     for (let i = 1; i < 14; i++) {
-      if (serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] === 77) {
+      if (serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired)) { // Prüft ob das 6 Bit gesetzt ist, unabhängig davon ob die anderen gesetzt sind
         checkedItemsReady[i] = true;
       }
     }
+    // Prüfung des Arrays, ob alle Einträge im Array True sind, dann setze Zustand ProzesszonesAreReady
     if (checkedItemsReady.slice(1, 14).every(Boolean)) {
       sharedState.ProzesszonesAreReady = true
     }
   }
-
   //********************************************************************************************************************************** */
   //********************************************************************************************************************************** */
-  // Shut Down Down Button Shut Down Down Button Shut Down Down Button Shut Down Down Button Shut Down Down Button Shut Down Down Button
+  // Prüft, ob das System im Shutdown Modus ist.
   if (sharedState.ShutdownisOn) {
+    //Prüft, ob die Icons nicht mehr auf Ready stehen
     for (let i = 1; i < 14; i++) {
-      if (serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] === 13) {
+      if (!(serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired))) {
         checkedItemsOff[i] = true;
       }
     }
+    //Prüft das Array, ob alle Icons nicht mehr auf Ready, wenn ja, dann wird der Zustand gesetzt, das die Prozesszones aus sind.
     if (checkedItemsOff.slice(1, 14).every(Boolean)) {
       sharedState.ProzesszonesAreOff = true;
     }
+
     sharedState.ProzesszonesAreReady = false;
+    // Prüfung ob, der ActWert unter TempRelease gefallen ist,also unter der Freigabetemperatur, wenn ja, dann werden einige Zustände gesetzt. Das Icon ist dann auf "Off"
     if (rAct < rTempRelease) {
-      wasBelow100[i] = true;
+      wasBelowTempRelease[i] = true;
       hasEierUhrFinished = false
       checkedItemsReady[i] = false;
 
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) // Icon ist auf off
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired) // BIT 6
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on) // BIT 9
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Show_remain_time_on_hmi)  // BIT 15 Show remain time on hmi
     }
-
-    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] &= ~(1 << 15); // Temperature Monitoring not active
+    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Show_remain_time_on_hmi);
 
     serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTime.nodeId.value] = EierUhrEinstellZeit;
     EierUhrStartWert = EierUhrEinstellZeit;
 
+    // Löscht das Intervall der EierUhr, falls noch einer Aktiv ist.
     if (isEierUhrRunning[i]) {
       clearInterval(intervalEieruhrIds[i]);
-      isEierUhrRunning[i] = false;  // Setzen Sie den Status für den spezifischen Index zurück
+      isEierUhrRunning[i] = false;
     }
   }
   //********************************************************************************************************************************** */
   //********************************************************************************************************************************** */
-  // Cool Down Button ist gedrückt // Cool Down Button ist gedrückt // Cool Down Button ist gedrückt // Cool Down Button ist gedrückt // Cool Down Button ist gedrückt
+  // Prüft, ob das System im Kühl Modus ist.
   if (sharedState.CoolingisOn) {
+//Prüft, ob die Icons nicht mehr auf Ready stehen
     for (let i = 1; i < 14; i++) {
-      if (serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] === 13) {
+      if (!(serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired))) {
         checkedItemsOff[i] = true;
       }
     }
+    // Prüfung, ob alle Zonen nicht mehr Ready stehen, wenn ja dann wird der Zustand gesetzt.
     if (checkedItemsOff.slice(1, 14).every(Boolean)) {
       sharedState.ProzesszonesAreOff = true;
     }
+
+    // In dem Moment, wo der CoolDown Button gedrückt, sind die Zonen nicht mehr Ready, daher wird der Zustand gesetzt
     sharedState.ProzesszonesAreReady = false;
+
+
+    // Wenn die Temperatur unter dem Freigabewert fällt, werden eingie Zustände gesetzt
     if (rAct < rTempRelease) {
-      wasBelow100[i] = true;
+      wasBelowTempRelease[i] = true;
       hasEierUhrFinished = false
       checkedItemsReady[i] = false;
 
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 7);
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired);
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running);
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on)
     }
 
-    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] &= ~(1 << 15);
+    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Show_remain_time_on_hmi);
+
+    // Prüfung ob Temperatur über TempRelease ist, dann werden einige Zustände gesetzt
     if (rAct > rTempRelease) {
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) | (1 << 6) | (1 << 7); // Bit 7 Cool Down is running
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired);
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on)
     }
+
+    
     serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTime.nodeId.value] = EierUhrEinstellZeit;
     EierUhrStartWert = EierUhrEinstellZeit;
 
+   
 
     if (isEierUhrRunning[i]) {
       clearInterval(intervalEieruhrIds[i]);
       isEierUhrRunning[i] = false;  // Setzen Sie den Status für den spezifischen Index zurück
     }
-    if (rAct < rTempCooldown) {
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] = (1 << 0) | (1 << 2) | (1 << 3) // Icon ist auf off
-      //machine.setState('SU1000_Line_Hmi_udtLm_udtHeader_dwLineStatus', 'STOPPED')
-    }
 
+    // Wenn die aktuelle Temperatur unter dem Freigabewert fallen, dann werden Zustände gesetzt
+    if (rAct < rTempCooldown) {
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired);
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on)
+    }
   }
 }
 
@@ -584,20 +616,18 @@ function startTimerIconStartWizzard(i, callback) {
       isEierUhrRunning[i] = false;
       hasEierUhrFinished[i] = true;  // Setzen Sie den "abgeschlossen" Status für den spezifischen Index
       intervalEieruhr = null;
-      wasBelow100[i] = false
+      wasBelowTempRelease[i] = false
       if (callback) {
         callback(i);
       }
     }
-  }, 500);
+  }, 800);
 }
-
 
 
 let pidTimerIddown = [] // Array für die Id des Setintervalls 
 let pidTimerIdup = []//  Array für die Id des Setintervalls 
 let pidTimerIdshutdown = [] // Array für die Id des Setintervalls 
-
 
 const MAX_INDEX = 13;  // Index von 1 bis 13
 const savedValues = {};  // Objekt zur Speicherung von rAct1 und integral
@@ -621,7 +651,6 @@ function PIDUP(i, nameNodeId, serverValues, source) {
   const K2 = 1
   let rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   let rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
-
 
   let rSet;
   if (source === "A") {
@@ -661,14 +690,13 @@ function PIDUP(i, nameNodeId, serverValues, source) {
 
       let u = pTerm + iTerm + dTerm;
 
-
       lastError = error;
 
       // Begrenzung des Wertes von u zwischen -100 und 100
       u_begrenzt = Math.max(-100, Math.min(u, 100));
 
       // Wert wird der HMI zugewiesen
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = u_begrenzt
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzCv_rAct.nodeId.value] = u_begrenzt
 
       // 1.Glied PT1 der Reglestrecke
       let dy1 = (K1 * u - rAct1) / T1 * dt;
@@ -750,7 +778,7 @@ function PIDCOOLDOWN(i, nameNodeId, serverValues, source) {
       u_begrenzt = Math.max(-100, Math.min(u, 100));
 
       // Wert wird der HMI zugewiesen
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = u_begrenzt
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzCv_rAct.nodeId.value] = u_begrenzt
 
 
 
@@ -817,7 +845,11 @@ function PIDSHUTDOWN(i, nameNodeId, serverValues) {
 
       lastError = error;
 
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rActPidCv.nodeId.value] = u
+      // Begrenzung des Wertes von u zwischen -100 und 100
+      u_begrenzt = Math.max(-100, Math.min(u, 100));
+
+      // Wert wird der HMI zugewiesen
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzCv_rAct.nodeId.value] = u_begrenzt
 
       // 1.Glied PT1 der Reglestrecke
       let dy1 = (K1 * u - rAct1) / T1 * dt;
@@ -906,13 +938,10 @@ let intervalIds = {
 function simulateFeederSingleMode(i, nameNodeId, serverValues) {
   // Prüft, ob für den angegebenen Feeder (identifiziert durch 'i') bereits ein Intervall läuft.
   if (intervalIds.simulateFeederSingle[i]) {
-    // Wenn ja, gibt eine Meldung in der Konsole aus und verlässt die Funktion.
-    console.log("Intervall für Feeder " + i + " läuft bereits. Keine neue Erstellung.");
     return;  // Verhindert das mehrfache Starten des gleichen Intervalls für denselben Feeder.
   }
   // Importiert Variablen aus einer externen Datei.
   var werte = require('./profiles/simulation/variables/Variablen');
-
   // Holt den aktuellen Durchsatz des Feeders aus den Serverdaten.
   let currentThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
   // Innere Funktion zur Simulation des einzelnen Feeders.
@@ -962,28 +991,21 @@ function simulateFeederLineMode(i, nameNodeId, serverValues) {
   if (intervalIds.simulateFeederLine[i]) {
     return;  // Beendet die Funktion frühzeitig.
   }
-
   // Importiert die Variablendefinitionen aus einer externen Datei.
   var werte = require('./profiles/simulation/variables/Variablen');
-
   // Holt den Gesamtdurchsatz für die Feederlinie aus den Server-Daten.
   let totalTargetThroughput = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value];
-
   // Bestimmt den aktuellen prozentualen Durchsatz des spezifischen Feeders.
   let currentFeederThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value];
-
   // Innere Funktion, die den Durchsatz des Feeders im Line Mode simuliert.
   function simulateFeederLine() {
     // Berechnet den Zieldurchsatz für den Feeder basierend auf dem Gesamtdurchsatz.
     let targetThroughputForFeeder = totalTargetThroughput * (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] / 100);
-
     // Ermittelt die Richtung der Durchsatzänderung (Erhöhung oder Verringerung).
     let direction = (targetThroughputForFeeder > currentFeederThroughput) ? 1 : -1;
-
     // Berechnet das Inkrement, um den Durchsatz anzupassen.
     let inkrement = 1.0 * direction;
     currentFeederThroughput += inkrement;
-
     // Prüft, ob ein globaler Stoppbefehl für den Line Mode vorliegt.
     if (sharedState.intervalIds.stopsimulateLineMode) {
       // Beendet alle Intervalle, wenn ein Stoppbefehl vorliegt.
@@ -993,7 +1015,6 @@ function simulateFeederLineMode(i, nameNodeId, serverValues) {
       intervalIds.simulateFeederLine = [];  // Setzt das Array zurück.
       return;  // Beendet die Ausführung der inneren Funktion.
     }
-
     // Prüft, ob der Feeder ausgeschaltet ist.
     if (sharedState.feeders[i].FeederisOff) {
       currentFeederThroughput = 0;  // Setzt den Durchsatz auf Null.
@@ -1018,196 +1039,221 @@ function simulateFeederLineMode(i, nameNodeId, serverValues) {
 }
 
 
-// Globale Zählervariable
-let updateFeederWeightCount = 0;
+
+// Diese Funktion aktualisiert kontinuierlich das Füllniveau eines Feeders in der Simulation.
 function simulateFeederFillLevel(i, nameNodeId, serverValues) {
-
-  // Überprüfen, ob bereits ein Intervall für diesen Feeder existiert
+  // Überprüft, ob für diesen Feeder bereits ein Intervall aktiv ist, um Doppelungen zu vermeiden.
   if (intervalIds.updateFeederWeight[i]) {
-    console.log("Intervall für Fill Level des Feeders " + i + " läuft bereits. Keine neue Erstellung.");
-    return;  // Vorzeitiges Verlassen der Funktion
+    // Wenn ja, verlässt die Funktion frühzeitig, da kein neues Intervall benötigt wird.
+    return;
   }
+  // Importiert Variablen und Konfigurationen aus einer externen Datei.
   var werte = require('./profiles/simulation/variables/Variablen');
-
+  // Die innere Funktion, die das Füllniveau aktualisiert.
   function updateFeederWeight() {
+    // Loggt den Aufruf für Debugging und Überwachungszwecke.
     console.log("Aufruf von updateFeederWeight für Feeder " + i);
+    // Berechnet den neuen Füllstand basierend auf der aktuellen Durchsatzrate.
     let ratePerInterval = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
     let currentLevel = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value];
-
     currentLevel -= ratePerInterval;
-
-    // Werte wird in der HMI zugewiesen
+    // Aktualisiert die Gesamtmenge und den Füllstand in der HMI.
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rAct.nodeId.value] += ratePerInterval;
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value] = currentLevel;
-
-    // 1. Abbruchbedingung, wenn der Button Stop Feeding im Pop Up gedrückt wird
+    // Erste Abbruchbedingung: Wenn der Stop-Button in der HMI gedrückt wird.
     if (sharedState.intervalIds.stopSimulateFeederWeight) {
+      // Stoppt alle Intervalle für die Aktualisierung des Füllstandes.
       for (let id of intervalIds.updateFeederWeight) {
         clearInterval(id);
       }
-      intervalIds.updateFeederWeight = [];  // Leeren des Arrays
-      return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
+      // Setzt die Intervall-Referenzen zurück.
+      intervalIds.updateFeederWeight = [];
+      // Verlässt die Funktion, da keine weiteren Aktualisierungen erforderlich sind.
+      return;
     }
-    // 2. Abbruchbedingung , wenn Feeder Level unter oder gleich Null ist, oder wenn der Stop Button des Feeders gedrückt wird.
+    // Zweite Abbruchbedingung: Wenn der Füllstand Null oder negativ wird.
     if (currentLevel <= 0) {
-
-      clearInterval(intervalIds.updateFeederWeight[i]); // Stopp das Interval
+      // Stoppt das Intervall für diesen speziellen Feeder.
+      clearInterval(intervalIds.updateFeederWeight[i]);
+      // Entfernt die Referenz auf das gestoppte Intervall.
       intervalIds.updateFeederWeight[i] = null;
-      currentLevel = 0; // Wert erreicht nie ganz null, daher wird das nochmal zugewiesen. Bzw durch das Inkrement geht es dann unter Null
-      //Wert wird der HMI zugewiesen
+      // Stellt sicher, dass der Füllstand nicht negativ wird.
+      currentLevel = 0;
+      // Aktualisiert den Füllstand in der HMI auf 0.
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value] = currentLevel;
     }
-
-    //3. Abbruchbedingung
+    // Dritte Abbruchbedingung: Wenn der Feeder ausgeschaltet wird.
     if (sharedState.feeders[i].FeederisOff) {
+      // Stoppt das Intervall für diesen speziellen Feeder.
       clearInterval(intervalIds.updateFeederWeight[i]);
+      // Entfernt die Referenz auf das gestoppte Intervall.
       intervalIds.updateFeederWeight[i] = null;
     }
-    // Zähler erhöhen
-    updateFeederWeightCount++;
-    // Konsolenausgabe mit aktuellem Level, Index und Zählerstand
-    // console.log("Aktueller Level: " + currentLevel.toFixed(2) + ", Index: " + i + ", Aufrufnummer: " + updateFeederWeightCount);
-
-
   }
-
+  // Legt ein neues Intervall an, das updateFeederWeight jede Minute aufruft.
   let intervalId = setInterval(updateFeederWeight, 600);
+  // Speichert die ID des Intervalls, damit es später gestoppt werden kann.
   intervalIds.updateFeederWeight[i] = intervalId;
 }
 
+
+// Funktion zur Simulation der Durchsatzrampensteuerung für einen Feeder
 function simulateFeederLineModeRamp(i, nameNodeId, serverValues) {
   // Überprüfen, ob bereits ein Intervall für diesen Feeder existiert
+  // Verhindert das mehrfache Starten des Intervalls für denselben Feeder
   if (intervalIds.startsimulateLineModeRamp[i]) {
-    console.log("Intervall für Line Mode Ramp des Feeders " + i + " läuft bereits. Keine neue Erstellung.");
-    return;  // Vorzeitiges Verlassen der Funktion
+    return;  // Frühzeitiger Abbruch, falls das Intervall schon läuft
   }
+  // Importieren notwendiger Werte aus einer externen Datei
   var werte = require('./profiles/simulation/variables/Variablen');
 
-  // Zieldurchsatz kg/h bestimmen anhand vom Throughput Set
-  let throughputSet = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value]
-  let througputSetPercLineMode = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value]
-  let targetThroughput = throughputSet * througputSetPercLineMode / 100
+  // Bestimmen des Zieldurchsatzes (kg/h) basierend auf dem gesetzten Gesamtdurchsatz und dem prozentualen Anteil des Feeders
+  let throughputSet = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value];
+  let througputSetPercLineMode = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value];
+  let targetThroughput = throughputSet * througputSetPercLineMode / 100;
 
-  // Steigung der Rampe 
-  let gradient = serverValues[werte.data.SU1000_Line_Parameter_udtLm_rThroughputRamp_Set.nodeId.value] / 60
+  // Wert wird der HMI zugewiesen, Anpassung des aktuellen Set Wertes für den Durchsatz, Achtung Wert wird nur angezeigt, wenn die RampenFuntion gestartet wird,
+  serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value] = targetThroughput;
 
+  // Berechnung der Steigung der Durchsatzrampe (Änderung pro Minute)
+  let gradient = serverValues[werte.data.SU1000_Line_Parameter_udtLm_rThroughputRamp_Set.nodeId.value] / 60;
+
+  // Funktion zur stetigen Anpassung des aktuellen Durchsatzes des Feeders
   function startsimulateLineModeRamp() {
-
+    // Abrufen des aktuellen Durchsatzes des Feeders
     let currentThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
-    // Bestimmt die Richtung, in die der Durchsatz verändert werden soll
+    // Ermitteln der Richtung der Durchsatzanpassung (Erhöhung oder Verringerung)
     let direction = (targetThroughput > currentThroughput) ? 1 : -1;
-
-    // Das Inkrement, also die Steigung  multipliziert mit der Richtung
+    // Berechnung des Durchsatzinkrements basierend auf der Rampensteigung und der Richtung
     let increment = gradient * direction;
-
-    // Aktualisiert den aktuellen Durchsatz mit dem Inkrement
+    // Aktualisieren des aktuellen Durchsatzes um das berechnete Inkrement
     currentThroughput += increment;
-
-    // Wert wird in der HMI zugewiesen
+    // Zuweisen des aktualisierten Durchsatzes zur Anzeige in der HMI
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput;
-
-    // 1. Abbruchbedingung 
+    // Erste Abbruchbedingung: Stoppen der Rampe über globale Steuerung
     if (sharedState.intervalIds.stopSimulateThroughputRampLine) {
-      console.log("Abbruchbedingung stopSimulateThroughputRampLine")
+      // Stoppen aller Intervalle der Rampensteuerung
       for (let id of intervalIds.startsimulateLineModeRamp) {
         clearInterval(id);
       }
-      intervalIds.startsimulateLineModeRamp = [];  // Leeren des Arrays
-      return;  // Funktion wird vorzeitig geändert, wir springen aus der Funktion "heraus"
+      // Leeren des Intervall-Arrays
+      intervalIds.startsimulateLineModeRamp = [];
+      return;  // Frühzeitiger Abbruch der Funktion
     }
-
-    // 2. Abbruchbedingung
+    // Zweite Abbruchbedingung: Globales Signal zum Stoppen der Rampensteuerung
     if (sharedState.FeederRampModeisOff) {
       clearInterval(intervalIds.startsimulateLineModeRamp[i]);
       intervalIds.startsimulateLineModeRamp[i] = null;
     }
-
-
-
-    //3. Abbruchbedingung Wenn der aktuelle Wert größer oder gleich dem ZielWert ist
+    // Dritte Abbruchbedingung: Erreichen des Zielwertes in beiden Richtungen
     if ((direction === 1 && currentThroughput >= targetThroughput) || (direction === -1 && currentThroughput <= targetThroughput)) {
+      // Festlegen des Durchsatzes auf den Zielwert
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = targetThroughput;
+      // Stoppen des aktuellen Intervalls
       clearInterval(intervalIds.startsimulateLineModeRamp[i]);
+      // Entfernen der Referenz auf das gestoppte Intervall
       intervalIds.startsimulateLineModeRamp[i] = null;
 
-      // Überprüfen, ob alle anderen Feeders auch ihr Ziel erreicht haben
+      // Überprüfen, ob alle Feeders ihr Ziel erreicht haben
       let allFeedersCompleted = true;
       for (let j = 1; j <= 4; j++) {
+        // Hier wird überprüft, ob noch Intervalle für die Rampensteuerung der Feeder laufen.
+        // Für nicht gestartete Feeder ist `intervalIds.startsimulateLineModeRamp[j]` bereits auf Null gesetzt,
+        // daher werden sie in dieser Überprüfung nicht als aktiv betrachtet.
+        // Wenn ein aktives Intervall gefunden wird, bedeutet dies, dass der betreffende Feeder sein Ziel noch nicht erreicht hat.
         if (intervalIds.startsimulateLineModeRamp[j]) {
+          // Sobald ein noch laufendes Intervall gefunden wird, wird festgestellt, dass nicht alle Feeder ihr Ziel erreicht haben.
           allFeedersCompleted = false;
-          break;
+          break; // Schleife wird sofort verlassen, da ein laufendes Intervall gefunden wurde.
         }
       }
-
-      // Wenn alle Feeders ihr Ziel erreicht haben
+      // Wenn alle Feeders ihr Ziel erreicht haben, also kein aktives Intervall mehr läuft,
+      // werden die globalen Steuerungssignale für die Rampensteuerung aktualisiert.
       if (allFeedersCompleted) {
         sharedState.FeederRampModeisOff = true;
         sharedState.FeederRampModeisOn = false;
       }
     }
   }
-  let intervalId = setInterval(startsimulateLineModeRamp, 500);
-  intervalIds.startsimulateLineModeRamp[i] = intervalId; // Speichern Sie intervalId im globalen intervalIds-Objekt
+  // Starten der Rampensteuerungsfunktion in regelmäßigen Intervallen
+  let intervalId = setInterval(startsimulateLineModeRamp, 300);
+  // Speichern der Interval-ID im globalen Objekt für spätere Referenzierung
+  intervalIds.startsimulateLineModeRamp[i] = intervalId;
 }
 
 
-// Funktion zum Verteilen Prozente
+// Diese Funktion verteilt den gesamten Durchsatz auf die im Line Mode aktiven Feeder.
 function PercentagedistributionFeederLineMode() {
-  let sum = 0
+  // Summe der Durchsätze wird initialisiert, um später die Gesamtdurchsätze zu berechnen.
+  let sum = 0;
+  // Import der Variablen-Definitionen aus einer externen Datei, um Zugriff auf Variablenwerte zu erhalten.
   var werte = require('./profiles/simulation/variables/Variablen');
+  // Der Gesamtdurchsatz wird aus den Serverwerten bezogen. Dies ist der Referenzwert für die Verteilung.
+  let totalThroughput = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value];
 
-  // Zuweisung von udtLineRamp.Throughput.rSet an  totalThroughput (Feeding Popup operating Point oder start Wizzard)
-  let totalThroughput = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value]
+  // Zähler für die Anzahl der aktiven Feeder im Line Mode.
   let activeFeeders = 0;
-
-  // Prüfung ob ein Feeder auf Line steht, Zähler wird dementsprechend hochgezählt.
+  // Durchläuft alle Feeder und zählt, wie viele im Line Mode sind.
   for (let i = 1; i <= 4; i++) {
     if (sharedState.feeders[i].FeederLineMode) {
       activeFeeders++;
     }
   }
-
-  // Prüfung, ob genau ein Feeder auf Line Modus steht.
+  // Wenn nur ein Feeder im Line Mode ist, wird sein Durchsatz mit dem Gesamtdurchsatz synchronisiert.
   if (activeFeeders === 1) {
-    // Werte aktualisiert, wenn genau ein Feeder auf Line steht
+    // Durchläuft alle Feeder, um den aktiven Feeder im Line Mode zu finden.
     for (let i = 1; i <= 4; i++) {
       if (sharedState.feeders[i].FeederLineMode) {
+        // Aktueller Durchsatz des aktiven Feeders im Line Mode.
         let feederThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value];
-        if (feederThroughput < totalThroughput) { // Wenn der totale Durchsatz kleiner als der Durchsatz vom Feeder ist, dann wird der Durchsatz 
+        // Passt den Durchsatz des aktiven Feeders an, wenn er nicht mit dem Gesamtdurchsatz übereinstimmt.
+        // Dies stellt sicher, dass der Feeder den gesamten Durchsatz nutzt, wenn er der einzige im Line Mode ist.
+        if (feederThroughput < totalThroughput) {
           serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value] = totalThroughput;
         }
-        if (feederThroughput > totalThroughput) { // Wenn Feeder Durchsatz größer als der Totale Durchsatz, ist der Totale Durchsatz gleich dem Feederdurchsatz
-          totalThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value]
+        // Aktualisiert den Gesamtdurchsatz, wenn der Feeder einen höheren Wert als den aktuellen Gesamtdurchsatz hat.
+        if (feederThroughput > totalThroughput) {
+          totalThroughput = feederThroughput;
         }
       }
     }
-  } ////////***** ACHTUNG GILT NUR WENN EIN FEEDER AUF LINE STEHT. ES IST DAFÜR GEDACHT, WENN GENAU EIN FEEDER AUF LINE STEHT */
-
-  // Jetzt berechnen Sie totalThroughput
+  }
+  // Berechnet den Gesamtdurchsatz neu, wenn mehrere Feeder im Line Mode sind.
+  sum = 0; // Reset der Summe für die Neuberechnung.
   for (let i = 1; i <= 4; i++) {
     if (sharedState.feeders[i].FeederLineMode) {
+      // Addiert die Durchsätze aller im Line Mode aktiven Feeder.
       sum += serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value];
     }
   }
-  serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value] = sum
-  totalThroughput = sum
-
-  // Prozentsatzberechnung
+  // Speichert den neu berechneten Gesamtdurchsatz.
+  serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value] = sum;
+  totalThroughput = sum;
+  // Berechnet den Prozentsatz des Beitrags jedes Feeders zum Gesamtdurchsatz.
   for (let i = 1; i <= 4; i++) {
     if (sharedState.feeders[i].FeederLineMode) {
+      // Berechnet den prozentualen Anteil des Feeders am Gesamtdurchsatz.
       let feederThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value];
       let percentage = (feederThroughput / totalThroughput) * 100;
+      // Speichert den berechneten Prozentsatz im Serverwert für die spätere Verwendung.
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value] = percentage;
     }
   }
-
-  // Wenn keiner Feeder auf Line Mode steht, dann ist PercSet_rSet
+  // Setzt die Durchsatzprozente der Feeder, die nicht im Line Mode sind, auf 0.
   for (let i = 1; i <= 4; i++) {
+    // Überprüft, ob der Feeder nicht im Line Mode ist.
     if (!sharedState.feeders[i].FeederLineMode) {
-      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value] = 0; // Wenn feeder Mode nicht 2 ist, dann wird auf null gesetzt
+      // Feeder, die nicht im Line Mode sind, werden im Prozess der Durchsatzverteilung ignoriert.
+      // Daher wird ihr Durchsatzanteil auf 0 gesetzt, um dies in der Anzeige der HMI zu reflektieren.
+      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value] = 0;
     }
   }
 }
+
+
+
+
+
 
 // Definition der Funktion 'GearboxOilLubricationFollowUpTimer' für die Nachlaufzeit der Getriebeölschmierung.
 function GearboxOilLubricationFollowUpTimer() {

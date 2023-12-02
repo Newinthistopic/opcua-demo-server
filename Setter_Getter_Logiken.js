@@ -1,13 +1,8 @@
 const funktionen = require('./../opcua-demo-server/funktionen');
-
 const alarme_warnungen_funktionen = require('./alarme_warnungen_funktionen');
-
 var sharedState = require('./Zustände');
 
-const serverValues = require('./../opcua-demo-server/server');
-// Globale Zählervariable, initialisiert mit 0
-let pCounter = 0;
-let lalalaCounter = 0;
+
 const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtUmGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtUmSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm", undefined, nameNodeId, serverValues); },
@@ -3157,14 +3152,12 @@ const SetGetlogic = {
     // Prüft ob Apply Taste gedrückt wird, es gibt 3 Möglichkeiten je nachdem welche Tasta  im Pop Feeding gerade aktiv ist.
     if ((serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] === sharedState.buttonPushed.ApplyChanges1 || serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] === sharedState.buttonPushed.ApplyChanges2) && roundedValue === 100) {
       // Prüft alle Feeder, ob diese auf LineMode stehen, wenn ja so werden die Prozente von new Set (rThroughputPercSet_rSet) +bernommen und rThroughputPerc_rSet zugewiesen
-      pCounter++;
-      console.log("ppppppppppppppppppppppppppppppppp " + pCounter);
+    
       for (let i = 1; i < 5; i++) {
         if (sharedState.feeders[i].FeederLineMode) { // Prüfung, ob Feeder im Line Modus ist
           //Funktion wird nur gestartet, wenn Extruder an ist.
           serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPercSet_rSet.nodeId.value];
-          lalalaCounter++;
-          console.log("lalalalalalalalalallalalalalala " + lalalaCounter);
+        
           //Wenn Extruder an ist und rThroughputPerc_rSet größer Null, dann die Funktion ausgeführt. Zeile ist notwenig, damit beim Drücken des "Apply" Button die Funktion neu gestartet wird.
           if (sharedState.ExtruderisOn && sharedState.feeders[i].FeederisRunning && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] > 0) {
             funktionen.simulateFeederLineMode(i, nameNodeId, serverValues)
@@ -4150,7 +4143,7 @@ const SetGetlogic = {
     setTimeout(function () {
 
       // Wenn alle Icons der Prozesszonen auf Ready sind, sowird die State Machine auf Running gesetzt
-      if (sharedState.ProzesszonesAreReady) {
+      if (sharedState.HeatingisOn &&sharedState.ProzesszonesAreReady) {
         machine.setState('SU1000_Line_Hmi_udtLm_udtHeader_dwLineStatus', 'RUNNING');
       }
       // Cool Down ist an und alle Prozesszonen sind nicht aus. Trotz kühlen ist der State Running, da Maschine nocht "läuft"
@@ -4241,21 +4234,7 @@ const SetGetlogic = {
   },
   SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSetSet: function (i, nameNodeId, serverValues) {
     funktionen.initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet", undefined, nameNodeId, serverValues);
-    // Vorausgesetzt serverValues und werte sind bereits definiert:
-    var werte = require('./profiles/simulation/variables/Variablen');
-    // Überprüfen Sie zuerst die Bedingung
 
-    for (let i = 1; i <= 4; i++) {
-      if (sharedState.feeders[i].FeederLineMode) {
-
-        // Nehmen Sie den prozentualen Wert
-        let percentage = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] / 100;
-
-        // Multiplizieren Sie den gesetzten Wert mit dem prozentualen Wert
-        serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value] = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value] * percentage;
-
-      }
-    }
 
   },
   SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSetRecGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSetRec", 0, nameNodeId, serverValues); },

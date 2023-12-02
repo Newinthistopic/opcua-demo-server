@@ -42,6 +42,13 @@ const BIT_POSITIONS = {
         Critical: 0
     },
 
+    startWizzard: {
+        Temp_release_Temp_reached_and_soaktime_expired: 6, //TRUE: Temp. release (Temp. reached and soaktime expired); https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3113779313/udt+Hmi+emProcessZone
+        Cool_down_is_running: 7, //TRUE: Cool down is running; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3113779313/udt+Hmi+emProcessZone
+        Temp_controller_on:9, // TRUE: Temp. controller on; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3113779313/udt+Hmi+emProcessZone
+        Show_remain_time_on_hmi: 15, //TRUE: Show remain time on hmi; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3113779313/udt+Hmi+emProcessZone
+    },
+
 
     Status_Auto_Start_On_Off: 8,
     Lock_On_Off_Status_of_AutoStop_Button: 12,
@@ -99,14 +106,14 @@ const buttonPushed = {
 const Alarms_Warnings = {
 
     ExtruderDriveControl: {
-        
-            Warning_Torque_too_high_shutdown_timer_started: 10,
-            Warning_Torque_too_low_shutdown_timer_started: 11,
-               
-            Alarm_Torque_too_high_delay_shutdown_time_expired: 5,
-            Alarm_Torque_too_low_delay_shutdown_time_expired: 6,
-        }
+
+        Warning_Torque_too_high_shutdown_timer_started: 10,
+        Warning_Torque_too_low_shutdown_timer_started: 11,
+
+        Alarm_Torque_too_high_delay_shutdown_time_expired: 5,
+        Alarm_Torque_too_low_delay_shutdown_time_expired: 6,
     }
+}
 
 
 const feeders = [
@@ -117,10 +124,10 @@ const feeders = [
     { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true }  // Zustand für Feeder 4
 ]
 
-const status_Alarms_Warnings={
-    ExtruderDriveControl:{
-        status_Warning_Torque_too_low_shutdown_timer_started:false,
-        status_Warning_Torque_too_high_shutdown_timer_started:false,
+const status_Alarms_Warnings = {
+    ExtruderDriveControl: {
+        status_Warning_Torque_too_low_shutdown_timer_started: false,
+        status_Warning_Torque_too_high_shutdown_timer_started: false,
     }
 }
 
@@ -150,7 +157,7 @@ module.exports = {
 
     simulateFeederWeightisRunning: false,
 
-   
+
 
 
     feedingautostartButtons: {
@@ -193,7 +200,7 @@ module.exports = {
     GearOilRemainPreRunTimeExpired: false,
     GearOilRemainTimeFollowUpExpired: false,
 
-  
+
 
 
 };
