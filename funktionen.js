@@ -660,7 +660,7 @@ function getSaveKey(rAct2, index) {
   return `${Math.round(rAct2)}-${index}`;
 }
 
-function PIDUP(i, nameNodeId, serverValues, source) {
+function PIDUP(i, nameNodeId, serverValues) {
   var werte = require('./profiles/simulation/variables/Variablen');
   if (pidTimerIddown[i]) clearTimeout(pidTimerIddown[i]); // löscht alle Timer von pidDown, falls ein Timer noch läuft
   if (pidTimerIdshutdown[i]) clearTimeout(pidTimerIdshutdown[i]); // löscht alle Timer von shutDown fals ein Timer noch läuft
@@ -746,7 +746,7 @@ function PIDUP(i, nameNodeId, serverValues, source) {
   calculateNextValue();
 }
 
-function PIDCOOLDOWN(i, nameNodeId, serverValues, source) {
+function PIDCOOLDOWN(i, nameNodeId, serverValues) {
   var werte = require('./profiles/simulation/variables/Variablen');
   if (pidTimerIdup[i]) clearTimeout(pidTimerIdup[i]); // löscht alle Timer von pidUp
   if (pidTimerIdshutdown[i]) clearTimeout(pidTimerIdshutdown[i]); //löscht alle Timer von shutDown
@@ -762,7 +762,7 @@ function PIDCOOLDOWN(i, nameNodeId, serverValues, source) {
   const K2 = 1
   let rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   let rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
-  
+
   let rSet;
   if (serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.Show_preheat_temperature_setpoint_on_hmi)) {
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value];

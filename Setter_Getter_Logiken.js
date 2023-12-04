@@ -157,19 +157,7 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrlGet: function (i, nameNodeId, serverValues) {
     funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl", undefined, nameNodeId, serverValues);
 
-    setTimeout(function () {
-      var werte = require('./profiles/simulation/variables/Variablen');
-      //Extruder ist an
-      if (sharedState.ExtruderisOn && !sharedState.ExtruderisOff) {
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.MainDrive_On_Off); // Main drive is running
-      }
 
-      // Extruder ist Aus
-      if (sharedState.ExtruderisOff && !sharedState.ExtruderisOn) {
-
-        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.MainDrive_On_Off); // Main drive is off
-      }
-    }, 1);
   },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrlSet: function (i, nameNodeId, serverValues) {
     funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl", undefined, nameNodeId, serverValues);
@@ -222,7 +210,35 @@ const SetGetlogic = {
     let nominalTorque = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewTorqueNom_Set.nodeId.value];
 
   },
-  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStatGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat", 1545, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStatGet: function (i, nameNodeId, serverValues) { 
+    funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat",1037, nameNodeId, serverValues);
+  
+   setTimeout(function () {
+      var werte = require('./profiles/simulation/variables/Variablen');
+
+ //Öl Schmierung ist abgelaufen, Extruder kann angeschaltet werden.
+ if ( sharedState.GearOilRemainPreRunTimeExpired &&sharedState.ExtruderisOff ) {
+  serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_Main_drive_is_running); 
+}
+
+if(sharedState.GearOilLubricationOff){
+  serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_Main_drive_is_running); 
+}
+
+      //Extruder ist an
+      if (sharedState.ExtruderisOn && !sharedState.ExtruderisOff) {
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.MainDrive_On_Off); // Main drive is running
+      }
+
+      // Extruder ist Aus
+      if (sharedState.ExtruderisOff && !sharedState.ExtruderisOn) {
+
+        serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.MainDrive_On_Off); // Main drive is off
+      }
+    }, 1)
+  
+  
+  },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStatSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtMotorMainDriveGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtMotorMainDrive", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtMotorMainDriveSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtMotorMainDrive", undefined, {}, i, nameNodeId, serverValues); },
@@ -1457,9 +1473,9 @@ const SetGetlogic = {
       if (currentTemp < setTemp) { // Wenn Set Temperatur höher ist als aktuelle Temperatur, dann steigt die Temperatur
         serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << 17) //TRUE: Show remain time on hmi
         serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] |= (1 << 15); // TRUE: Tolerance monitoring is active
-        funktionen.PIDUP(i, nameNodeId, serverValues, "B");
+        funktionen.PIDUP(i, nameNodeId, serverValues);
       } else if (currentTemp > setTemp) {// Wenn Set Temperatur kleiner ist als aktuelle Temperatur, dann sinkt die Temperatur
-        funktionen.PIDCOOLDOWN(i, nameNodeId, serverValues, "B");
+        funktionen.PIDCOOLDOWN(i, nameNodeId, serverValues);
         serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] |= (1 << 15); // TRUE: Tolerance monitoring is active
       }
     }
