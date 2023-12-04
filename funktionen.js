@@ -429,61 +429,61 @@ function initialSingleValue(variableName, initialValue, nameNodeId, serverValues
 
 
 
-var wasBelowTempRelease = Array(13).fill(true);  // Am Anfang, außerhalb der Funktion
-const checkedItemsReady = Array(13).fill(false); // Alle Prozesszonen sind auf Ready
-const checkedItemsOff = Array(13).fill(false); // Alle Prozesszonen sind auf Off
+var wasBelowTempRelease = Array(13).fill(true);  // Initialzustand für die Überprüfung, ob die Temperatur unterhalb des Freigabewertes gefallen ist
+const checkedItemsReady = Array(13).fill(false); // Statusarray für die Überprüfung, ob alle Prozesszonen "Ready" sind
+const checkedItemsOff = Array(13).fill(false); // Statusarray für die Überprüfung, ob alle Prozesszonen "Off" sind
 function dwStatStartWizzard(i, nameNodeId, serverValues) {
   var werte = require('./profiles/simulation/variables/Variablen');
-
+  // Definieren von wichtigen Temperaturwerten und der Eieruhrzeit aus den Serverdaten
   let rSetTolMaxMax = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSetTolMaxMax.nodeId.value];
   let rAct = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   let rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value];
   let rTempCooldown = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempCooldown_Set.nodeId.value];
   let rTempRelease = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempRel_Set.nodeId.value];
-
-  const EierUhrEinstellZeit = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_udTimeRel.nodeId.value];
+  let EierUhrEinstellZeit = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_udTimeRel_Set.nodeId.value];
   let EierUhrStartWert = EierUhrEinstellZeit
 
   //********************************************************************************************************************************** */
+  //********************************************************************************************************************************** */
+  //********************************************************************************************************************************** */
   // Prüft, ob das System im Heizmodus ist.
   if (sharedState.HeatingisOn) {
-
+    // In dem Moment, wo der Button auf Heating geklickt wird, sind die Prozesszonen nicht mehr auf Off, daher wird der Zustand gesetzt
     sharedState.ProzesszonesAreOff = false;
     if (rAct < rTempRelease) {
       wasBelowTempRelease[i] = true;
     }
-     // Wenn die aktuelle Temperatur überhalb des Freigabewerts liegt und nicht einmal drunter war.
+    // Wenn die aktuelle Temperatur überhalb des Freigabewerts liegt und nicht einmal drunter war.
     if (rAct > rTempRelease && !wasBelowTempRelease[i]) {
-       // Aktualisiere verschiedene Statuswerte entsprechend
+      // Aktualisiere verschiedene Statuswerte entsprechend
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired) // BIT 6 stellt auf Ready
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on) // BIT 9
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
     }
-
-    // Weitere überprüfungen
+    // Mehrere Bedingungen für die Temperaturkontrolle
     if (rAct < rSet && rAct < (rSet - rSetTolMaxMax) && wasBelowTempRelease[i]) {
-
+      // Statusänderungen, wenn die Temperatur unterhalb des Sollwertes und der Toleranzgrenze liegt und einmal unter der Freigabetemperatur.
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on) // BIT 9 stellt auf Active
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired)
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired) // BIT 6 
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
     }
 
-    // Beindung , damit die EierUhr gestartet wird 
+    // Bedingung für die Eieruhr
     if (rAct > (rSet - rSetTolMaxMax) && wasBelowTempRelease[i] && !hasEierUhrFinished[i]) {
-
+      // Aktualisiere verschiedene Statuswerte entsprechend
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Show_remain_time_on_hmi)  // BIT 15 Show remain time on hmi
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired) // BIT 6
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on) // BIT 9
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
-      startTimerIconStartWizzard(i, function (index) {
-        serverValues[werte.data[index].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired)  // Bit 6 stellt Icon auf Ready
+      startTimerIconStartWizzard(i, function () {
+        // Statusänderungen, wenn die Eieruhr abgelaufen ist
+        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired)  // Bit 6 stellt Icon auf Ready
         serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on) //BIT 9
         serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Show_remain_time_on_hmi) // BIT 15
         serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
       });
     }
-
-    // Es wird geprüft, ob alle Icons, also alle Zonen auf Ready stehen, wenn ja, dann wird er Zustand gesetzt
+    // Überprüfung aller Prozesszonen auf "Ready"
     for (let i = 1; i < 14; i++) {
       if (serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired)) { // Prüft ob das 6 Bit gesetzt ist, unabhängig davon ob die anderen gesetzt sind
         checkedItemsReady[i] = true;
@@ -496,26 +496,29 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
   }
   //********************************************************************************************************************************** */
   //********************************************************************************************************************************** */
+  //********************************************************************************************************************************** */
   // Prüft, ob das System im Shutdown Modus ist.
   if (sharedState.ShutdownisOn) {
-    //Prüft, ob die Icons nicht mehr auf Ready stehen
+    sharedState.ProzesszonesAreReady = false; // Setzt den Zustand der Prozesszonen auf "Nicht Ready"
+
+    // Überprüfen, ob alle Prozesszonen nicht mehr im "Ready" Zustand sind
     for (let i = 1; i < 14; i++) {
       if (!(serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired))) {
         checkedItemsOff[i] = true;
       }
     }
-    //Prüft das Array, ob alle Icons nicht mehr auf Ready, wenn ja, dann wird der Zustand gesetzt, das die Prozesszones aus sind.
+    // Wenn alle Prozesszonen "Off" sind, setze den Zustand entsprechend
     if (checkedItemsOff.slice(1, 14).every(Boolean)) {
       sharedState.ProzesszonesAreOff = true;
     }
 
-    sharedState.ProzesszonesAreReady = false;
-    // Prüfung ob, der ActWert unter TempRelease gefallen ist,also unter der Freigabetemperatur, wenn ja, dann werden einige Zustände gesetzt. Das Icon ist dann auf "Off"
+    // Logik für die Temperaturprüfung im Shutdown-Modus
     if (rAct < rTempRelease) {
+
       wasBelowTempRelease[i] = true;
       hasEierUhrFinished = false
       checkedItemsReady[i] = false;
-
+      // Setzen der Zustände und Icons für den Shutdown-Modus
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired) // BIT 6
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on) // BIT 9
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
@@ -528,35 +531,38 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
 
     // Löscht das Intervall der EierUhr, falls noch einer Aktiv ist.
     if (isEierUhrRunning[i]) {
+      // Überprüft, ob der Timer (EierUhr) für den aktuellen Index i noch läuft.
+      // Wenn ja, wird das Intervall gestoppt.
       clearInterval(intervalEieruhrIds[i]);
+      // Setzt den Laufstatus des Timers für diesen Index auf 'false', was bedeutet, dass er nicht mehr aktiv ist.
       isEierUhrRunning[i] = false;
     }
   }
   //********************************************************************************************************************************** */
   //********************************************************************************************************************************** */
+  //********************************************************************************************************************************** */
+  //********************************************************************************************************************************** */
   // Prüft, ob das System im Kühl Modus ist.
   if (sharedState.CoolingisOn) {
-//Prüft, ob die Icons nicht mehr auf Ready stehen
+    sharedState.ProzesszonesAreReady = false; // Setzt den Zustand der Prozesszonen auf "Nicht Ready"
+
+    // Überprüfen, ob alle Prozesszonen nicht mehr im "Ready" Zustand sind
     for (let i = 1; i < 14; i++) {
       if (!(serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired))) {
         checkedItemsOff[i] = true;
       }
     }
-    // Prüfung, ob alle Zonen nicht mehr Ready stehen, wenn ja dann wird der Zustand gesetzt.
+    // Wenn alle Prozesszonen "Off" sind, setze den Zustand entsprechend
     if (checkedItemsOff.slice(1, 14).every(Boolean)) {
       sharedState.ProzesszonesAreOff = true;
     }
 
-    // In dem Moment, wo der CoolDown Button gedrückt, sind die Zonen nicht mehr Ready, daher wird der Zustand gesetzt
-    sharedState.ProzesszonesAreReady = false;
-
-
-    // Wenn die Temperatur unter dem Freigabewert fällt, werden eingie Zustände gesetzt
+    // Logik für die Temperaturprüfung im Cooling-Modus
     if (rAct < rTempRelease) {
+
       wasBelowTempRelease[i] = true;
       hasEierUhrFinished = false
       checkedItemsReady[i] = false;
-
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired);
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running);
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on)
@@ -571,18 +577,19 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on)
     }
 
-    
+    // Setzt den Remain Time der EierUhr wieder auf den Standard Wert zurück
     serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTime.nodeId.value] = EierUhrEinstellZeit;
     EierUhrStartWert = EierUhrEinstellZeit;
 
-   
 
     if (isEierUhrRunning[i]) {
+      // Wenn die EierUhr (ein Timer) für den spezifischen Index i aktiv ist, wird sie gestoppt.
       clearInterval(intervalEieruhrIds[i]);
-      isEierUhrRunning[i] = false;  // Setzen Sie den Status für den spezifischen Index zurück
+      // Der Status der EierUhr für diesen Index wird auf 'false' gesetzt, was bedeutet, dass sie nicht mehr läuft.
+      isEierUhrRunning[i] = false;
     }
 
-    // Wenn die aktuelle Temperatur unter dem Freigabewert fallen, dann werden Zustände gesetzt
+    // Wenn die aktuelle Temperatur unter dem Freigabewert fällt, dann werden Zustände gesetzt
     if (rAct < rTempCooldown) {
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired);
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
@@ -592,37 +599,54 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
 }
 
 
-let intervalEieruhrIds = [];
-let isEierUhrRunning = Array(14).fill(false);  // Neue Variable als Array
-let hasEierUhrFinished = Array(14).fill(false);  // Array, um den abgeschlossenen Status der Eieruhr für jeden Index zu verfolgen
+// Deklaration von Arrays zur Verwaltung der Eieruhr-Timer für jeden Index
+let intervalEieruhrIds = []; // Speichert die IDs der Intervalle (Timer) für die Eieruhr
+let isEierUhrRunning = Array(14).fill(false); // Speichert, ob die Eieruhr für jeden Index läuft
+let hasEierUhrFinished = Array(14).fill(false); // Speichert, ob die Eieruhr für jeden Index abgeschlossen ist
 
+// Funktion zum Starten der Eieruhr-Timer
 function startTimerIconStartWizzard(i, callback) {
-  var werte = require('./profiles/simulation/variables/Variablen');
+    // Importieren notwendiger Variablen aus einer externen Datei
+    var werte = require('./profiles/simulation/variables/Variablen');
 
-  // Überprüfen, ob bereits ein Intervall für den gegebenen Index i läuft
-  // oder die Eieruhr für den Index i bereits abgelaufen ist
-  if (isEierUhrRunning[i] || hasEierUhrFinished[i]) {
-    return; // Wenn ja, brechen Sie die Funktion sofort ab
-  }
-
-  let EierUhrStartWert = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_udTimeRel.nodeId.value];
-  let intervalEieruhr = setInterval(function () {
-    if (EierUhrStartWert > 0) {
-      isEierUhrRunning[i] = true;
-      EierUhrStartWert -= 1;
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTime.nodeId.value] = EierUhrStartWert;
-    } else {
-      clearInterval(intervalEieruhr);
-      isEierUhrRunning[i] = false;
-      hasEierUhrFinished[i] = true;  // Setzen Sie den "abgeschlossen" Status für den spezifischen Index
-      intervalEieruhr = null;
-      wasBelowTempRelease[i] = false
-      if (callback) {
-        callback(i);
-      }
+    // Überprüfen, ob bereits ein Intervall für den Index 'i' existiert oder ob die Eieruhr abgeschlossen ist
+    if (isEierUhrRunning[i] || hasEierUhrFinished[i] || intervalEieruhrIds[i]) {
+        // Wenn ja, beende die Funktion vorzeitig, um Mehrfachausführungen zu vermeiden
+        return;
     }
-  }, 800);
+    // Initialisiere den Startwert der Eieruhr basierend auf Serverdaten
+    let EierUhrStartWert = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_udTimeRel_Set.nodeId.value];
+    // Erstelle ein Intervall (Timer), das wiederholt eine Funktion ausführt
+    let intervalEieruhr = setInterval(function () {
+      // Prüfen, ob der Zeitwert auf der Eieruhr null oder kleiner ist
+      if (EierUhrStartWert <= 1) {
+          // Wenn die Zeit abgelaufen ist oder der Wert negativ ist, stoppe das Intervall
+          clearInterval(intervalEieruhr);
+          // Setze den Status der Eieruhr auf abgeschlossen und nicht mehr laufend
+          isEierUhrRunning[i] = false;
+          hasEierUhrFinished[i] = true;
+          // Entferne die Referenz auf das Intervall
+          intervalEieruhr = null;
+          intervalEieruhrIds[i] = null;
+          // Setze den Zustand 'wasBelowTempRelease' zurück
+          wasBelowTempRelease[i] = false;
+          // Wenn eine Callback-Funktion definiert wurde, führe sie aus
+          if (callback) {
+              callback(i); // Übergabe i an die Funktion
+          }
+      } else {
+          // Wenn noch Zeit verbleibt, reduziere den Zeitwert
+          isEierUhrRunning[i] = true;
+          EierUhrStartWert -= 1;
+          // Aktualisiere den verbleibenden Zeitwert in den Serverdaten
+          serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTime.nodeId.value] = EierUhrStartWert;
+      }
+  }, 2000); // Das Intervall wird alle 2000 Millisekunden (2 Sekunden) ausgeführt
+    // Speichere die Intervall-ID im Array zur späteren Verwaltung
+    intervalEieruhrIds[i] = intervalEieruhr;
 }
+
+
 
 
 let pidTimerIddown = [] // Array für die Id des Setintervalls 
@@ -653,27 +677,22 @@ function PIDUP(i, nameNodeId, serverValues, source) {
   let rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
 
   let rSet;
-  if (source === "A") {
+  if (serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.Show_preheat_temperature_setpoint_on_hmi)) {
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value];
-    // Hängt mit der Funktion dwstatupdate zusammen. Für die Toleranzgrenzen braucht man einen Set Wert. Endung _rSet, rTempHeatup_Set geht nicht !
+    // Hängt mit der Funktion dwstatupdate zusammen. Für die Toleranzgrenzen braucht man einen Set Wert. Endung _rSet, rTempHeatup_Set geht nicht ! die update dwStat braucht einen Set Wert
     serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value] = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value]
-  } else if (source === "B") {
+  } else if (!(serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.Show_preheat_temperature_setpoint_on_hmi))) {
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value];
   }
-
   let integral
 
   let key = getSaveKey(rAct2, i);
 
   if (savedValues.hasOwnProperty(key)) {
     rAct1 = savedValues[key].rAct1;
-    //integral = savedValues[key].integral;
-    //} else {
-
-  }
+    }
   lastError = 0;
   integral = 0;
-
 
   function calculateNextValue() {
     var werte = require('./profiles/simulation/variables/Variablen');
@@ -719,7 +738,7 @@ function PIDUP(i, nameNodeId, serverValues, source) {
           break;  // Sobald wir einen Schlüssel gefunden haben, der nicht existiert und gespeichert wurde, brechen wir aus der Schleife aus.
         }
       }
-      const timerup = setTimeout(calculateNextValue, 10);
+      const timerup = setTimeout(calculateNextValue, 1); 
       pidTimerIdup[i] = timerup; // Timer-ID am spezifischen Index setzen
     }
   }
@@ -743,16 +762,14 @@ function PIDCOOLDOWN(i, nameNodeId, serverValues, source) {
   const K2 = 1
   let rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   let rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
-  let rSet
-  if (source === "A") {
-    rSet = 20
-    // Hängt mit der Funktion dwstatupdate zusammen. Für die Toleranzgrenzen braucht man einen Set Wert. Endung _rSet, rTempHeatup_Set geht nicht !
-    // serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value]=serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value]
-  } else if (source === "B") {
+  
+  let rSet;
+  if (serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.Show_preheat_temperature_setpoint_on_hmi)) {
+    rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value];
+    // Hängt mit der Funktion dwstatupdate zusammen. Für die Toleranzgrenzen braucht man einen Set Wert. Endung _rSet, rTempHeatup_Set geht nicht ! die update dwStat braucht einen Set Wert
+    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value] = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value]
+  } else if (!(serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.Show_preheat_temperature_setpoint_on_hmi))) {
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value];
-    if (rSet < 20) {
-      rSet = 20
-    }
   }
   let lastError = 0;
 

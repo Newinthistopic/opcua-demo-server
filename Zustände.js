@@ -7,6 +7,8 @@ const BIT_POSITIONS = {
     Setpoint_input_of_Hmi_is_active: 13,// TRUE: Setpoint input of Hmi is active; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325158/udt+Hmi+cmHmiValues
     MainDrive_On_Off: 11, //TRUE: Main drive is running    FALSE: Main drive is off; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325128/udt+Hmi+emExtruderDriveCtrl
 
+    Show_preheat_temperature_setpoint_on_hmi:16,// TRUE: Show preheat temperature setpoint on hmi; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3113779313/udt+Hmi+emProcessZone#dwStat
+
     GearOilLubrication_Button_is_On_Off: 11,
     GearOilLubrication_Button_Lock_OFF_Status: 10,
 
