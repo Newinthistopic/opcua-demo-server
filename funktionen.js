@@ -701,8 +701,7 @@ function PIDUP(i, nameNodeId, serverValues) {
 
   if (savedValues.hasOwnProperty(key)) {
     rAct1 = savedValues[key].rAct1;
-    //integral = savedValues[key].integral;
-    //} else {
+    
 
   }
   lastError = 0;
