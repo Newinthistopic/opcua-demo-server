@@ -544,6 +544,7 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
   //********************************************************************************************************************************** */
   // Prüft, ob das System im Kühl Modus ist.
   if (sharedState.CoolingisOn) {
+    
     sharedState.ProzesszonesAreReady = false; // Setzt den Zustand der Prozesszonen auf "Nicht Ready"
 
     // Überprüfen, ob alle Prozesszonen nicht mehr im "Ready" Zustand sind
@@ -606,60 +607,68 @@ let hasEierUhrFinished = Array(14).fill(false); // Speichert, ob die Eieruhr fü
 
 // Funktion zum Starten der Eieruhr-Timer
 function startTimerIconStartWizzard(i, callback) {
-    // Importieren notwendiger Variablen aus einer externen Datei
-    var werte = require('./profiles/simulation/variables/Variablen');
+  // Importieren notwendiger Variablen aus einer externen Datei
+  var werte = require('./profiles/simulation/variables/Variablen');
 
-    // Überprüfen, ob bereits ein Intervall für den Index 'i' existiert oder ob die Eieruhr abgeschlossen ist
-    if (isEierUhrRunning[i] || hasEierUhrFinished[i] || intervalEieruhrIds[i]) {
-        // Wenn ja, beende die Funktion vorzeitig, um Mehrfachausführungen zu vermeiden
-        return;
-    }
-    // Initialisiere den Startwert der Eieruhr basierend auf Serverdaten
-    let EierUhrStartWert = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_udTimeRel_Set.nodeId.value];
-    // Erstelle ein Intervall (Timer), das wiederholt eine Funktion ausführt
-    let intervalEieruhr = setInterval(function () {
-      // Prüfen, ob der Zeitwert auf der Eieruhr null oder kleiner ist
-      if (EierUhrStartWert <= 1) {
-          // Wenn die Zeit abgelaufen ist oder der Wert negativ ist, stoppe das Intervall
-          clearInterval(intervalEieruhr);
-          // Setze den Status der Eieruhr auf abgeschlossen und nicht mehr laufend
-          isEierUhrRunning[i] = false;
-          hasEierUhrFinished[i] = true;
-          // Entferne die Referenz auf das Intervall
-          intervalEieruhr = null;
-          intervalEieruhrIds[i] = null;
-          // Setze den Zustand 'wasBelowTempRelease' zurück
-          wasBelowTempRelease[i] = false;
-          // Wenn eine Callback-Funktion definiert wurde, führe sie aus
-          if (callback) {
-              callback(i); // Übergabe i an die Funktion
-          }
-      } else {
-          // Wenn noch Zeit verbleibt, reduziere den Zeitwert
-          isEierUhrRunning[i] = true;
-          EierUhrStartWert -= 1;
-          // Aktualisiere den verbleibenden Zeitwert in den Serverdaten
-          serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTime.nodeId.value] = EierUhrStartWert;
+  // Überprüfen, ob bereits ein Intervall für den Index 'i' existiert oder ob die Eieruhr abgeschlossen ist
+  if (isEierUhrRunning[i] || hasEierUhrFinished[i] || intervalEieruhrIds[i]) {
+    // Wenn ja, beende die Funktion vorzeitig, um Mehrfachausführungen zu vermeiden
+    return;
+  }
+  // Initialisiere den Startwert der Eieruhr basierend auf Serverdaten
+  let EierUhrStartWert = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_udTimeRel_Set.nodeId.value];
+  // Erstelle ein Intervall (Timer), das wiederholt eine Funktion ausführt
+  let intervalEieruhr = setInterval(function () {
+    // Prüfen, ob der Zeitwert auf der Eieruhr null oder kleiner ist
+    if (EierUhrStartWert <= 1) {
+      // Wenn die Zeit abgelaufen ist oder der Wert negativ ist, stoppe das Intervall
+      clearInterval(intervalEieruhr);
+      // Setze den Status der Eieruhr auf abgeschlossen und nicht mehr laufend
+      isEierUhrRunning[i] = false;
+      hasEierUhrFinished[i] = true;
+      // Entferne die Referenz auf das Intervall
+      intervalEieruhr = null;
+      intervalEieruhrIds[i] = null;
+      // Setze den Zustand 'wasBelowTempRelease' zurück
+      wasBelowTempRelease[i] = false;
+      // Wenn eine Callback-Funktion definiert wurde, führe sie aus
+      if (callback) {
+        callback(i); // Übergabe i an die Funktion
       }
+    } else {
+      // Wenn noch Zeit verbleibt, reduziere den Zeitwert
+      isEierUhrRunning[i] = true;
+      EierUhrStartWert -= 1;
+      // Aktualisiere den verbleibenden Zeitwert in den Serverdaten
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTime.nodeId.value] = EierUhrStartWert;
+    }
   }, 2000); // Das Intervall wird alle 2000 Millisekunden (2 Sekunden) ausgeführt
-    // Speichere die Intervall-ID im Array zur späteren Verwaltung
-    intervalEieruhrIds[i] = intervalEieruhr;
+  // Speichere die Intervall-ID im Array zur späteren Verwaltung
+  intervalEieruhrIds[i] = intervalEieruhr;
 }
 
 
 
+// Initialisierung von Arrays zur Speicherung von Timer-IDs.
+// Diese Timer werden verwendet, um zeitgesteuerte Funktionen im PID-Regelkreis zu steuern.
+let pidTimerIddown = []; // Für das Herunterfahren der Temperatur
+let pidTimerIdup = []; // Für das Hochfahren der Temperatur
+let pidTimerIdshutdown = []; // Für das Abschalten der Temperatursteuerung
 
-let pidTimerIddown = [] // Array für die Id des Setintervalls 
-let pidTimerIdup = []//  Array für die Id des Setintervalls 
-let pidTimerIdshutdown = [] // Array für die Id des Setintervalls 
 
-const MAX_INDEX = 13;  // Index von 1 bis 13
-const savedValues = {};  // Objekt zur Speicherung von rAct1 und integral
+const MAX_INDEX = 13; // Maximale Anzahl der speicherbaren Zustände
+const savedValues = {}; // Objekt zum Speichern von Zuständen für rAct1 und integral
 
+// Funktion zur Erstellung eines eindeutigen Schlüssels für die Speicherung von Werten.
+// 'rAct2' ist ein Temperaturwert, der gerundet wird, um Ganzzahligkeit zu sichern.
+// 'index' ist ein Zähler, der unterschiedliche Zustände bei gleichem 'rAct2'-Wert unterscheidet.
+// Der resultierende Schlüssel im Format "gerundeterWert-index" wird zur Identifikation
+// und Speicherung spezifischer Zustände in einem Objekt verwendet.
 function getSaveKey(rAct2, index) {
   return `${Math.round(rAct2)}-${index}`;
 }
 
+// PIDUP-Funktion zur Temperaturregelung für das Hochfahren
 function PIDUP(i, nameNodeId, serverValues) {
   var werte = require('./profiles/simulation/variables/Variablen');
   if (pidTimerIddown[i]) clearTimeout(pidTimerIddown[i]); // löscht alle Timer von pidDown, falls ein Timer noch läuft
@@ -676,23 +685,29 @@ function PIDUP(i, nameNodeId, serverValues) {
   let rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   let rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
 
+
   let rSet;
-  if (serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.Show_preheat_temperature_setpoint_on_hmi)) {
+  if (!sharedState.ProzesszonesAreReady) {
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value];
-    // Hängt mit der Funktion dwstatupdate zusammen. Für die Toleranzgrenzen braucht man einen Set Wert. Endung _rSet, rTempHeatup_Set geht nicht ! die update dwStat braucht einen Set Wert
+    // Hängt mit der Funktion dwstatupdate zusammen. Für die Toleranzgrenzen braucht man einen Set Wert. Endung _rSet, rTempHeatup_Set geht nicht !
     serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value] = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value]
-  } else if (!(serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.Show_preheat_temperature_setpoint_on_hmi))) {
+  } else if (sharedState.ProzesszonesAreReady) {
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value];
   }
+
   let integral
 
   let key = getSaveKey(rAct2, i);
 
   if (savedValues.hasOwnProperty(key)) {
     rAct1 = savedValues[key].rAct1;
-    }
+    //integral = savedValues[key].integral;
+    //} else {
+
+  }
   lastError = 0;
   integral = 0;
+
 
   function calculateNextValue() {
     var werte = require('./profiles/simulation/variables/Variablen');
@@ -738,7 +753,7 @@ function PIDUP(i, nameNodeId, serverValues) {
           break;  // Sobald wir einen Schlüssel gefunden haben, der nicht existiert und gespeichert wurde, brechen wir aus der Schleife aus.
         }
       }
-      const timerup = setTimeout(calculateNextValue, 1); 
+      const timerup = setTimeout(calculateNextValue, 10);
       pidTimerIdup[i] = timerup; // Timer-ID am spezifischen Index setzen
     }
   }
@@ -762,20 +777,22 @@ function PIDCOOLDOWN(i, nameNodeId, serverValues) {
   const K2 = 1
   let rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   let rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
+  let rSet
 
-  let rSet;
-  if (serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.Show_preheat_temperature_setpoint_on_hmi)) {
-    rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value];
-    // Hängt mit der Funktion dwstatupdate zusammen. Für die Toleranzgrenzen braucht man einen Set Wert. Endung _rSet, rTempHeatup_Set geht nicht ! die update dwStat braucht einen Set Wert
-    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value] = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value]
-  } else if (!(serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.Show_preheat_temperature_setpoint_on_hmi))) {
+  if (sharedState.CoolingisOn && !sharedState.HeatingisOn) {
+    rSet = 20
+      } else if (sharedState.HeatingisOn && sharedState.ProzesszonesAreReady) {
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value];
+    if (rSet < 20) {
+      rSet = 20
+    }
   }
   let lastError = 0;
 
   let integral = 0
 
   function calculateNextValue() {
+    
     if (Math.abs(rSet - rAct2) > 0.1) {
       let error = rSet - rAct2;
 
@@ -886,7 +903,6 @@ function PIDSHUTDOWN(i, nameNodeId, serverValues) {
   // Start der Berechnung
   calculateNextValue();
 }
-
 // Definition der Funktion 'simulateScrewSpeed', die zur Simulation der Drehzahl eines Extruders dient.
 function simulateScrewSpeed() {
   // Importieren der Variablendefinitionen aus einer externen Datei für Zugriff auf verschiedene Variablenwerte.

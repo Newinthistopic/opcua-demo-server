@@ -6,8 +6,6 @@ const certificateManager = new opcua.OPCUACertificateManager({ automaticallyAcce
 
 const config = require(path.join(__dirname, 'profiles', 'simulation', 'config.json'));
 
-
-
 (async () => {
     /*** SERVER INIT ***/
     const server = new opcua.OPCUAServer(
@@ -40,7 +38,6 @@ const config = require(path.join(__dirname, 'profiles', 'simulation', 'config.js
     );
 
     var serverValues = {}; // Holds all server values
-
     module.exports = {
         namespace3: namespace3,
         opcua: opcua,
@@ -59,4 +56,3 @@ const config = require(path.join(__dirname, 'profiles', 'simulation', 'config.js
     console.log("[OK] OPC UA: Listening on port " + server.endpoints[0].port);
     console.log("Endpoint URL: ", endpointUrl);
 })();
-

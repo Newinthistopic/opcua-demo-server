@@ -221,6 +221,7 @@ const SetGetlogic = {
   serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_Main_drive_is_running); 
 }
 
+// wenn die Ölschmierung aus ist, so kann der Extruder nicht angeschaltet werden, Lockcondition ist gesetzt.
 if(sharedState.GearOilLubricationOff){
   serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_Main_drive_is_running); 
 }
@@ -1405,7 +1406,7 @@ if(sharedState.GearOilLubricationOff){
   SU3111_ZeExtruder_Hmi_udtEmPzLoopGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPzLoop", 1, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmPzLoopSet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPzLoop", undefined, {}, i, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtEmPz_dwStatGet: function (i, nameNodeId, serverValues) {
-    funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_dwStat",1114189, {}, i, nameNodeId, serverValues);
+    funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_dwStat",1114125, {}, i, nameNodeId, serverValues);
 
     for (let i = 1; i < 14; i++) {
       setTimeout(function () {
@@ -1415,7 +1416,11 @@ if(sharedState.GearOilLubricationOff){
           serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Show_preheat_temperature_setpoint_on_hmi)
          }
   
-         if( sharedState.ProzesszonesAreReady){
+         if( sharedState.HeatingisOn && sharedState.ProzesszonesAreReady){
+          serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Show_preheat_temperature_setpoint_on_hmi)
+         }
+
+         if( sharedState.CoolingisOn && !sharedState.ProzesszonesAreReady){
           serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Show_preheat_temperature_setpoint_on_hmi)
          }
      
@@ -4065,7 +4070,7 @@ if(sharedState.GearOilLubricationOff){
       sharedState.ShutdownisOn = false;
 
       for (var i = 1; i < 14; i++) {
-        funktionen.PIDUP(i, nameNodeId, serverValues, "A");
+        funktionen.PIDUP(i, nameNodeId, serverValues);
         serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << 17); // Monitoring values active für die Eieruhr 
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~((1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_Start_Button)); // Macht den start down Button "grau"
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_CoolDown_Button); // Setzt den Cool Down Button, damit er "schwarz" wird
@@ -4081,7 +4086,7 @@ if(sharedState.GearOilLubricationOff){
       sharedState.shutdownisOn = false;
       for (var i = 1; i < 14; i++) {
 
-        funktionen.PIDCOOLDOWN(i, nameNodeId, serverValues, "A");
+        funktionen.PIDCOOLDOWN(i, nameNodeId, serverValues);
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_CoolDown_Button);// Macht den Cool down Button "an" 8(schwarz geht "aus")
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_Start_Button); //Setz den start Button, damit er "Schwarz" wird 
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.Lock_On_Off_Status_of_ShutDown_Button);// Setzt den Shut Down Button, damit er "schwarz" wird

@@ -7,7 +7,7 @@ const BIT_POSITIONS = {
     Setpoint_input_of_Hmi_is_active: 13,// TRUE: Setpoint input of Hmi is active; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325158/udt+Hmi+cmHmiValues
 
     MainDrive_On_Off: 11, //TRUE: Main drive is running    FALSE: Main drive is off; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325128/udt+Hmi+emExtruderDriveCtrl
-    Lock_On_Off_Status_of_Main_drive_is_running: 9 ,
+    Lock_On_Off_Status_of_Main_drive_is_running: 9 , // Lock Kondition des Extruders Button "ON", wenn bit 9 gesetzt, so kann der Extruder angeschaltet werden
 
     Show_preheat_temperature_setpoint_on_hmi:16,// TRUE: Show preheat temperature setpoint on hmi; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3113779313/udt+Hmi+emProcessZone#dwStat
 
@@ -119,7 +119,6 @@ const Alarms_Warnings = {
     }
 }
 
-
 const feeders = [
     null, // Platzhalter für Index 0
     { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true }, // Zustand für Feeder 1
@@ -134,7 +133,6 @@ const status_Alarms_Warnings = {
         status_Warning_Torque_too_high_shutdown_timer_started: false,
     }
 }
-
 
 module.exports = {
     BIT_POSITIONS,
@@ -161,9 +159,6 @@ module.exports = {
 
     simulateFeederWeightisRunning: false,
 
-
-
-
     feedingautostartButtons: {
 
         autoStop: true,
@@ -172,7 +167,6 @@ module.exports = {
         stopFeeding: false
 
     },
-
 
     intervalIds: {
         stopSimulateFeederSingle: false,
@@ -185,27 +179,18 @@ module.exports = {
 
     },
 
-
     SpeedCalculationDirectisOn: true,
     SpeedCalculationSpecRateisOn: false,
-
 
     AutoStartSideFeederisOn: false,
     AutoStartSideFeederisOff: true,
 
-
-
     ProzesszonesAreReady: false,
     ProzesszonesAreOff: false,
-
 
     GearOilLubricationOn: false,
     GearOilLubricationOff: true,
     GearOilRemainPreRunTimeExpired: false,
     GearOilRemainTimeFollowUpExpired: false,
-
-
-
-
 };
 
