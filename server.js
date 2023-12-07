@@ -45,7 +45,7 @@ const config = require(path.join(__dirname, 'profiles', 'simulation', 'config.js
     };
     /*** VARIABLES ***/
     var myModule = require('./profiles/simulation/variables/Variablen')
-    myModule.run1(addressSpace, device,namespace3)
+    myModule.run1(addressSpace, device)
 
     /*** START SERVER ***/
     await server.start();

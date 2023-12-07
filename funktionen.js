@@ -1,15 +1,14 @@
 var { serverValues, opcua, namespace3 } = require('./../opcua-demo-server/server');
 
-var sharedState = require('./Zustände');
+var sharedState = require('./states');
 
 
 
-function createObjectDouble(organizedByValue, browseName) {
+function createObject(organizedByValue, browseName, nodeId) {
   return namespace3.addObject({
     organizedBy: organizedByValue,
     browseName: browseName,
-    dataType: opcua.DataType.Double,
-    nodeId: "ns=3;s=\"" + browseName + "\""
+       nodeId: "ns=3;s=\"" + nodeId + "\""
   });
 }
 
@@ -447,69 +446,69 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
   //********************************************************************************************************************************** */
   //********************************************************************************************************************************** */
   // Prüft, ob das System im Heizmodus ist.
-  if (sharedState.HeatingisOn) {
+  if (sharedState.Process_states.Heating_is_On) {
     // In dem Moment, wo der Button auf Heating geklickt wird, sind die Prozesszonen nicht mehr auf Off, daher wird der Zustand gesetzt
-    sharedState.ProzesszonesAreOff = false;
+    sharedState.Process_states.Prozesszones_Are_Off = false;
     if (rAct < rTempRelease) {
       wasBelowTempRelease[i] = true;
     }
     // Wenn die aktuelle Temperatur überhalb des Freigabewerts liegt und nicht einmal drunter war.
     if (rAct > rTempRelease && !wasBelowTempRelease[i]) {
       // Aktualisiere verschiedene Statuswerte entsprechend
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired) // BIT 6 stellt auf Ready
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on) // BIT 9
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.dwStat.startWizzard.Temp_release_Temp_reached_and_soaktime_expired) // BIT 6 stellt auf Ready
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Temp_controller_on) // BIT 9
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
     }
     // Mehrere Bedingungen für die Temperaturkontrolle
     if (rAct < rSet && rAct < (rSet - rSetTolMaxMax) && wasBelowTempRelease[i]) {
       // Statusänderungen, wenn die Temperatur unterhalb des Sollwertes und der Toleranzgrenze liegt und einmal unter der Freigabetemperatur.
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on) // BIT 9 stellt auf Active
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired) // BIT 6 
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.dwStat.startWizzard.Temp_controller_on) // BIT 9 stellt auf Active
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Temp_release_Temp_reached_and_soaktime_expired) // BIT 6 
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
     }
 
     // Bedingung für die Eieruhr
     if (rAct > (rSet - rSetTolMaxMax) && wasBelowTempRelease[i] && !hasEierUhrFinished[i]) {
       // Aktualisiere verschiedene Statuswerte entsprechend
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Show_remain_time_on_hmi)  // BIT 15 Show remain time on hmi
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired) // BIT 6
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on) // BIT 9
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.dwStat.startWizzard.Show_remain_time_on_hmi)  // BIT 15 Show remain time on hmi
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Temp_release_Temp_reached_and_soaktime_expired) // BIT 6
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Temp_controller_on) // BIT 9
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
       startTimerIconStartWizzard(i, function () {
         // Statusänderungen, wenn die Eieruhr abgelaufen ist
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired)  // Bit 6 stellt Icon auf Ready
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on) //BIT 9
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Show_remain_time_on_hmi) // BIT 15
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
+        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.dwStat.startWizzard.Temp_release_Temp_reached_and_soaktime_expired)  // Bit 6 stellt Icon auf Ready
+        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Temp_controller_on) //BIT 9
+        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Show_remain_time_on_hmi) // BIT 15
+        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
       });
     }
     // Überprüfung aller Prozesszonen auf "Ready"
     for (let i = 1; i < 14; i++) {
-      if (serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired)) { // Prüft ob das 6 Bit gesetzt ist, unabhängig davon ob die anderen gesetzt sind
+      if (serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.dwStat.startWizzard.Temp_release_Temp_reached_and_soaktime_expired)) { // Prüft ob das 6 Bit gesetzt ist, unabhängig davon ob die anderen gesetzt sind
         checkedItemsReady[i] = true;
       }
     }
-    // Prüfung des Arrays, ob alle Einträge im Array True sind, dann setze Zustand ProzesszonesAreReady
+    // Prüfung des Arrays, ob alle Einträge im Array True sind, dann setze Zustand Prozesszones_Are_Ready
     if (checkedItemsReady.slice(1, 14).every(Boolean)) {
-      sharedState.ProzesszonesAreReady = true
+      sharedState.Prozesszones_Are_Ready = true
     }
   }
   //********************************************************************************************************************************** */
   //********************************************************************************************************************************** */
   //********************************************************************************************************************************** */
   // Prüft, ob das System im Shutdown Modus ist.
-  if (sharedState.ShutdownisOn) {
-    sharedState.ProzesszonesAreReady = false; // Setzt den Zustand der Prozesszonen auf "Nicht Ready"
+  if (sharedState.Process_states.Shutdown_is_On) {
+    sharedState.Prozesszones_Are_Ready = false; // Setzt den Zustand der Prozesszonen auf "Nicht Ready"
 
     // Überprüfen, ob alle Prozesszonen nicht mehr im "Ready" Zustand sind
     for (let i = 1; i < 14; i++) {
-      if (!(serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired))) {
+      if (!(serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.dwStat.startWizzard.Temp_release_Temp_reached_and_soaktime_expired))) {
         checkedItemsOff[i] = true;
       }
     }
     // Wenn alle Prozesszonen "Off" sind, setze den Zustand entsprechend
     if (checkedItemsOff.slice(1, 14).every(Boolean)) {
-      sharedState.ProzesszonesAreOff = true;
+      sharedState.Process_states.Prozesszones_Are_Off = true;
     }
 
     // Logik für die Temperaturprüfung im Shutdown-Modus
@@ -519,12 +518,12 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
       hasEierUhrFinished = false
       checkedItemsReady[i] = false;
       // Setzen der Zustände und Icons für den Shutdown-Modus
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired) // BIT 6
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on) // BIT 9
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Show_remain_time_on_hmi)  // BIT 15 Show remain time on hmi
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Temp_release_Temp_reached_and_soaktime_expired) // BIT 6
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Temp_controller_on) // BIT 9
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Show_remain_time_on_hmi)  // BIT 15 Show remain time on hmi
     }
-    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Show_remain_time_on_hmi);
+    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Show_remain_time_on_hmi);
 
     serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_diActRemainTime.nodeId.value] = EierUhrEinstellZeit;
     EierUhrStartWert = EierUhrEinstellZeit;
@@ -543,19 +542,19 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
   //********************************************************************************************************************************** */
   //********************************************************************************************************************************** */
   // Prüft, ob das System im Kühl Modus ist.
-  if (sharedState.CoolingisOn) {
-    
-    sharedState.ProzesszonesAreReady = false; // Setzt den Zustand der Prozesszonen auf "Nicht Ready"
+  if (sharedState.Process_states.Cooling_is_On) {
+
+    sharedState.Prozesszones_Are_Ready = false; // Setzt den Zustand der Prozesszonen auf "Nicht Ready"
 
     // Überprüfen, ob alle Prozesszonen nicht mehr im "Ready" Zustand sind
     for (let i = 1; i < 14; i++) {
-      if (!(serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired))) {
+      if (!(serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] & (1 << sharedState.dwStat.startWizzard.Temp_release_Temp_reached_and_soaktime_expired))) {
         checkedItemsOff[i] = true;
       }
     }
     // Wenn alle Prozesszonen "Off" sind, setze den Zustand entsprechend
     if (checkedItemsOff.slice(1, 14).every(Boolean)) {
-      sharedState.ProzesszonesAreOff = true;
+      sharedState.Process_states.Prozesszones_Are_Off = true;
     }
 
     // Logik für die Temperaturprüfung im Cooling-Modus
@@ -564,18 +563,18 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
       wasBelowTempRelease[i] = true;
       hasEierUhrFinished = false
       checkedItemsReady[i] = false;
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired);
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running);
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on)
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Temp_release_Temp_reached_and_soaktime_expired);
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.dwStat.startWizzard.Cool_down_is_running);
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Temp_controller_on)
     }
 
-    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Show_remain_time_on_hmi);
+    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Show_remain_time_on_hmi);
 
     // Prüfung ob Temperatur über TempRelease ist, dann werden einige Zustände gesetzt
     if (rAct > rTempRelease) {
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired);
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on)
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.dwStat.startWizzard.Temp_release_Temp_reached_and_soaktime_expired);
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << sharedState.dwStat.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Temp_controller_on)
     }
 
     // Setzt den Remain Time der EierUhr wieder auf den Standard Wert zurück
@@ -592,9 +591,9 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
 
     // Wenn die aktuelle Temperatur unter dem Freigabewert fällt, dann werden Zustände gesetzt
     if (rAct < rTempCooldown) {
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_release_Temp_reached_and_soaktime_expired);
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
-      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONS.startWizzard.Temp_controller_on)
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Temp_release_Temp_reached_and_soaktime_expired);
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Cool_down_is_running); // Bit 7 Cool Down is running
+      serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.startWizzard.Temp_controller_on)
     }
   }
 }
@@ -670,39 +669,44 @@ function getSaveKey(rAct2, index) {
 
 // PIDUP-Funktion zur Temperaturregelung für das Hochfahren
 function PIDUP(i, nameNodeId, serverValues) {
+  // Einbinden notwendiger Variablen aus einer externen Datei
   var werte = require('./profiles/simulation/variables/Variablen');
+  // Löschen laufender Timer von pidDown und shutdown, um Konflikte zu vermeiden
   if (pidTimerIddown[i]) clearTimeout(pidTimerIddown[i]); // löscht alle Timer von pidDown, falls ein Timer noch läuft
   if (pidTimerIdshutdown[i]) clearTimeout(pidTimerIdshutdown[i]); // löscht alle Timer von shutDown fals ein Timer noch läuft
 
+  // Laden der PID-Reglerparameter aus Serverdaten
   const Kp = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGain.nodeId.value];
   const Ki = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value];
   const Kd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value];
-  const dt = 0.01
-  const T1 = 105
-  const T2 = 100
-  const K1 = 1
-  const K2 = 1
+  // Festlegung von Zeitschritt (dt) und Zeitkonstanten (T1, T2) für die Simulation
+  const dt = 0.01;
+  const T1 = 105;
+  const T2 = 100;
+  const K1 = 1; // Verstärkungsfaktor für das erste PT1-Glied der Regelstrecke
+  const K2 = 1; // Verstärkungsfaktor für das zweite PT1-Glied der Regelstrecke
+  // Aktuelle Temperaturwerte (Ist-Werte) aus den Serverdaten
   let rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   let rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
 
-
+  // Bestimmung des Sollwerts der Temperatur
   let rSet;
-  if (!sharedState.ProzesszonesAreReady) {
+  // Logik zur Festlegung des Sollwerts, abhängig vom Zustand der Prozesszonen
+  if (!sharedState.Prozesszones_Are_Ready) {
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value];
     // Hängt mit der Funktion dwstatupdate zusammen. Für die Toleranzgrenzen braucht man einen Set Wert. Endung _rSet, rTempHeatup_Set geht nicht !
     serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value] = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value]
-  } else if (sharedState.ProzesszonesAreReady) {
+  } else if (sharedState.Prozesszones_Are_Ready) {
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value];
   }
 
   let integral
-
+  // Bestimmung des eindeutigen Schlüssels für die Speicherung von Regelzuständen
   let key = getSaveKey(rAct2, i);
-
+  // Überprüfung, ob bereits ein gespeicherter Zustand für diesen spezifischen Temperaturwert existiert
   if (savedValues.hasOwnProperty(key)) {
+    // Wenn ja, wird rAct1 mit dem gespeicherten Wert aktualisiert
     rAct1 = savedValues[key].rAct1;
-    
-
   }
   lastError = 0;
   integral = 0;
@@ -710,28 +714,27 @@ function PIDUP(i, nameNodeId, serverValues) {
 
   function calculateNextValue() {
     var werte = require('./profiles/simulation/variables/Variablen');
+    // Prüfung, ob eine Anpassung der Temperatur notwendig ist
     if (rSet - rAct2 > 0.1) {
-
+      // Berechnung des Fehlers zwischen Soll- und Istwert
       let error = rSet - rAct2;
-
       integral += error * dt;
-
+      // Berechnung der PID-Anteile (Proportional, Integral, Derivativ)
       let derivative = (error - lastError) / dt;
       let pTerm = Kp * error;  // Proportional-Anteil
       let iTerm = Ki * integral;  // Integral-Anteil
       let dTerm = Kd * derivative;  // Derivative-Anteil
-
+      // Ermittlung der Steuerungsgröße aus den PID-Anteilen
       let u = pTerm + iTerm + dTerm;
-
       lastError = error;
 
       // Begrenzung des Wertes von u zwischen -100 und 100
       u_begrenzt = Math.max(-100, Math.min(u, 100));
 
-      // Wert wird der HMI zugewiesen
+      // Zuweisung des berechneten Werts an die HMI
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzCv_rAct.nodeId.value] = u_begrenzt
 
-      // 1.Glied PT1 der Reglestrecke
+      // Simulation der Regelstrecke mit zwei PT1-Gliedern
       let dy1 = (K1 * u - rAct1) / T1 * dt;
       rAct1 += dy1;
 
@@ -739,19 +742,20 @@ function PIDUP(i, nameNodeId, serverValues) {
       let dy2 = (K2 * rAct1 - rAct2) / T2 * dt;
       rAct2 += dy2;
 
-      //Ausgabe des Act Wertes in der HMI 
+      // Aktualisierung des Ist-Werts der Temperatur in der HMI
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value] = rAct2;
 
+      // Speicherung der Zustände für zukünftige Regelvorgänge
       let streckenAusgang = Math.round(serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value]);
-
       for (let idx = 1; idx <= MAX_INDEX; idx++) {
         const key = getSaveKey(streckenAusgang, idx);
         if (!savedValues.hasOwnProperty(key)) {
           savedValues[key] = { rAct1: rAct1, integral: integral, };
-          //console.log(`Gespeicherte Werte für ${key}: rAct1 = ${rAct1}, integral = ${integral}, rAct2 = ${streckenAusgang}`);
+
           break;  // Sobald wir einen Schlüssel gefunden haben, der nicht existiert und gespeichert wurde, brechen wir aus der Schleife aus.
         }
       }
+      // Setzen eines Timers zur kontinuierlichen Ausführung der Funktion
       const timerup = setTimeout(calculateNextValue, 10);
       pidTimerIdup[i] = timerup; // Timer-ID am spezifischen Index setzen
     }
@@ -760,143 +764,153 @@ function PIDUP(i, nameNodeId, serverValues) {
   calculateNextValue();
 }
 
+// PIDCOOLDOWN-Funktion zur Temperaturregelung für das Herunterfahren
 function PIDCOOLDOWN(i, nameNodeId, serverValues) {
-  var werte = require('./profiles/simulation/variables/Variablen');
-  if (pidTimerIdup[i]) clearTimeout(pidTimerIdup[i]); // löscht alle Timer von pidUp
-  if (pidTimerIdshutdown[i]) clearTimeout(pidTimerIdshutdown[i]); //löscht alle Timer von shutDown
+  // Einbinden der notwendigen Variablen aus einer externen Datei
+  var werte = require('./profiles/simulation/variables/Variablen')
+  // Löschen laufender Timer von pidUp und shutdown, um Konflikte zu vermeiden
+  if (pidTimerIdup[i]) clearTimeout(pidTimerIdup[i]);
+  if (pidTimerIdshutdown[i]) clearTimeout(pidTimerIdshutdown[i]);
+  // Löschen aller Timer, die für andere zeitgesteuerte Funktionen gesetzt wurden
   intervalEieruhrIds.forEach(intervalEieruhr => clearInterval(intervalEieruhr));
 
+  // Laden der PID-Reglerparameter (Kp, Ki, Kd) aus den Serverdaten
   const Kp = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGain.nodeId.value];
   const Ki = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value];
   const Kd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value];
+  // Festlegung von Zeitschritt (dt) und Zeitkonstanten (T1, T2) für die Regelstrecken-Simulation
   const dt = 0.01
   const T1 = 80
   const T2 = 70
-  const K1 = 1
-  const K2 = 1
+  const K1 = 1; // Verstärkungsfaktor für das erste PT1-Glied der Regelstrecke
+  const K2 = 1; // Verstärkungsfaktor für das zweite PT1-Glied der Regelstrecke
+
+  // Aktuelle Temperaturwerte (Ist-Werte) aus den Serverdaten
   let rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   let rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
+  // Bestimmung des Sollwerts der Temperatur basierend auf Systemzustand
   let rSet
-
-  if (sharedState.CoolingisOn && !sharedState.HeatingisOn) {
-    rSet = 20
-      } else if (sharedState.HeatingisOn && sharedState.ProzesszonesAreReady) {
+  if (sharedState.Process_states.Cooling_is_On && !sharedState.Process_states.Heating_is_On) {
+    rSet = 20 // Festlegung eines Standardkühlwerts, wenn Kühlung aktiv ist, aber Heizung nicht
+  } else if (sharedState.Process_states.Heating_is_On && sharedState.Prozesszones_Are_Ready) {
+    // Nutzung des Sollwerts aus HMI, falls Heizung aktiv und Prozesszonen bereit sind
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value];
+    // Sicherstellung, dass der Sollwert nicht unter einem Mindestwert liegt
     if (rSet < 20) {
       rSet = 20
     }
   }
+  // Initialisierung der Variablen für den PID-Regelungsprozess
   let lastError = 0;
-
   let integral = 0
 
+  // Funktion zur Berechnung des nächsten Temperaturwerts mittels PID-Regelung
   function calculateNextValue() {
-    
+    // Prüfung, ob eine Anpassung der Temperatur notwendig ist
     if (Math.abs(rSet - rAct2) > 0.1) {
+      // Berechnung des Fehlers zwischen Soll- und Istwert
       let error = rSet - rAct2;
-
       integral += error * dt;
-
       let derivative = (error - lastError) / dt;
 
+      // Berechnung der PID-Anteile (Proportional, Integral, Derivativ)
       let pTerm = Kp * error;  // Proportional-Anteil
       let iTerm = Ki * integral;  // Integral-Anteil
       let dTerm = Kd * derivative;  // Derivative-Anteil
-
+      // Ermittlung der Steuerungsgröße aus den PID-Anteilen
       let u = pTerm + iTerm + dTerm;
-
       lastError = error;
 
-      // Begrenzung des Wertes von u zwischen -100 und 100
+      // Begrenzung der Steuerungsgröße
       u_begrenzt = Math.max(-100, Math.min(u, 100));
 
-      // Wert wird der HMI zugewiesen
+      // Zuweisung des berechneten Werts an die HMI
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzCv_rAct.nodeId.value] = u_begrenzt
 
-
-
-      // 1.Glied PT1 der Reglestrecke
-      let dy1 = (K1 * u - rAct1) / T1 * dt;
+      // Simulation der Regelstrecke mit zwei PT1-Gliedern
+      let dy1 = (K1 * u - rAct1) / T1 * dt;// Dynamik des ersten Glieds
       rAct1 += dy1;
 
-      // 2.Glied PT1 der Regelstrecke
-      let dy2 = (K2 * rAct1 - rAct2) / T2 * dt;
+      let dy2 = (K2 * rAct1 - rAct2) / T2 * dt;// Dynamik des zweiten Glieds
       rAct2 += dy2;
 
-      //Ausgabe des Act Wertes in der HMI 
+      // Aktualisierung des Ist-Werts der Temperatur in der HMI
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value] = rAct2;
 
-
+      // Setzen eines Timers zur kontinuierlichen Ausführung der Funktion
       const timerdown = setTimeout(calculateNextValue, 10);
-      pidTimerIddown[i] = timerdown; // Timer-ID am spezifischen Index setzen
+      pidTimerIddown[i] = timerdown; // Speicherung der Timer-ID für spätere Referenz
     }
   }
   // Start der Berechnung
   calculateNextValue();
 }
 
-
+// PIDSHUTDOWN-Funktion für die Temperaturregelung zum Abschalten des Systems
 function PIDSHUTDOWN(i, nameNodeId, serverValues) {
+  // Einbinden notwendiger Variablen aus einer externen Datei
   var werte = require('./profiles/simulation/variables/Variablen');
-  if (pidTimerIdup[i]) clearTimeout(pidTimerIdup[i]); //löscht alle Timer von PidUp
-  if (pidTimerIddown[i]) clearTimeout(pidTimerIddown[i]); //löscht alle Timer von PidDown
+  // Löschen laufender Timer von pidUp und pidDown, um Konflikte zu vermeiden
+  if (pidTimerIdup[i]) clearTimeout(pidTimerIdup[i]); // Löscht alle Hochfahr-Timer
+  if (pidTimerIddown[i]) clearTimeout(pidTimerIddown[i]); // Löscht alle Herunterfahr-Timer
 
+  // Löschen aller Timer
   intervalEieruhrIds.forEach(intervalEieruhr => clearInterval(intervalEieruhr));
 
-
+  // Laden der PID-Reglerparameter aus den Serverdaten
   const Kp = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rGain.nodeId.value];
   const Ki = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value];
   const Kd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value];
-  const dt = 0.01
-  const T1 = 50
-  const T2 = 50
-  const K1 = 1
-  const K2 = 1
-
+  // Festlegung von Zeitschritt (dt) und Zeitkonstanten (T1, T2) für die Regelstrecken-Simulation
+  const T1 = 50; // Zeitkonstante für das erste PT1-Glied der Regelstrecke
+  const T2 = 50; // Zeitkonstante für das zweite PT1-Glied der Regelstrecke
+  const K1 = 1; // Verstärkungsfaktor für das erste PT1-Glied
+  const K2 = 1; // Verstärkungsfaktor für das zweite PT1-Glied
+  // Aktuelle Temperaturwerte (Ist-Werte) aus den Serverdaten
   var rAct1 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
   var rAct2 = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
 
-  var rSet = 20;
+  // Festlegung eines festen Sollwerts für das Herunterfahren
+  var rSet = 20; // Zieltemperatur für das Abschalten
 
-  let lastError = 0;
+  // Initialisierung der Variablen für den PID-Regelungsprozess
+  let lastError = 0; // Letzter Fehlerwert
+  let integral = 0; // Integralwert für den Integral-Anteil des PID-Reglers
 
-  let integral = 0
-
+  // Funktion zur Berechnung des nächsten Temperaturwerts mittels PID-Regelung
   function calculateNextValue() {
+    // Prüfung, ob eine Anpassung der Temperatur notwendig ist
     if (Math.abs(rSet - rAct2) > 0.1) {
+      // Berechnung des Fehlers zwischen Soll- und Istwert
       let error = rSet - rAct2;
+      integral += error * dt; // Akkumulation des Fehlers für den Integralanteil
+      let derivative = (error - lastError) / dt; // Berechnung der Ableitung des Fehlers für den Differenzialanteil
 
-      integral += error * dt;
-
-      let derivative = (error - lastError) / dt;
-
+      // Berechnung der PID-Anteile (Proportional, Integral, Derivativ)
       let pTerm = Kp * error;  // Proportional-Anteil
       let iTerm = Ki * integral;  // Integral-Anteil
       let dTerm = Kd * derivative;  // Derivative-Anteil
-
+      // Ermittlung der Steuerungsgröße aus den PID-Anteilen
       let u = pTerm + iTerm + dTerm;
+      lastError = error; // Aktualisierung des letzten Fehlerwerts
 
-      lastError = error;
-
-      // Begrenzung des Wertes von u zwischen -100 und 100
+      // Begrenzung der Steuerungsgröße
       u_begrenzt = Math.max(-100, Math.min(u, 100));
 
-      // Wert wird der HMI zugewiesen
+      // Zuweisung des berechneten Werts an die Mensch-Maschine-Schnittstelle (HMI)
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzCv_rAct.nodeId.value] = u_begrenzt
 
-      // 1.Glied PT1 der Reglestrecke
-      let dy1 = (K1 * u - rAct1) / T1 * dt;
+      // Simulation der Regelstrecke mit zwei PT1-Gliedern
+      let dy1 = (K1 * u - rAct1) / T1 * dt; // Dynamik des ersten Glieds
       rAct1 += dy1;
-
-      // 2.Glied PT1 der Regelstrecke
-      let dy2 = (K2 * rAct1 - rAct2) / T2 * dt;
+      let dy2 = (K2 * rAct1 - rAct2) / T2 * dt; // Dynamik des zweiten Glieds
       rAct2 += dy2;
 
-      //Ausgabe des Act Wertes in der HMI 
+      // Aktualisierung des Ist-Werts der Temperatur in der HMI
       serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value] = rAct2;
-
+      // Setzen eines Timers zur kontinuierlichen Ausführung der Funktion
       const timerdown = setTimeout(calculateNextValue, 10);
-      pidTimerIdshutdown[i] = timerdown; // Timer-ID am spezifischen Index setzen
+      pidTimerIdshutdown[i] = timerdown; //  Speicherung der Timer-ID für spätere Referenz
     }
   }
   // Start der Berechnung
@@ -924,8 +938,8 @@ function simulateScrewSpeed() {
     let increment = 0.1 / rampTime; // Inkrement basiert auf einem 100ms Update-Intervall.
 
     // Anpassen der Zielgeschwindigkeit xf basierend auf dem Gesamtdurchsatz und der spezifischen Rate.
-    if (sharedState.SpeedCalculationSpecRateisOn) {
-      if (Durchsatzgesamt === 0 && sharedState.ExtruderisOn) {
+    if (sharedState.Process_states.Speed_Calculation_Spec_Rate_is_On) {
+      if (Durchsatzgesamt === 0 && sharedState.Process_states.Extruder_is_On) {
         // Wenn der Gesamtdurchsatz null ist und der Extruder läuft, wird xf auf die minimale Drehzahl gesetzt.
         xf = serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMin.nodeId.value];
       } else {
@@ -979,7 +993,7 @@ function simulateFeederSingleMode(i, nameNodeId, serverValues) {
   // Innere Funktion zur Simulation des einzelnen Feeders.
   function simulateFeederSingle() {
     // Prüft, ob ein globaler Stoppbefehl für alle Feeder im Single Mode vorliegt.
-    if (sharedState.intervalIds.stopSimulateFeederSingle) {
+    if (sharedState.intervalIds.stop_Simulate_Feeder_Single) {
       // Durchläuft alle Intervall-IDs und stoppt jedes Intervall.
       for (let id of intervalIds.simulateFeederSingle) {
         clearInterval(id);  // Beendet das Intervall.
@@ -1039,7 +1053,7 @@ function simulateFeederLineMode(i, nameNodeId, serverValues) {
     let inkrement = 1.0 * direction;
     currentFeederThroughput += inkrement;
     // Prüft, ob ein globaler Stoppbefehl für den Line Mode vorliegt.
-    if (sharedState.intervalIds.stopsimulateLineMode) {
+    if (sharedState.intervalIds.stop_simulate_Line_Mode) {
       // Beendet alle Intervalle, wenn ein Stoppbefehl vorliegt.
       for (let id of intervalIds.simulateFeederLine) {
         clearInterval(id);
@@ -1093,7 +1107,7 @@ function simulateFeederFillLevel(i, nameNodeId, serverValues) {
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rTotal_rAct.nodeId.value] += ratePerInterval;
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value] = currentLevel;
     // Erste Abbruchbedingung: Wenn der Stop-Button in der HMI gedrückt wird.
-    if (sharedState.intervalIds.stopSimulateFeederWeight) {
+    if (sharedState.intervalIds.stop_Simulate_Feeder_Weight) {
       // Stoppt alle Intervalle für die Aktualisierung des Füllstandes.
       for (let id of intervalIds.updateFeederWeight) {
         clearInterval(id);
@@ -1163,7 +1177,7 @@ function simulateFeederLineModeRamp(i, nameNodeId, serverValues) {
     // Zuweisen des aktualisierten Durchsatzes zur Anzeige in der HMI
     serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = currentThroughput;
     // Erste Abbruchbedingung: Stoppen der Rampe über globale Steuerung
-    if (sharedState.intervalIds.stopSimulateThroughputRampLine) {
+    if (sharedState.intervalIds.stop_Simulate_Throughput_Ramp_Line) {
       // Stoppen aller Intervalle der Rampensteuerung
       for (let id of intervalIds.startsimulateLineModeRamp) {
         clearInterval(id);
@@ -1173,7 +1187,7 @@ function simulateFeederLineModeRamp(i, nameNodeId, serverValues) {
       return;  // Frühzeitiger Abbruch der Funktion
     }
     // Zweite Abbruchbedingung: Globales Signal zum Stoppen der Rampensteuerung
-    if (sharedState.FeederRampModeisOff) {
+    if (sharedState.Process_states.Feeder_Ramp_Mode_is_Off) {
       clearInterval(intervalIds.startsimulateLineModeRamp[i]);
       intervalIds.startsimulateLineModeRamp[i] = null;
     }
@@ -1202,7 +1216,7 @@ function simulateFeederLineModeRamp(i, nameNodeId, serverValues) {
       // Wenn alle Feeders ihr Ziel erreicht haben, also kein aktives Intervall mehr läuft,
       // werden die globalen Steuerungssignale für die Rampensteuerung aktualisiert.
       if (allFeedersCompleted) {
-        sharedState.FeederRampModeisOff = true;
+        sharedState.Process_states.Feeder_Ramp_Mode_is_Off = true;
         sharedState.FeederRampModeisOn = false;
       }
     }
@@ -1358,24 +1372,26 @@ function GearboxOilLubricationTimerPreRun() {
 
 
 
-
+// Initialisiere Objekte zur Speicherung von früheren Werten und Zählern.
 let previousRAct = {};
 let consecutiveCounter = {};
 
 function updatedwstat(i, NameVariabel) {
+ // Importiere erforderliche Werte aus einer externen Datei.
+ var werte = require('./profiles/simulation/variables/Variablen');
+ var rActKey; // Schlüssel für den Zugriff auf den aktuellen Wert.
+ var data; // Variable für die Speicherung der Daten.
 
-  var werte = require('./profiles/simulation/variables/Variablen');
-  var rActKey;
-  var data;
-
+  // Erstelle den Schlüssel basierend auf dem Präfix, falls 'i' definiert ist.
   if (typeof i !== "undefined") {
+    
     rActKey = i + "_" + "." + NameVariabel; // Schlüssel basierend auf dem Präfix erstellen
     data = werte.data[i];
   } else {
-    rActKey = "." + NameVariabel;
+       rActKey = "." + NameVariabel;
     data = werte.data;
   }
-
+ // Lese aktuelle Werte und Toleranzwerte aus den Serverdaten.
   var rAct = serverValues[data[NameVariabel + "_rAct"].nodeId.value];
   let rSetTolMin = serverValues[data[NameVariabel + "_rSetTolMin"].nodeId.value];
   let rSetTolMinMin = serverValues[data[NameVariabel + "_rSetTolMinMin"].nodeId.value];
@@ -1384,122 +1400,117 @@ function updatedwstat(i, NameVariabel) {
   let set = serverValues[data[NameVariabel + "_rSet"].nodeId.value];
   let dwStat = serverValues[data[NameVariabel + "_dwStat"].nodeId.value];
 
-  if (!(dwStat & (1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active))) { // Wenn das Bit für Tolerance Monitoring aus,  dann werden die Farben rot und orange "gelöscht"
-    dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
-    dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
+   // Überprüfe und bearbeite dwStat, wenn die Toleranzüberwachung inaktiv ist.
+  if (!(dwStat & (1 << sharedState.dwStat.Tolerance_monitoring_is_active))) { // Wenn das Bit für Tolerance Monitoring aus,  dann werden die Farben rot und orange "gelöscht"
+     // Setze die Bits für MaxMax und Max Toleranzüberschreitungen zurück.
+    dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
+    dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_Max);
   }
 
-
+ // Behandelt den Fall, wenn der aktuelle Wert (rAct) gleich 0 ist.
   if (rAct === 0) {
-    dwStat &= ~(1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_down);
-    dwStat &= ~(1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_up);
-    dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
-    dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
+     // Setzt verschiedene Bits zurück, die Tendenz und Toleranzüberschreitungen anzeigen.
+    dwStat &= ~(1 << sharedState.dwStat.Actual_value_tendence_is_down); // Pfeil runter wird gelöscht
+    dwStat &= ~(1 << sharedState.dwStat.Actual_value_tendence_is_up); // Pfeil hoch wird gelöscht
+    dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_MaxMax); // Löschen der Toleranzzonen MaxMax 
+    dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_Max); // Löschen der Toleranzzonen Max
   } else {
+     // Prüft und aktualisiert Tendenzinformationen basierend auf früheren Werten.
     if (typeof previousRAct[rActKey] !== 'undefined') {
+      // Vergleicht aktuellen Wert mit dem vorherigen und aktualisiert dwStat und Zähler.
       if (rAct > previousRAct[rActKey]) {
-        consecutiveCounter[rActKey] = 0;
-        dwStat |= (1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_up);
-        dwStat &= ~(1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_down);
+        consecutiveCounter[rActKey] = 0; // Setzt Zähler zurück.
+        dwStat |= (1 << sharedState.dwStat.Actual_value_tendence_is_up);// Setzt Bit für aufsteigende Tendenz.
+        dwStat &= ~(1 << sharedState.dwStat.Actual_value_tendence_is_down);// Löscht Bit für absteigende Tendenz.
       } else if (rAct < previousRAct[rActKey]) {
-        consecutiveCounter[rActKey] = 0;
-        dwStat |= (1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_down);
-        dwStat &= ~(1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_up);
+        consecutiveCounter[rActKey] = 0;// Setzt Zähler zurück.
+        dwStat |= (1 << sharedState.dwStat.Actual_value_tendence_is_down);// Setzt Bit für absteigende Tendenz.
+        dwStat &= ~(1 << sharedState.dwStat.Actual_value_tendence_is_up);// Löscht Bit für aufsteigende Tendenz.
       } else {
-        consecutiveCounter[rActKey] = (consecutiveCounter[rActKey] || 0) + 1;
-        if (consecutiveCounter[rActKey] > 20) {
-          dwStat &= ~(1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_down);
-          dwStat &= ~(1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_up);
+        consecutiveCounter[rActKey] = (consecutiveCounter[rActKey] || 0) + 1;// Erhöht Zähler bei gleichbleibendem Wert.
+          // Wenn der Wert für mehr als 20 Iterationen gleich bleibt, werden die Tendenzbits zurückgesetzt.
+        if (consecutiveCounter[rActKey] > 20) { 
+          dwStat &= ~(1 << sharedState.dwStat.Actual_value_tendence_is_down);  // Löscht das Bit für absteigende Tendenz.
+          dwStat &= ~(1 << sharedState.dwStat.Actual_value_tendence_is_up); // Löscht das Bit für aufsteigende Tendenz.
         }
       }
     }
   }
-
-  if ((dwStat & (1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active)) && (dwStat & (1 << sharedState.BIT_POSITIONS.Tolreances_are_absolute))) {
-
-
+  // Behandlung von absoluten Toleranzen: Setzt entsprechende Bits basierend auf Toleranzüberschreitungen.
+  if ((dwStat & (1 << sharedState.dwStat.Tolerance_monitoring_is_active)) && (dwStat & (1 << sharedState.dwStat.Tolreances_are_absolute))) {
+  // Prüft und setzt Bits für unterschiedliche Toleranzüberschreitungen.
     if (rSetTolMin === 0 && rAct < rSetTolMinMin && rAct < rSetTolMax && rAct < rSetTolMaxMax) {
-      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
-      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax); // ROT
-      //console.log("erste Stufe")
-    }
-
+      dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_Max);
+      dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_MaxMax); 
+          }
     if (rAct === 0) {
-      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_down);
-      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Actual_value_tendence_is_up);
-      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
-      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
+      dwStat &= ~(1 << sharedState.dwStat.Actual_value_tendence_is_down);
+      dwStat &= ~(1 << sharedState.dwStat.Actual_value_tendence_is_up);
+      dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
+      dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_Max);
     }
-
     if (rAct < rSetTolMin && rAct < rSetTolMinMin && rAct < rSetTolMax && rAct < rSetTolMaxMax) {
-      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
-      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax); // ROT
-      //  console.log("erste Stude 1 B")
-    }
+      dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_Max);
+      dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_MaxMax); 
+          }
     if (rAct > rSetTolMin && rSetTolMin > 0 && rAct < rSetTolMinMin && rAct < rSetTolMax && rAct < rSetTolMaxMax) {
-      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
-      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
-      //console.log("zweite Stufe")
-    }
+      dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
+      dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_Max);
+         }
 
     if (rAct > rSetTolMinMin && rAct < rSetTolMax && rAct < rSetTolMaxMax) {
-      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
-      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
-      // console.log("dritte Stufe")
-    }
+      dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
+      dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_Max);
+         }
 
     if (rAct > rSetTolMin && rAct > rSetTolMinMin && rAct < rSetTolMaxMax && rAct > rSetTolMax) {
-      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
-      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
-      // console.log("vierte Stufe")
-    }
+      dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
+      dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_Max);
+          }
     if (rAct > rSetTolMin && rAct > rSetTolMinMin && rAct > rSetTolMaxMax && rAct > rSetTolMax) {
-      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
-      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
-      // console.log("fünfte Stufe")
+      dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_Max);
+      dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
+     
     }
   }
 
-
-  if ((dwStat & (1 << sharedState.BIT_POSITIONS.Tolerance_monitoring_is_active)) && !(dwStat & (1 << sharedState.BIT_POSITIONS.Tolreances_are_absolute))) {
-    // BIT15 ist gesetzt und BIT14 ist nicht gesetzt
-
-    // Relativ zum Set-Wert
+// Behandlung von relativen Toleranzen
+  if ((dwStat & (1 << sharedState.dwStat.Tolerance_monitoring_is_active)) && !(dwStat & (1 << sharedState.dwStat.Tolreances_are_absolute))) {
+      // Behandelt den Fall relativer Toleranzen und setzt entsprechende Bits in Relation zum Set-Wert.
     if (rAct < set - rSetTolMinMin) {
-      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
+      dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
     }
     if (rAct < set - rSetTolMin && rAct > set - rSetTolMinMin) {
-      dwStat &= ~(1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
-      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
+      dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
+      dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_Max);
     }
     if (rAct > set - rSetTolMin) {
-      dwStat &= ~((1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax) | (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max));
+      dwStat &= ~((1 << sharedState.dwStat.Out_of_tolerance_MaxMax) | (1 << sharedState.dwStat.Out_of_tolerance_Max));
     }
     if (rAct > set + rSetTolMinMin) {
-      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_MaxMax);
+      dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
     }
 
     if (rAct > set + rSetTolMin) {
-      dwStat |= (1 << sharedState.BIT_POSITIONS.Out_of_tolerance_Max);
+      dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_Max);
     }
 
   }
-
-
-  // Am Ende der Logik speichern wir den aktuellen Wert von rAct
+ // Speichert den aktuellen Wert von rAct für zukünftige Vergleiche.
   previousRAct[rActKey] = rAct;
+   // Aktualisiert den dwStat-Wert im Server.
   serverValues[data[NameVariabel + "_dwStat"].nodeId.value] = dwStat
 };
 
 class StateMachine {
   constructor() {
     this.states = {
-      IDLE: { name: "IDLE", bit: (1 << sharedState.BIT_POSITIONS.statemachine.Idle) },
-      RUNNING: { name: "RUNNING", bit: (1 << sharedState.BIT_POSITIONS.statemachine.Running) },
-      STOPPED: { name: "STOPPED", bit: (1 << sharedState.BIT_POSITIONS.statemachine.Stopped) },
-      E_STOP_PRESSED: { name: "E-STOP-PRESSED", bit: (1 << sharedState.BIT_POSITIONS.statemachine.E_Stop_Pressed) },
-      E_STOP_RELEASED: { name: "E-STOP-RELEASED", bit: (1 << sharedState.BIT_POSITIONS.statemachine.E_Stop_Released) },
-      PREHEATING: { name: "PREHEATING", bit: (1 << sharedState.BIT_POSITIONS.statemachine.Preheating) }
+      IDLE: { name: "IDLE", bit: (1 << sharedState.dwStat.statemachine.Idle) },
+      RUNNING: { name: "RUNNING", bit: (1 << sharedState.dwStat.statemachine.Running) },
+      STOPPED: { name: "STOPPED", bit: (1 << sharedState.dwStat.statemachine.Stopped) },
+      E_STOP_PRESSED: { name: "E-STOP-PRESSED", bit: (1 << sharedState.dwStat.statemachine.E_Stop_Pressed) },
+      E_STOP_RELEASED: { name: "E-STOP-RELEASED", bit: (1 << sharedState.dwStat.statemachine.E_Stop_Released) },
+      PREHEATING: { name: "PREHEATING", bit: (1 << sharedState.dwStat.statemachine.Preheating) }
     };
   }
   setState(variableName, stateName) {
@@ -1519,11 +1530,11 @@ class StateMachine {
 class StateMachineNavigationBar {
   constructor() {
     this.states = {
-      STOPPED: { name: "STOPPED", bit: (1 << sharedState.BIT_POSITIONS.statemachine_navigationbar.Stopped) },
-      RUNNING: { name: "RUNNING", bit: (1 << sharedState.BIT_POSITIONS.statemachine_navigationbar.Running) },
-      WARNING: { name: "WARNING", bit: (1 << sharedState.BIT_POSITIONS.statemachine_navigationbar.Warning) },
-      ERROR: { name: "ERROR", bit: (1 << sharedState.BIT_POSITIONS.statemachine_navigationbar.Error) },
-      CRITICAL: { name: "CRITICAL", bit: (1 << sharedState.BIT_POSITIONS.statemachine_navigationbar.Critical) }
+      STOPPED: { name: "STOPPED", bit: (1 << sharedState.dwStat.statemachine_navigationbar.Stopped) },
+      RUNNING: { name: "RUNNING", bit: (1 << sharedState.dwStat.statemachine_navigationbar.Running) },
+      WARNING: { name: "WARNING", bit: (1 << sharedState.dwStat.statemachine_navigationbar.Warning) },
+      ERROR: { name: "ERROR", bit: (1 << sharedState.dwStat.statemachine_navigationbar.Error) },
+      CRITICAL: { name: "CRITICAL", bit: (1 << sharedState.dwStat.statemachine_navigationbar.Critical) }
     };
   }
 
@@ -1545,7 +1556,7 @@ class StateMachineNavigationBar {
 module.exports = {
   createCustomVariableFloat: createCustomVariableFloat,
   initial: initial,
-  createObjectDouble: createObjectDouble,
+  createObject: createObject,
   createVariableforTime: createVariableforTime,
   createCustomVariableUint32: createCustomVariableUint32,
   createCustomVariableUint64: createCustomVariableUint64,

@@ -12,35 +12,31 @@ function run1(addressSpace, device) {
         nodeId: "s=PLC",
         description: "The PLC instance which supports you with OPC UA functionality"
     })
-    var datablocksGlobal = namespace3.addObject({
-        organizedBy: ppC_Compound_V3,
-        browseName: "DatablocksGlobal",
-        nodeId: "s=DatablocksGlobal"
-    });
+  
 
-    var datablocksGlobal = functions.createObjectDouble(ppC_Compound_V3, 'DatablocksGlobal');
+    var datablocksGlobal = functions.createObject(ppC_Compound_V3, 'DatablocksGlobal','datablocksGlobal');
 
-    var SU3111_ZeExtruder_Hmi = functions.createObjectDouble(datablocksGlobal, 'SU3111_ZeExtruder.Hmi');
-    var SU3111_ZeExtruder_Parameter = functions.createObjectDouble(datablocksGlobal, 'SU3111_ZeExtruder.Parameter');
-    var SU3111_ZeExtruder_Config = functions.createObjectDouble(datablocksGlobal, 'SU3111_ZeExtruder_Config');
+    var SU3111_ZeExtruder_Hmi = functions.createObject(datablocksGlobal, 'SU3111_ZeExtruder.Hmi', 'SU3111_ZeExtruder.Hmi');
+    var SU3111_ZeExtruder_Parameter = functions.createObject(datablocksGlobal, 'SU3111_ZeExtruder.Parameter', 'SU3111_ZeExtruder.Parameter');
+    var SU3111_ZeExtruder_Config = functions.createObject(datablocksGlobal, 'SU3111_ZeExtruder_Config', 'SU3111_ZeExtruder_Config');
   
    
-    var SU2110_Feeding_Hmi = functions.createObjectDouble(datablocksGlobal, 'SU2110_Feeding.Hmi');
-    var SU2110_Feeding_Parameter = functions.createObjectDouble(datablocksGlobal, 'SU2110_Feeding.Parameter');
+    var SU2110_Feeding_Hmi = functions.createObject(datablocksGlobal, 'SU2110_Feeding.Hmi', 'SU2110_Feeding.Hmi');
+    var SU2110_Feeding_Parameter = functions.createObject(datablocksGlobal, 'SU2110_Feeding.Parameter','SU2110_Feeding.Parameter');
 
   
-    var SU1000_Line_Hmi = functions.createObjectDouble(datablocksGlobal, 'SU1000_Line.Hmi');
-    var SU1000_Line_Parameter = functions.createObjectDouble(datablocksGlobal, 'SU1000_Line.Parameter');
+    var SU1000_Line_Hmi = functions.createObject(datablocksGlobal, 'SU1000_Line.Hmi', 'SU1000_Line.Hmi');
+    var SU1000_Line_Parameter = functions.createObject(datablocksGlobal, 'SU1000_Line.Parameter', 'SU1000_Line.Parameter');
 
-    var SU3100_Plastification_Hmi = functions.createObjectDouble(datablocksGlobal, 'SU3000_Plastification.Hmi');
-    var SU3100_Plastification_Parameter = functions.createObjectDouble(datablocksGlobal, 'SU3000_Plastification.Parameter');
+    var SU3100_Plastification_Hmi = functions.createObject(datablocksGlobal, 'SU3000_Plastification.Hmi', 'SU3000_Plastification.Hmi');
+    var SU3100_Plastification_Parameter = functions.createObject(datablocksGlobal, 'SU3000_Plastification.Parameter', 'SU3000_Plastification.Parameter');
   
-    var SU3141_DiverterValve_Hmi = functions.createObjectDouble(datablocksGlobal, 'SU3141_DiverterValve.Hmi');
-    var SU3141_DiverterValve_Parameter = functions.createObjectDouble(datablocksGlobal, 'SU3141_DiverterValve.Parameter');
+    var SU3141_DiverterValve_Hmi = functions.createObject(datablocksGlobal, 'SU3141_DiverterValve.Hmi', 'SU3141_DiverterValve.Hmi');
+    var SU3141_DiverterValve_Parameter = functions.createObject(datablocksGlobal, 'SU3141_DiverterValve.Parameter', 'SU3141_DiverterValve.Parameter');
 
-    var SU3131_Zsa_Config = functions.createObjectDouble(datablocksGlobal, 'SU3131_Zsa.Config');
-    var SU3131_Zsa_Hmi = functions.createObjectDouble(datablocksGlobal, 'SU3131_Zsa.Hmi')
-    var SU3131_Zsa_Parameter = functions.createObjectDouble(datablocksGlobal, 'SU3131_Zsa.Parameter')
+    var SU3131_Zsa_Config = functions.createObject(datablocksGlobal, 'SU3131_Zsa.Config', 'SU3131_Zsa.Config');
+    var SU3131_Zsa_Hmi = functions.createObject(datablocksGlobal, 'SU3131_Zsa.Hmi', 'SU3131_Zsa.Hmi')
+    var SU3131_Zsa_Parameter = functions.createObject(datablocksGlobal, 'SU3131_Zsa.Parameter', 'SU3131_Zsa.Parameter')
 
  
 
