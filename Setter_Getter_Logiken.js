@@ -1,3 +1,4 @@
+const { s } = require('node-opcua');
 const funktionen = require('./../opcua-demo-server/funktionen');
 const alarme_warnungen_funktionen = require('./alarme_warnungen_funktionen');
 var sharedState = require('./states');
@@ -3029,7 +3030,7 @@ const SetGetlogic = {
     }
 
     // Setzt FeederisRunning auf true, sobald der on Button gedrückt wird
-    if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.Feeder_On)) {  // On Button
+    if (serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.Feeder_On) && sharedState.Process_states.Prozesszones_Are_Ready) {  // On Button
 
       sharedState.feeders[i].FeederisRunning = true;
       sharedState.feeders[i].FeederisOff = false;
@@ -3069,7 +3070,7 @@ const SetGetlogic = {
           serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Status_feeder_is_On_Off); // Status  auto start feeder is off (POP UP Feeding)
         }
       }
-      if (sharedState.Process_states.Extruder_is_On) { // Main Drive is On
+      if (sharedState.Process_states.Extruder_is_On && sharedState.Process_states.Prozesszones_Are_Ready) { // Main Drive is On
         for (let i = 1; i <= 4; i++) {
           serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Feeder_Button_Lock_On_Status); // Lock Conditin wird aufgehoben (On Button vom Feeder "anklickbar")
         }
@@ -4096,10 +4097,7 @@ const SetGetlogic = {
       if (sharedState.Process_states.Prozesszones_Are_Off) {
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONSLock_On_Off_Status_of_ShutDown_Button);
       }
-      // Wenn der Extruder an ist, dann kann der Cool Down Button nicht mehr gedrückt werden
-      if (sharedState.Process_states.Extruder_is_Off) {
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_CoolDown_Button);
-      }
+     
       // Wenn der Extruder an ist, oder der Cool Down Modus ist an, so kann der Cool Down Button nicht mehr angeklickt werden, Button ist "grau"
       if (sharedState.Process_states.Extruder_is_On || sharedState.Process_states.Cooling_is_On) {
 
@@ -4111,9 +4109,20 @@ const SetGetlogic = {
       if (sharedState.Process_states.Heating_is_On) {
 
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~((1 << sharedState.dwStat.Lock_On_Off_Status_of_Start_Button)); // Macht den start down Button "grau"
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_CoolDown_Button); // Setzt den Cool Down Button, damit er "schwarz" wird
+      
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_ShutDown_Button); // Setzt den Shut Down Button, damit er "  schwarz" ist
       }
+
+      if (sharedState.Process_states.Heating_is_On && sharedState.Process_states.Extruder_is_On) {
+        // Code für den Fall, dass beide Bedingungen wahr sind
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Lock_On_Off_Status_of_CoolDown_Button); // Setzt den Cool Down Button, damit er "grau" wird
+    } else if (sharedState.Process_states.Heating_is_On) {
+        // Code für den Fall, dass nur Heating_is_On wahr ist
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_CoolDown_Button); // Setzt den Cool Down Button, damit er "schwarz" wird
+    } // Weitere Bedingungen können hier folgen
+    
+
+    
     }, 1)
 
 
