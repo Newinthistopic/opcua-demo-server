@@ -24,7 +24,7 @@ function Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues) {
     timerValue--;  // Dekrementieren des Timerwerts.
    
     // 1. Abbruchbedingung: Überprüfen, ob Warnungen (Torque zu niedrig/hoch) nicht mehr aktiv sind.
-    if (!sharedState.dwStat_status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_low_shutdown_timer_started && !sharedState.dwStat_status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_high_shutdown_timer_started) {
+    if (!sharedState.status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_low_shutdown_timer_started && !sharedState.status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_high_shutdown_timer_started) {
       clearInterval(intervalId); // Stoppen des Timers, falls keine Warnungen mehr aktiv sind.
       isTimerRunning = false; // Zurücksetzen des Timer-Laufstatus.
     }

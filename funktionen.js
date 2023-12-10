@@ -28,17 +28,17 @@ function createCustomVariableFloat(i, variableName, componentOf, browseName, par
     value: {
       get: function () {
         var nameNodeId = {};
-        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
+        nameNodeId[variableName] = this.nodeId.value;
 
         if (customGetLogic) {
           customGetLogic(i, nameNodeId, serverValues);
         }
-        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nameNodeId[variableName + "NodeId"]] });
+        return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nameNodeId[variableName]] });
       },
       set: function (variant) {
         var nameNodeId = {};
-        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
-        serverValues[nameNodeId[variableName + "NodeId"]] = parseFloat(variant.value);
+        nameNodeId[variableName ] = this.nodeId.value;
+        serverValues[nameNodeId[variableName ]] = parseFloat(variant.value);
         if (customSetLogic) {
           customSetLogic(i, nameNodeId, serverValues);
         }
@@ -74,11 +74,11 @@ function createCustomVariableString(i, variableName, componentOf, browseName, pa
     value: {
       get: function () {
         var nameNodeId = {};
-        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
+        nameNodeId[variableName ] = this.nodeId.value;
         if (customGetLogic) {
           customGetLogic(i, nameNodeId, serverValues);
         }
-        return new opcua.Variant({ dataType: opcua.DataType.String, value: serverValues[nameNodeId[variableName + "NodeId"]] });
+        return new opcua.Variant({ dataType: opcua.DataType.String, value: serverValues[nameNodeId[variableName ]] });
       },
       set: function (variant) {
         return opcua.StatusCodes.Good;
@@ -116,13 +116,13 @@ function createCustomVariableUint16(i, variableName, componentOf, browseName, pa
       get: function () {
         var nameNodeId = {};
 
-        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
+        nameNodeId[variableName ] = this.nodeId.value;
 
         if (customGetLogic) {
           customGetLogic(i, nameNodeId, serverValues);
         }
 
-        var serverValue = serverValues[nameNodeId[variableName + "NodeId"]];
+        var serverValue = serverValues[nameNodeId[variableName ]];
         if (serverValue === undefined) {
           serverValue = 0;
         }
@@ -131,8 +131,8 @@ function createCustomVariableUint16(i, variableName, componentOf, browseName, pa
       },
       set: function (variant) {
         var nameNodeId = {};
-        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
-        serverValues[nameNodeId[variableName + "NodeId"]] = parseInt(variant.value);
+        nameNodeId[variableName ] = this.nodeId.value;
+        serverValues[nameNodeId[variableName ]] = parseInt(variant.value);
         if (customSetLogic) {
           customSetLogic(i, nameNodeId, serverValues);
         }
@@ -157,13 +157,13 @@ function createVariableforTime(i, variableName, componentOf, browseName, nodeId,
       get: function () {
         var nameNodeId = {};
 
-        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
+        nameNodeId[variableName ] = this.nodeId.value;
 
         if (customGetLogic) {
           customGetLogic(i, nameNodeId, serverValues);
         }
 
-        var serverValue = serverValues[nameNodeId[variableName + "NodeId"]];
+        var serverValue = serverValues[nameNodeId[variableName ]];
         if (serverValue === undefined) {
           serverValue = 0;
         }
@@ -172,8 +172,8 @@ function createVariableforTime(i, variableName, componentOf, browseName, nodeId,
       },
       set: function (variant) {
         var nameNodeId = {};
-        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
-        serverValues[nameNodeId[variableName + "NodeId"]] = parseInt(variant.value);
+        nameNodeId[variableName ] = this.nodeId.value;
+        serverValues[nameNodeId[variableName ]] = parseInt(variant.value);
         if (customSetLogic) {
           customSetLogic(i, nameNodeId, serverValues);
         }
@@ -215,13 +215,13 @@ function createCustomVariableUint32(i, variableName, componentOf, browseName, pa
     value: {
       get: function () {
         var nameNodeId = {};
-        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
+        nameNodeId[variableName ] = this.nodeId.value;
 
         if (customGetLogic) {
           customGetLogic(i, nameNodeId, serverValues);
         }
 
-        var serverValue = serverValues[nameNodeId[variableName + "NodeId"]];
+        var serverValue = serverValues[nameNodeId[variableName ]];
         if (serverValue === undefined) {
           serverValue = 0;
         }
@@ -230,8 +230,8 @@ function createCustomVariableUint32(i, variableName, componentOf, browseName, pa
       },
       set: function (variant) {
         var nameNodeId = {};
-        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
-        serverValues[nameNodeId[variableName + "NodeId"]] = parseInt(variant.value);
+        nameNodeId[variableName ] = this.nodeId.value;
+        serverValues[nameNodeId[variableName ]] = parseInt(variant.value);
 
         if (customSetLogic) {
           customSetLogic(i, nameNodeId, serverValues);
@@ -268,13 +268,13 @@ function createCustomVariableInt32(i, variableName, componentOf, browseName, par
     value: {
       get: function () {
         var nameNodeId = {};
-        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
+        nameNodeId[variableName ] = this.nodeId.value;
 
         if (customGetLogic) {
           customGetLogic(i, nameNodeId, serverValues);
         }
 
-        var serverValue = serverValues[nameNodeId[variableName + "NodeId"]];
+        var serverValue = serverValues[nameNodeId[variableName ]];
         if (serverValue === undefined) {
           serverValue = 0;
         }
@@ -283,8 +283,8 @@ function createCustomVariableInt32(i, variableName, componentOf, browseName, par
       },
       set: function (variant) {
         var nameNodeId = {};
-        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
-        serverValues[nameNodeId[variableName + "NodeId"]] = parseInt(variant.value);
+        nameNodeId[variableName ] = this.nodeId.value;
+        serverValues[nameNodeId[variableName]] = parseInt(variant.value);
 
         if (customSetLogic) {
           customSetLogic(i, nameNodeId, serverValues);
@@ -325,13 +325,13 @@ function createCustomVariableUint64(i, variableName, componentOf, browseName, pa
       get: function () {
         var nameNodeId = {};
 
-        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
+        nameNodeId[variableName ] = this.nodeId.value;
 
         if (customGetLogic) {
           customGetLogic(i, nameNodeId, serverValues);
         }
 
-        var serverValue = serverValues[nameNodeId[variableName + "NodeId"]];
+        var serverValue = serverValues[nameNodeId[variableName ]];
         if (serverValue === undefined) {
           serverValue = 0;
         }
@@ -340,8 +340,8 @@ function createCustomVariableUint64(i, variableName, componentOf, browseName, pa
       },
       set: function (variant) {
         var nameNodeId = {};
-        nameNodeId[variableName + "NodeId"] = this.nodeId.value;
-        serverValues[nameNodeId[variableName + "NodeId"]] = parseInt(variant.value);
+        nameNodeId[variableName ] = this.nodeId.value;
+        serverValues[nameNodeId[variableName ]] = parseInt(variant.value);
         if (customSetLogic) {
           customSetLogic(i, nameNodeId, serverValues);
         }
@@ -360,17 +360,17 @@ function initial(variableName, initialValue, customValues, i, nameNodeId, server
   var nodeIdInitial = [];
 
   // Überprüfen, ob die Node-ID der Variable im nameNodeId-Objekt existiert
-  if (nameNodeId[variableName + "NodeId"] !== undefined) {
+  if (nameNodeId[variableName] !== undefined) {
     // Speichern der Node-ID im nodeIdInitial-Array an der Position i
     // Dies wird verwendet, um später auf die spezifische Node-ID zuzugreifen
-    nodeIdInitial[i] = nameNodeId[variableName + "NodeId"];
+    nodeIdInitial[i] = nameNodeId[variableName];
   } else {
     // Beenden der Funktion, falls die Node-ID nicht definiert ist
     // Dies verhindert, dass die Funktion mit ungültigen Daten arbeitet
     return;
   }
   // Prüfung, ob die Node-ID bereits in serverValues vorhanden ist
-  if (!(nameNodeId[variableName + "NodeId"] in serverValues)) {
+  if (!(nameNodeId[variableName] in serverValues)) {
     // Wenn die Node-ID nicht in serverValues ist, wird der folgende Block ausgeführt
 
     // Durchlaufen aller Indizes von 0 bis 13
@@ -406,10 +406,10 @@ function initialSingleValue(variableName, initialValue, nameNodeId, serverValues
   // Überprüfung, ob eine Node-ID für den angegebenen Variablennamen existiert.
   // Hier wird der Variablenname dynamisch aus dem Parameter 'variableName' und dem String 'NodeId' zusammengesetzt.
   // Beispiel: Wenn 'variableName' = "Temperatur" ist, wird nach 'nameNodeId["TemperaturNodeId"]' gesucht.
-  if (nameNodeId[variableName + "NodeId"] !== undefined) {
+  if (nameNodeId[variableName] !== undefined) {
     // Wenn die Node-ID existiert (nicht 'undefined'), wird sie in 'nodeIdInitial' gespeichert.
     // Dies ist der Schlüssel, der später verwendet wird, um den Wert in 'serverValues' zu setzen.
-    nodeIdInitial = nameNodeId[variableName + "NodeId"];
+    nodeIdInitial = nameNodeId[variableName];
   } else {
     // Beendet die Funktion vorzeitig, wenn keine Node-ID für den angegebenen Variablennamen existiert.
     // Dies verhindert, dass die Funktion mit einer ungültigen Node-ID arbeitet, was zu Fehlern führen könnte.
@@ -447,6 +447,8 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
   //********************************************************************************************************************************** */
   // Prüft, ob das System im Heizmodus ist.
   if (sharedState.Process_states.Heating_is_On) {
+
+    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Tolerance_monitoring_is_active); // Tolerance Monitoring On
     // In dem Moment, wo der Button auf Heating geklickt wird, sind die Prozesszonen nicht mehr auf Off, daher wird der Zustand gesetzt
     sharedState.Process_states.Prozesszones_Are_Off = false;
     if (rAct < rTempRelease) {
@@ -488,9 +490,9 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
         checkedItemsReady[i] = true;
       }
     }
-    // Prüfung des Arrays, ob alle Einträge im Array True sind, dann setze Zustand Prozesszones_Are_Ready
+    // Prüfung des Arrays, ob alle Einträge im Array True sind, dann setze Zustand Process_states.Prozesszones_Are_Ready
     if (checkedItemsReady.slice(1, 14).every(Boolean)) {
-      sharedState.Prozesszones_Are_Ready = true
+      sharedState.Process_states.Prozesszones_Are_Ready = true
     }
   }
   //********************************************************************************************************************************** */
@@ -498,7 +500,8 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
   //********************************************************************************************************************************** */
   // Prüft, ob das System im Shutdown Modus ist.
   if (sharedState.Process_states.Shutdown_is_On) {
-    sharedState.Prozesszones_Are_Ready = false; // Setzt den Zustand der Prozesszonen auf "Nicht Ready"
+    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.value] &= ~((1 << sharedState.dwStat.Tolerance_monitoring_is_active));// Tolerance Monitoring On
+    sharedState.Process_states.Prozesszones_Are_Ready = false; // Setzt den Zustand der Prozesszonen auf "Nicht Ready"
 
     // Überprüfen, ob alle Prozesszonen nicht mehr im "Ready" Zustand sind
     for (let i = 1; i < 14; i++) {
@@ -543,8 +546,8 @@ function dwStatStartWizzard(i, nameNodeId, serverValues) {
   //********************************************************************************************************************************** */
   // Prüft, ob das System im Kühl Modus ist.
   if (sharedState.Process_states.Cooling_is_On) {
-
-    sharedState.Prozesszones_Are_Ready = false; // Setzt den Zustand der Prozesszonen auf "Nicht Ready"
+    serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.value] &= ~((1 << sharedState.dwStat.Tolerance_monitoring_is_active));
+    sharedState.Process_states.Prozesszones_Are_Ready = false; // Setzt den Zustand der Prozesszonen auf "Nicht Ready"
 
     // Überprüfen, ob alle Prozesszonen nicht mehr im "Ready" Zustand sind
     for (let i = 1; i < 14; i++) {
@@ -692,11 +695,11 @@ function PIDUP(i, nameNodeId, serverValues) {
   // Bestimmung des Sollwerts der Temperatur
   let rSet;
   // Logik zur Festlegung des Sollwerts, abhängig vom Zustand der Prozesszonen
-  if (!sharedState.Prozesszones_Are_Ready) {
+  if (!sharedState.Process_states.Prozesszones_Are_Ready) {
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value];
     // Hängt mit der Funktion dwstatupdate zusammen. Für die Toleranzgrenzen braucht man einen Set Wert. Endung _rSet, rTempHeatup_Set geht nicht !
     serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value] = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempHeatup_Set.nodeId.value]
-  } else if (sharedState.Prozesszones_Are_Ready) {
+  } else if (sharedState.Process_states.Prozesszones_Are_Ready) {
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value];
   }
 
@@ -792,7 +795,7 @@ function PIDCOOLDOWN(i, nameNodeId, serverValues) {
   let rSet
   if (sharedState.Process_states.Cooling_is_On && !sharedState.Process_states.Heating_is_On) {
     rSet = 20 // Festlegung eines Standardkühlwerts, wenn Kühlung aktiv ist, aber Heizung nicht
-  } else if (sharedState.Process_states.Heating_is_On && sharedState.Prozesszones_Are_Ready) {
+  } else if (sharedState.Process_states.Heating_is_On && sharedState.Process_states.Prozesszones_Are_Ready) {
     // Nutzung des Sollwerts aus HMI, falls Heizung aktiv und Prozesszonen bereit sind
     rSet = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value];
     // Sicherstellung, dass der Sollwert nicht unter einem Mindestwert liegt
@@ -862,6 +865,7 @@ function PIDSHUTDOWN(i, nameNodeId, serverValues) {
   const Ki = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value];
   const Kd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value];
   // Festlegung von Zeitschritt (dt) und Zeitkonstanten (T1, T2) für die Regelstrecken-Simulation
+  const dt=0.01
   const T1 = 50; // Zeitkonstante für das erste PT1-Glied der Regelstrecke
   const T2 = 50; // Zeitkonstante für das zweite PT1-Glied der Regelstrecke
   const K1 = 1; // Verstärkungsfaktor für das erste PT1-Glied

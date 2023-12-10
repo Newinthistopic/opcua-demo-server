@@ -1,3 +1,4 @@
+// Das sind die BITS die gesetzt / gelöscht werden müssen, damit die visuellen "Aktionen" in der HMI funktionieren
 const dwStat = {
     TargetScrewSpeedCalculation_direct_specRate: 8, //FLASE: Spec. throughput [kg/h/rpm]    (Throughput [kg/h] / Spec. throughput [kg/h/rpm] = Speed [rpm]    TRUE: Absolut setpoint [rpm]; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325128/udt+Hmi+emExtruderDriveCtrl
     Setpoint_value_is_visible: 11, // TRUE: Setpoint value is visible; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325158/udt+Hmi+cmHmiValues
@@ -8,8 +9,8 @@ const dwStat = {
 
     Show_preheat_temperature_setpoint_on_hmi: 16,// TRUE: Show preheat temperature setpoint on hmi; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3113779313/udt+Hmi+emProcessZone#dwStat
 
-    GearOilLubrication_Button_is_On_Off: 11,
-    GearOilLubrication_Button_Lock_OFF_Status: 10,
+    GearOilLubrication_Button_is_On_Off: 11, // Schaltet visuell ob der Button auf an oder aus steht 
+    GearOilLubrication_Button_Lock_OFF_Status: 10, // Setzt die Lockcondition für den Off Button
 
     Tolerance_monitoring_is_active: 15, //TRUE: Tolerance monitoring is active; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325158/udt+Hmi+cmHmiValues
     Out_of_tolerance_MaxMax: 16, // TRUE: Out of tolerance MaxMax;https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325158/udt+Hmi+cmHmiValues
@@ -22,19 +23,20 @@ const dwStat = {
     Status_feeder_is_On_Off: 11, // TRUE: Status feeder is on;https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3123576919/udt+Hmi+emFeederRawMaterial
     Feeder_Button_Lock_On_Status: 9,
 
-    Status_AutoStart_Side_Feeder_is_On_Off: 15,
+    Status_AutoStart_Side_Feeder_is_On_Off: 15, // Schaltet visuell den Auto Start Side Feeder Button auf On / Off
 
-    Status_Side_Feeder_is_On_Off: 11,
+    Status_Side_Feeder_is_On_Off: 11, // Schaltet visuell den Side Feeder Button auf On / Off
 
+    
     statemachine: {
-        Idle: 5,
+        Idle: 5, 
         Running: 3,
         Stopped: 4,
         E_Stop_Pressed: 1,
         E_Stop_Released: 2,
         Preheating: 2
-    }
-    ,
+    },
+        // Steuert die Icons in den Navigationbar
     statemachine_navigationbar: {
         Stopped: 4,
         Running: 5,
@@ -48,18 +50,21 @@ const dwStat = {
         Temp_controller_on: 9, // TRUE: Temp. controller on; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3113779313/udt+Hmi+emProcessZone
         Show_remain_time_on_hmi: 15, //TRUE: Show remain time on hmi; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3113779313/udt+Hmi+emProcessZone
     },
-    Status_Auto_Start_On_Off: 8,
-    Lock_On_Off_Status_of_AutoStop_Button: 12,
-    Lock_On_Off_Status_of_AutoStart_Button: 9,
-    Status_Auto_Stop_On: 13,
-    Status_Auto_Start_On: 10,
 
-    Lock_On_Off_Status_of_Start_Button: 6,
-    Lock_On_Off_Status_of_CoolDown_Button: 24,
-    Lock_On_Off_Status_of_ShutDown_Button: 13,
+    Status_Auto_Start_Feeder_On_Off: 8, // Setz den Button Auto Start Feeder im Pop up Feeding ; X wird blaue oder Haken wird blau
+    Lock_On_Off_Status_of_Auto_Stop_Button: 12, // Lockcondition für Autostop Button
+    Lock_On_Off_Status_of_Auto_Start_Button: 9, // Lockcondition für Autostart Button
+    Status_Auto_Stop_On: 13, // Setz den Button Auto Stop im Pop up Feeding blau
+    Status_Auto_Start_On: 10, // Setz den Button Auto Start im Pop up Feeding blau
 
-    Lock_On_Off_Status_of_RampOn_Button: 1
+    Lock_On_Off_Status_of_Start_Button: 6, // Setzt die Lockcondition vom Start Button im Start Wizzard
+    Lock_On_Off_Status_of_CoolDown_Button: 24, // Setzt die Lockcondition vom Cool Down Button im Start Wizzard
+    Lock_On_Off_Status_of_ShutDown_Button: 13, // Setzt die Lockcondition vom Shutdown Down Button im Start Wizzard
+
+    Lock_On_Off_Status_of_Ramp_On_Button: 1 // Setz die Lockcondition vom Ramp On Button
 };
+
+// Hier werden die Bits verwaltet für die Buttons, wenn man "klickt"
 const dwCtrl = {
     Speed_calculation_with_spec_throughput: 4, //TRUE (Impulse): Speed calculation with spec. throughput; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325128/udt+Hmi+emExtruderDriveCtrl
     Speed_calculation_with_absolut_speed: 5, // TRUE (Impulse): Speed calculation with absolut speed; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3105325128/udt+Hmi+emExtruderDriveCtrl
@@ -67,54 +72,54 @@ const dwCtrl = {
     Extruder_On: 5, // TRUE: Start operation; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3111715028/cmOpStartStop
     Extruder_Off: 6, // TRUE: Stop operation; https://kraussmaffei.atlassian.net/wiki/spaces/GHD/pages/3111715028/cmOpStartStop
 
-    Gear_Oil_Lubrication_On: 5,
-    Gear_Oil_Lubrication_Off: 6,
+    Gear_Oil_Lubrication_On: 5, // Impuls für Ölschmiernug an
+    Gear_Oil_Lubrication_Off: 6, // Impuls für Ölschmiernug aus
 
-    Feeder_On: 5,
-    Feeder_Off: 6,
+    Feeder_On: 5, // Impuls für den Feeder an
+    Feeder_Off: 6, // Impuls für den Feeder aus
 
-    Feeding_Auto_Start_Feeder_On_Off: 8,
-    Feeding_Auto_Stop: 6,
-    Feeding_Auto_Start: 5,
-    Feeding_Stop_Feeding: 3,
+    Feeding_Auto_Start_Feeder_On_Off: 8, // Impuls für den Auto Start Feeder Button im Pop Up Feeding
+    Feeding_Auto_Stop: 6, // Impuls für den Auto Stop Button im Pop Up Feeding
+    Feeding_Auto_Start: 5, // Impuls für den Auto Start Button im Pop Up Feeding
+    Feeding_Stop_Feeding: 3, // Impuls für den Stop Feeding Button im Pop Up Feeding
 
-    AutoStart_Side_Feeder_On_Off: 15,
+    Auto_Start_Side_Feeder_On_Off: 15, // Impuls für den Auto Start Side Feeder Button im Start Wizzard unter Start Extruder
 
-    Side_Feeder_On: 5,
-    Side_Feeder_Off: 6,
+    Side_Feeder_On: 5,// Impuls für den Side Feeder On , Button im Start Wizzard unter Start Extruder
+    Side_Feeder_Off: 6, // Impuls für den Side Feeder Off , Button im Start Wizzard unter Start Extruder
 
-    Apply_Changes: 15,
+    Apply_Changes: 15, // Impuls über die "Prozente" von New Set auf Set zu übernehmen, wird im Feeder Line Mode benötigt
 
-    StartWizzard_start: 7,
-    StartWizzard_coolDown: 15,
-    StartWizzard_shutDown: 17,
+    StartWizzard_start: 7, // Impuls für den Start Button im Start Wizzard
+    StartWizzard_coolDown: 15, // Impuls für den Cool Down Button im Start Wizzard
+    StartWizzard_shutDown: 17, // Impuls für den Shutdown Down Button im Start Wizzard
 
-    Line_Ramp_Off: 3,
-    Line_Ramp_On: 1
+    Line_Ramp_Off: 3, // Impuls für den Ramp Off Button, wird im Line Modus benötigt
+    Line_Ramp_On: 1 // Impuls für den Ramp On Button, wird im Line Modus benötigt
 
 }
 
 const Alarms_Warnings = {
     Extruder_Drive_Control: {
-        Warning_Torque_too_high_shutdown_timer_started: 10,
-        Warning_Torque_too_low_shutdown_timer_started: 11,
-        Alarm_Torque_too_high_delay_shutdown_time_expired: 5,
-        Alarm_Torque_too_low_delay_shutdown_time_expired: 6,
+        Warning_Torque_too_high_shutdown_timer_started: 10, // Auswahl der Warnung, die dann angezeigt wird, durch wMessage
+        Warning_Torque_too_low_shutdown_timer_started: 11, // Auswahl der Warnung, die dann angezeigt wird, durch wMessage
+        Alarm_Torque_too_high_delay_shutdown_time_expired: 5, // Auswahl der Warnung, die dann angezeigt wird, durch wMessage
+        Alarm_Torque_too_low_delay_shutdown_time_expired: 6,// Auswahl der Warnung, die dann angezeigt wird, durch wMessage
     }
 }
 
 const feeders = [
     null, // Platzhalter für Index 0
-    { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true }, // Zustand für Feeder 1
-    { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true }, // Zustand für Feeder 2
-    { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true }, // Zustand für Feeder 3
-    { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true }  // Zustand für Feeder 4
+    { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true }, // Zustand für Feeder 1 für alle Modi
+    { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true }, // Zustand für Feeder 2 für alle Modi
+    { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true }, // Zustand für Feeder 3 für alle Modi
+    { FeederLineMode: false, FeederSingleMode: true, FeederRecyclingMode: false, FeederSetupMode: false, FeederisRunning: false, FeederisOff: true }  // Zustand für Feeder 4 für alle Modi
 ]
 
-const dwStat_status_Alarms_Warnings = {
+const status_Alarms_Warnings = {
     Extruder_Drive_Control: {
-        status_Warning_Torque_too_low_shutdown_timer_started: false,
-        status_Warning_Torque_too_high_shutdown_timer_started: false,
+        status_Warning_Torque_too_low_shutdown_timer_started: false, // Zustand darüber, ob die Warnung aktiv ist
+        status_Warning_Torque_too_high_shutdown_timer_started: false, // Zustand darüber, ob die Warnung aktiv ist
     }
 }
 
@@ -150,8 +155,6 @@ const Process_states = {
 
     Auto_Start_Side_Feeder_is_On: false, // Auto Start für den Side Feeder ist an
     Auto_Start_Side_Feeder_is_Off: true, // Auto Start für den Side Feeder ist aus
-
-
 }
 
 // Trigger für den Stop aller Funktionen, die zum Feedersystem gehören. Triggerpunkt ist "Stop Feeding Button im Pop Up Feeding", alle Funktionen werden gestopt, bzw die Intervalle davon
@@ -162,25 +165,24 @@ const intervalIds = {
     stop_Adjust_Throughput: false,
     stop_Simulate_Throughput_Ramp_Line: false,
 }
+
+feeding_auto_start= {
+    auto_Stop: true, // Zustand darüber, ob der Button von Auto Stop im Pop up Feeder an/aus ist, nicht visuell
+    auto_Start: false, // Zustand darüber, ob der Button von Auto Stop im Pop up Feeder an/aus ist, nicht visuell
+    auto_Start_Feeder: false,  // Zustand darüber, ob der Button von Auto Stop im Pop up Feeder an/aus ist, nicht visuell
+    stop_Feeding: false // Zustand darüber, ob der Button von Auto Stop im Pop up Feeder an/aus ist, nicht visuell
+},
+
 module.exports = {
     dwStat,
     dwCtrl,
     Alarms_Warnings,
-    dwStat_status_Alarms_Warnings,
+    status_Alarms_Warnings,
     intervalIds,
     Process_states,
     feeders,
+    feeding_auto_start
 
-
-    feeding_auto_start: {
-        auto_Stop: true,
-        auto_Start: false,
-        auto_Start_Feeder: false,  // false für "X", true für "✔"
-        stop_Feeding: false
-    },
-
-
-
-
+   
 };
 

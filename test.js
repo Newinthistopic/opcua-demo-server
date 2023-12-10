@@ -1,333 +1,132 @@
 
-const { SetTriggeringResponse } = require('node-opcua');
-var { SetGetlogic } = require('./../../../Setter_Getter_Logiken')
-const functions = require('./../../../funktionen');
 
 
 
-function run1(addressSpace, device, opcua, verbose, serverValues,) {
 
- 
-    var data = {};
-    
-   
-    data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rAct = functions.createCustomVariable(undefined, "SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rAct", SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate, "rAct", "SU3111_ZeExtruder.Hmi", "udtEmExtruderDriveCtrl", "rSpecRate", "rAct", undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rActGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rActSet)
-   
 
-    module.exports = {
-        data: data
-    }
+var data = {};
+var SU3111_ZeExtruder_Hmi_udtUm = functions.createCustomVariableFloat(undefined, "SU3111_ZeExtruder_Hmi_udtUm", SU3111_ZeExtruder_Hmi, "udtUm", "SU3111_ZeExtruder.Hmi", "udtUm", undefined, undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtUmGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtUmSet)
+data.SU3111_ZeExtruder_Hmi_udtUm_dwStat = functions.createCustomVariableUint32(undefined, "SU3111_ZeExtruder_Hmi_udtUm_dwStat", SU3111_ZeExtruder_Hmi_udtUm, "dwStat", "SU3111_ZeExtruder.Hmi", "udtUm", "dwStat", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtUm_dwStatGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtUm_dwStatSet)
+data.SU3111_ZeExtruder_Hmi_udtUm_dwCtrl = functions.createCustomVariableFloat(undefined, "SU3111_ZeExtruder_Hmi_udtUm_dwCtrl", SU3111_ZeExtruder_Hmi_udtUm, "dwCtrl", "SU3111_ZeExtruder.Hmi", "udtUm", "dwCtrl", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtUm_dwCtrlGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtUm_dwCtrlSet)
+data.SU3111_ZeExtruder_Hmi_udtUm_wMessage = functions.createCustomVariableUint16(undefined, "SU3111_ZeExtruder_Hmi_udtUm_wMessage", SU3111_ZeExtruder_Hmi_udtUm, "wMessage", "SU3111_ZeExtruder.Hmi", "udtUm", "wMessage", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtUm_wMessageGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtUm_wMessageSet)
 
+for (var i = 0; i < 14; i++) {
+  data[i] = {};
+
+
+  data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPressLoop = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Hmi_udtCmMeltPressLoop", SU3111_ZeExtruder_Hmi_udtCmMeltPress, i.toString(), "SU3111_ZeExtruder.Hmi", "udtCmMeltPress", undefined, undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPressLoopGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPressLoopSet)
+  data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwCtrl = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwCtrl", data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPressLoop, "dwCtrl", "SU3111_ZeExtruder.Hmi", "udtCmMeltPress", "dwCtrl", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwCtrlGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwCtrlSet)
+  data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwStat = functions.createCustomVariableUint32(i, "SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwStat", data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPressLoop, "dwStat", "SU3111_ZeExtruder.Hmi", "udtCmMeltPress", "dwStat", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwStatGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwStatSet)
+  data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPresValueX1 = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPresValueX1", data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPressLoop, "rPresValueX1", "SU3111_ZeExtruder.Hmi", "udtCmMeltPress", "rPresValueX1", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPresValueX1Get, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPresValueX1Set)
 }
-
 
 module.exports = {
-    run1: run1,
+  data: data
 }
 
 
-SU3100_Plastification_Hmi_udtPc_udtModState_dwStatus
+const SetGetlogic = {
+  SU3111_ZeExtruder_Hmi_udtUmGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm", undefined, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtUmSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm", undefined, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtUm_dwStatGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_dwStat", 1048589, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtUm_dwStatSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_dwStat", undefined, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtUm_dwCtrlGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_dwCtrl", 0, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtUm_dwCtrlSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_dwCtrl", undefined, {}, i, nameNodeId, serverValues); },
+  SU3111_ZeExtruder_Hmi_udtUm_wMessageGet: function (i, nameNodeId, serverValues) { funktionen.initial("SU3111_ZeExtruder_Hmi_udtUm_wMessage", undefined, {}, i, nameNodeId, serverValues); },
 
-udtEmExtruderDriveCtrl_udtButtonStartStop
-
-serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_rAct.nodeId.value]
-
-serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value]
-
-SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat
-
-SU2110_Feeding_Hmi_udtUm_dwStat
-
-serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = 0;
-serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = 0;
-serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughput_rAct.nodeId.value] = 0
-serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughputTotal_rAct.nodeId.value] = 0
-funktionen.startFeeder(i, nameNodeId, serverValues, true)
-
-SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl
-SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat
-
-SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat
-
-SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwCtrl
-
-SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_dwStat
-
-SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rTorqueDensity_dwStat
-
-SU3111_ZeExtruder.Hmi.udtEmExtruderDriveCtrl.rScrewSpeed.dwStat
-
-SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecificEnergy_dwStat
-
-SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat
-
-SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_dwStat
-
-SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rSet
-
-SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat
-
-serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value] &= ~(1 << 8);
-
-serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] |= (1 << 11)
-
-SU1000_Line_Hmi_udtLm_strRecOrderName
-
-SU1000_Line_Hmi_udtLm_udtHeader_utActTime
-
-SU1000_Line_Hmi_udtLm_udtHeader_dwLineStatus
-
-serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtHeader_dwLineStatus.nodeId.value]
-
-SU2110_Feeding.Hmi.udtUm.udtModSate.dwStatus
-
-SU3100_Plastification_Hmi_udtPc_udtModState_dwStatus
-
-SU1000_Line.Hmi.udtLm.udtHeader.dwLineStatus
-
-SU3100_Plastification_Hmi_udtPc_udtModState_dwUnitNavigationStatus
-
-SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_dwStat
-
-serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque.nodeId.value] |= (1 << 13);
-
-SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat
-
-serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_udtButtonStartStop_dwStat.nodeId.value] & (1 << 11))
-
-serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value]
-
-SU3111_ZeExtruder_Parameter_udtEmPz_rTempCooldown_Set
-
-serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempCooldown_Set.nodeId.value]
-
-1048589
-
-SU3100_Plastification_Hmi_udtPc_udtModState_uiActOpMode
+}
+module.exports = {
+  SetGetlogic: SetGetlogic,
+}
 
 
-SU2110_Feeding.Hmi.udtUm.udtModSate.dwUnitNavigationStatus
+var newVariable = {};
+newVariable[variableName] = namespace3.addVariable({
+  componentOf: componentOf,
+  browseName: browseName,
+  dataType: opcua.DataType.Float,
+  nodeId: nodeId,
+  value: {
+    get: function () {
+      var nameNodeId = {};
+      nameNodeId[variableName + "NodeId"] = this.nodeId.value;
 
-SU3111_ZeExtruder.Hmi.udtUm.udtModState.dwUnitNavigationStatus
-
-
-
-SU3111_ZeExtruder.Hmi.udtUm.udtModState.dwUnitNavigationStatus
-
-SU3111_ZeExtruder_Hmi_udtUm_udtModState_dwUnitNavigationStatus
-
-
-SU2110_Feeding_Hmi_udtUm_rThroughputTotal.dwStat
-
-SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat
-
-50141
-58333
-SU2110_Feeding_Hmi_udtUmEmFeeder_rThroughput_dwStat
-
-serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtEmPz_rTempRel_Set.nodeId.value]
-
-SU3111_ZeExtruder_Parameter_udtEmPz_rTempRel_Set
-
-SU1000_Line.Hmi.udtLm.udtHeader.dwLineStatus
-
-SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime
-
-bit[11]:SU3111_ZeExtruder.Hmi.udtEmGearOilLubExt.udtButtonStartStop.dwStat
-
-SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Set
-
-SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp
-SU3111_ZeExtruder
-serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value]
-
-SU3111_ZeExtruder_Hmi_udtPc_udtModState_dwUnitNavigationStatus
-
-const machine = new StateMachineNavigationBar();
-setTimeout(function () {
-  var werte = require('./profiles/simulation/variables/Variabeln');
-  if (sharedState.HeatingisOn && sharedState.ExtruderisOn) {
-    machine.setState('SU3111_ZeExtruder_Hmi_udtPc_udtModState_dwUnitNavigationStatu', 'RUNNING');
-  }
-}, 1); 
-
-
-
-    //   serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value]
-    setTimeout(() => {
-        var werte = require('./profiles/simulation/variables/Variabeln');
-        // Erste Bedingung (Taste Spec.Rate)
-        if (sharedState.SpeedCalculationSpecRateisOn) {
-          // Bit 4 setzen
-          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value] &= ~(1 << 8);
-  
-  
-          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] &= ~(1 << 11); // TRUE: Setpoint value is visible
-          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] &= ~(1 << 13); // TRUE: Setpoint input of Hmi is activ
-  
-  
-          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] |= (1 << 11); // TRUE: Setpoint value is visible
-          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] |= (1 << 13);
-  
-          if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] & (1 << 11)) { // Prüft ob Main Drive on ist
-            console.log("kontrooooole")
-            funktionen.simulateScrewSpeed(i, nameNodeId, serverValues);
-          }
-  
-        }
-  
-        // Zweite Bedingung (Taste Direct)
-        if (sharedState.SpeedCalculationDirectisOn) {
-  
-          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat.nodeId.value] |= (1 << 8);
-          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] |= (1 << 11); // TRUE: Setpoint value is visible
-          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_dwStat.nodeId.value] |= (1 << 13); // TRUE: Setpoint input of Hmi is active
-  
-          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] &= ~(1 << 11); // TRUE: Setpoint value is visible
-          serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_dwStat.nodeId.value] &= ~(1 << 13);
-          if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwStat.nodeId.value] & (1 << 11)) { // Prüft ob Main Drive on ist
-            funktionen.simulateScrewSpeed(i, nameNodeId, serverValues);
-          }
-  
-        }
-      }, 1);
-
-
-
-      if (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] === 288 && (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] & (1 << 8))
-      ) {
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << 13);
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << 10);
+      if (customGetLogic) {
+        customGetLogic(i, nameNodeId, serverValues);
       }
-      // Auto Stop Button
-      if (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] === 320 && (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] & (1 << 8))
-      ) {
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << 13);
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << 10);
+      return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nameNodeId[variableName + "NodeId"]] });
+    },
+    set: function (variant) {
+      var nameNodeId = {};
+      nameNodeId[variableName + "NodeId"] = this.nodeId.value;
+      serverValues[nameNodeId[variableName + "NodeId"]] = parseFloat(variant.value);
+      if (customSetLogic) {
+        customSetLogic(i, nameNodeId, serverValues);
       }
-
-      SU2110_Feeding_Hmi_udtUm_dwCtrl
-
-      SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet
-
-      SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet
-
-      SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet
-
-      SU1000_Line.Parameter.udtLm.rThroughputRamp.Set
-
-      SU1000_Line.Hmi.udtLm.udtLineRamp.dwCtrl
-
-      SU1000_Line_Hmi_udtLm_udtLineRamp_dwCtrl
-
-      SU1000_Line_Parameter_udtLm_rThroughputRamp_rSet
-      let gradient = serverValues[werte.data.SU1000_Line_Parameter_udtLm_rThroughputRamp_rSet.nodeId.value] 
-
-      SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet
-
-      SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet
-      SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet
-
-      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rSet.nodeId.value] 
-      serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value] 
-   
-
-      serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] 
-
-
-      SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_dwStat
-
-
-
-      ${SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rSet}
-
-      SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage
-      SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwStat
-
-
-
-      Groud Board Extruder
-      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainPreRunTime.nodeId.value]
-      serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udActRemainTimeFollowUp.nodeId.value]
-      
-    
-
-Extruder Expert
-
-serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udFollowUpTime_Set.nodeId.value]
-serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmGearOilLubExt_udPreRunTime_Set.nodeId.value]
-
-serverValues[werte.data[i].SU3141_DiverterValve_Hmi_udtCmMeltPress_rPress_rAct.nodeId.value]
-serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_rAct.nodeId.value]
-
-SU3111_ZeExtruder_Hmi_udtEmGearOilLubExt_udtOilTemp_rAct
-
-
-serverValues[werte.data[i].SU3141_DiverterValve_Hmi_udtCmMeltTemp_rMeltTemp_rAct.nodeId.value]
-serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp.rAct.nodeId.value]
-
-SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin_Set
-
-
-serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewSpeedMin_Set.nodeId.value]
-
-serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMax.nodeId.value]
-
-
-serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rOpMax.nodeId.value]
-
-
-
-
-
-serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMin.nodeId.value]
-
-SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rOpMin
-
-
-SU3111_ZeExtruder.Hmi.udtEmExtruderDriveCtrl.rSpecRate.dwStat
-
-
-
-
-
-
-
-
-serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rSetTolMin.nodeId.value]
-
-
-serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rSetTolMinMin.nodeId.value]=serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Set.nodeId.value]
-serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rSetTolMax.nodeId.value]=serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueH_Set.nodeId.value]
-serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rSetTolMaxMax.nodeId.value]=serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Set.nodeId.value]
-
-
-
-
-
-
-
-
-DiverterValve.Hmi.udtUm_
-
-
-SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMin
-
-rMinThroughput_Set
-
-serverValues[werte.data[i].SU2110_Feeding_Parameter_udtEmFeeder_rMinThroughput_Set.nodeId.value]
-serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rOpMin.nodeId.value]
-
-var werte = require('./profiles/simulation/variables/Variabeln');
-
-
-
-serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value]
-serverValues[werte.data.SU3111_ZeExtruder.Hmi.udtEmExtruderDriveCtrl.rScrewTorque.rAct.nodeId.value]
-serverValues[werte.data.SU3111_ZeExtruder.Parameter.udtEmExtruderDriveCtrl.rScrewTorqueHH.Set.nodeId.value]
-serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Set.nodeId.value]
-
-serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_udScrewTorqueLTime_Set.nodeId.value]
-
-
-
+      return opcua.StatusCodes.Good;
+    }
+  },
+});
+return newVariable[variableName];
+}
+
+
+
+// Erstellen eines neuen Objekts und Zuweisung einer Variable mit dem Namen "Hallo"
+var newVariable = {};
+newVariable["Hallo"] = namespace3.addVariable({
+    componentOf: componentOf, // Ein Beispielwert oder Objekt
+    browseName: "MeinBrowseName", // Beispiel Browse-Name
+    dataType: opcua.DataType.Float,
+    nodeId: "Tschüss", // Node-ID ist direkt "Tschüss"
+    value: {
+        get: function () {
+            var nameNodeId = {};
+            nameNodeId["HalloNodeId"] = this.nodeId.value; // Der Schlüssel "HalloNodeId" wird hier genutzt
+
+            // Benutzerdefinierte Get-Logik, falls vorhanden
+            if (customGetLogic) {
+                customGetLogic(i, nameNodeId, serverValues);
+            }
+            return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues["HalloNodeId"] });
+        },
+        set: function (variant) {
+            var nameNodeId = {};
+            nameNodeId["HalloNodeId"] = this.nodeId.value; // Der Schlüssel "HalloNodeId" wird hier genutzt
+            serverValues["HalloNodeId"] = parseFloat(variant.value);
+
+            // Benutzerdefinierte Set-Logik, falls vorhanden
+            if (customSetLogic) {
+                customSetLogic(i, nameNodeId, serverValues);
+            }
+            return opcua.StatusCodes.Good;
+        }
+    },
+});
+
+// Rückgabe der erstellten Variable "Hallo"
+var erstellteVariable = newVariable["Hallo"];
+
+newVariable[variableName] = namespace3.addVariable({
+ 
+  nodeId: nodeId,
+  value: {
+    get: function () {
+      var nameNodeId = {};
+      nameNodeId[variableName] = this.nodeId.value;
+  
+            return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nameNodeId[variableName]] });
+    }.
+  },
+});
+
+
+nnamespace3.addVariable({
+ 
+    nodeId: noeId,
+
+  value: {
+       lol:true            
+    }.
+  },
+});

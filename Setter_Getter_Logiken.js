@@ -4,6 +4,7 @@ var sharedState = require('./states');
 
 
 const SetGetlogic = {
+  
   SU3111_ZeExtruder_Hmi_udtUmGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtUmSet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm", undefined, nameNodeId, serverValues); },
   SU3111_ZeExtruder_Hmi_udtUm_dwStatGet: function (i, nameNodeId, serverValues) { funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_dwStat", 1048589, nameNodeId, serverValues); },
@@ -34,13 +35,13 @@ const SetGetlogic = {
 
     setTimeout(() => {
       const machine = new funktionen.StateMachineNavigationBar();
-      if ((sharedState.Process_states.Extruder_is_On && !sharedState.dwStat_status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_low_shutdown_timer_started) || (sharedState.Process_states.Extruder_is_On && !sharedState.dwStat_status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_high_shutdown_timer_started)) {
+      if ((sharedState.Process_states.Extruder_is_On && !sharedState.status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_low_shutdown_timer_started) || (sharedState.Process_states.Extruder_is_On && !sharedState.status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_high_shutdown_timer_started)) {
         machine.setState("SU3111_ZeExtruder_Hmi_udtUm_udtModState_dwUnitNavigationStatus", 'RUNNING');
 
       } if (sharedState.Process_states.Extruder_is_Off) {
         machine.setState("SU3111_ZeExtruder_Hmi_udtUm_udtModState_dwUnitNavigationStatus", 'STOPPED');
       }
-      if (sharedState.dwStat_status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_low_shutdown_timer_started || sharedState.dwStat_status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_high_shutdown_timer_started) {
+      if (sharedState.status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_low_shutdown_timer_started || sharedState.status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_high_shutdown_timer_started) {
         machine.setState("SU3111_ZeExtruder_Hmi_udtUm_udtModState_dwUnitNavigationStatus", 'WARNING');
       }
 
@@ -88,12 +89,11 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwCtrlSet: function (i, nameNodeId, serverValues) {
     funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwCtrl", undefined, nameNodeId, serverValues);
 
-    var werte = require('./profiles/simulation/variables/Variablen');
+   var werte = require('./profiles/simulation/variables/Variablen');
     // Erste Bedingung (Taste Spec.Rate)
     if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.Speed_calculation_with_spec_throughput)) {
       sharedState.Process_states.Speed_Calculation_Direct_is_On = false;
       sharedState.Process_states.Speed_Calculation_Spec_Rate_is_On = true;
-
 
       if (sharedState.Process_states.Extruder_is_On && !sharedState.Process_states.Extruder_is_Off) { // Funktion wird nur gestarten wenn der Extruder an ist. 
         funktionen.simulateScrewSpeed(); // Startet die Funktion, damit falls die Target Speed Calculation geändert wird
@@ -108,7 +108,6 @@ const SetGetlogic = {
         funktionen.simulateScrewSpeed(); // Startet die Funktion, damit falls die Target Speed Calculation geändert wird
       }
     }
-
   },
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessageGet: function (i, nameNodeId, serverValues) {
     funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage", undefined, nameNodeId, serverValues);
@@ -120,24 +119,24 @@ const SetGetlogic = {
       if ((serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] < serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueL_Set.nodeId.value]) && sharedState.Process_states.Extruder_is_On) {
         // Setzen des Warnungsbits
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] |= (1 << sharedState.Alarms_Warnings.Extruder_Drive_Control.Warning_Torque_too_low_shutdown_timer_started);
-        sharedState.dwStat_status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_low_shutdown_timer_started = true;
+        sharedState.status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_low_shutdown_timer_started = true;
         alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues);
       } else {
         // Zurücksetzen des Warnungsbits
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] &= ~(1 << sharedState.Alarms_Warnings.Extruder_Drive_Control.Warning_Torque_too_low_shutdown_timer_started) && sharedState.Process_states.Extruder_is_On;
-        sharedState.dwStat_status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_low_shutdown_timer_started = false;
+        sharedState.status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_low_shutdown_timer_started = false;
       }
 
       // Wenn ScrewTorque Act über rScrewTorqueHH_Set, so wird die Warnung Torque to High angezeigt
       if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewTorque_rAct.nodeId.value] > serverValues[werte.data.SU3111_ZeExtruder_Parameter_udtEmExtruderDriveCtrl_rScrewTorqueHH_Set.nodeId.value]) {
         // Setzen des Warnungsbits
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] |= (1 << sharedState.Alarms_Warnings.Extruder_Drive_Control.Warning_Torque_too_high_shutdown_timer_started);
-        sharedState.dwStat_status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_high_shutdown_timer_started = true;
+        sharedState.status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_high_shutdown_timer_started = true;
         alarme_warnungen_funktionen.Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues);
       } else {
         // Zurücksetzen des Warnungsbits
         serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_wMessage.nodeId.value] &= ~(1 << sharedState.Alarms_Warnings.Extruder_Drive_Control.Warning_Torque_too_high_shutdown_timer_started);
-        sharedState.dwStat_status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_high_shutdown_timer_started = false
+        sharedState.status_Alarms_Warnings.Extruder_Drive_Control.status_Warning_Torque_too_high_shutdown_timer_started = false
 
       }
 
@@ -162,7 +161,7 @@ const SetGetlogic = {
   SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrlSet: function (i, nameNodeId, serverValues) {
     funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl", undefined, nameNodeId, serverValues);
     var werte = require('./profiles/simulation/variables/Variablen');
-    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl.nodeId.value] &(1 << sharedState.dwCtrl.Extruder_On)) { // Start Extruder Button On
+    if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.Extruder_On)) { // Start Extruder Button On
       sharedState.Process_states.Extruder_is_On = true
       sharedState.Process_states.Extruder_is_Off = false
 
@@ -170,21 +169,16 @@ const SetGetlogic = {
     }
 
     if (serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_udtButtonStartStop_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.Extruder_Off)) { // Start Extruder Button off
-
-
-
       sharedState.Process_states.Extruder_is_On = false
       sharedState.Process_states.Extruder_is_Off = true
       serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSet.nodeId.value] = 0// Endwert bzw. Setwert
-      // serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rSpecRate_rSet.nodeId.value]  = 0// Endwert bzw. Setwert
+
       funktionen.simulateScrewSpeed()
 
       for (let i = 1; i <= 4; i++) {
         serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = 0;
         serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = 0;
-
       }
-
 
       // Das ist die Abruchbedingung für alle Funktionen, die zum Feeder gehören.
       sharedState.intervalIds.stop_Simulate_Feeder_Single = true
@@ -201,10 +195,6 @@ const SetGetlogic = {
           sharedState.intervalIds.stop_simulate_Line_Mode = false,
           sharedState.intervalIds.stop_Simulate_Throughput_Ramp_Line = false
       }, 1500);
-
-
-
-
     }
 
     let nominalTorque = serverValues[werte.data.SU3111_ZeExtruder_Config_udtEmExtruderDriveCtrl_rScrewTorqueNom_Set.nodeId.value];
@@ -1468,7 +1458,7 @@ const SetGetlogic = {
 
   },
   SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSetSet: function (i, nameNodeId, serverValues) {
-    funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet", undefined, {}, i, nameNodeId, serverValues);
+    funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet", 200, {}, i, nameNodeId, serverValues);
     var werte = require('./profiles/simulation/variables/Variablen');
     let currentTemp = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rAct.nodeId.value];
     let setTemp = serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_rSet.nodeId.value];
@@ -1476,12 +1466,11 @@ const SetGetlogic = {
     if (sharedState.Process_states.Heating_is_On) { // Setter funktioniert nur, so lange Heating Modus an ist.
 
       if (currentTemp < setTemp) { // Wenn Set Temperatur höher ist als aktuelle Temperatur, dann steigt die Temperatur
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] &= ~(1 << 17) //TRUE: Show remain time on hmi
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] |= (1 << 15); // TRUE: Tolerance monitoring is active
+        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Tolerance_monitoring_is_active);
         funktionen.PIDUP(i, nameNodeId, serverValues);
       } else if (currentTemp > setTemp) {// Wenn Set Temperatur kleiner ist als aktuelle Temperatur, dann sinkt die Temperatur
         funktionen.PIDCOOLDOWN(i, nameNodeId, serverValues);
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] |= (1 << 15); // TRUE: Tolerance monitoring is active
+
       }
     }
   },
@@ -3035,7 +3024,7 @@ const SetGetlogic = {
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Tolerance_monitoring_is_active); // Tolerance Monitoring Off
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value] = 0;// Wenn der Button auf Off gedrückt, wird so fährt der Feeder runter auf Null
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_rAct.nodeId.value] = 0;// Wenn der Button auf Off gedrückt, wird so fährt der Feeder runter auf Null
-      sharedState.Process_statessimulate_Feeder_Weight_is_Running = false; // Funktion für Feederlevel wird fals false gesetzt, da Extruder aus ist
+      sharedState.Process_states.simulate_Feeder_Weight_is_Running = false; // Funktion für Feederlevel wird fals false gesetzt, da Extruder aus ist
 
     }
 
@@ -3048,7 +3037,7 @@ const SetGetlogic = {
 
       serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rSpeed_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Tolerance_monitoring_is_active);// Tolerance Monitoring On
       funktionen.simulateFeederFillLevel(i, nameNodeId, serverValues);
-      sharedState.Process_statessimulate_Feeder_Weight_is_Running = true;
+      sharedState.Process_states.simulate_Feeder_Weight_is_Running = true;
 
       //Wenn FeederLineModus an ist, dann wir die entsprechende Funktion gestartet
       if (sharedState.feeders[i].FeederLineMode && serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rSet.nodeId.value] > 0) { // Prüfen ob FeederLineMode true ist
@@ -3121,26 +3110,26 @@ const SetGetlogic = {
 
     var werte = require('./profiles/simulation/variables/Variablen');
 
-    if (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] &(1<<sharedState.dwCtrl.Feeding_Auto_Start_Feeder_On_Off)) { // Auto Start Feeder , das ist der "Haken" in der HMI (POP Up Feeding)
+    if (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.Feeding_Auto_Start_Feeder_On_Off)) { // Auto Start Feeder , das ist der "Haken" in der HMI (POP Up Feeding)
       sharedState.feeding_auto_start.auto_Start_Feeder = true
     }
 
-    if (!(serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] &(1<<sharedState.dwCtrl.Feeding_Auto_Start_Feeder_On_Off))) { // Auto Start Feeder , das ist das "X" in der HMI (POP Up Feeding)
+    if (!(serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.Feeding_Auto_Start_Feeder_On_Off))) { // Auto Start Feeder , das ist das "X" in der HMI (POP Up Feeding)
       sharedState.feeding_auto_start.auto_Start_Feeder = false
     }
 
     // Auto Start Button (POP Up Feeding)
-    if (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] &(1<<sharedState.dwCtrl.Feeding_Auto_Start)) {
+    if (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.Feeding_Auto_Start)) {
       sharedState.feeding_auto_start.auto_Start = true
       sharedState.feeding_auto_start.auto_Stop = false
     }
     // Auto Stop Button (POP Up Feeding)
-    if (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] &(1<< sharedState.dwCtrl.Feeding_Auto_Stop)) {
+    if (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.Feeding_Auto_Stop)) {
       sharedState.feeding_auto_start.auto_Start = false
       sharedState.feeding_auto_start.auto_Stop = true
     }
     // STOP FEEDING Button (POP Up Feeding)
-    if (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.Feeding_Stop_Feeding))   {
+    if (serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.Feeding_Stop_Feeding)) {
       sharedState.feeding_auto_start.stop_Feeding = true;
 
 
@@ -3180,7 +3169,7 @@ const SetGetlogic = {
     let roundedValue = Math.round(serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_rThroughputPerc_rAct.nodeId.value] * 100) / 100; // Wert muss gerundet werden, da er nicht ganz 100 ist, sondern 99.999999999999
 
     // Prüft ob Apply Taste gedrückt wird, es gibt 3 Möglichkeiten je nachdem welche Tasta  im Pop Feeding gerade aktiv ist.
-    if ((serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] & (1<<sharedState.dwCtrl.Apply_Changes)) && roundedValue === 100) {
+    if ((serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.Apply_Changes)) && roundedValue === 100) {
       // Prüft alle Feeder, ob diese auf LineMode stehen, wenn ja so werden die Prozente von new Set (rThroughputPercSet_rSet) +bernommen und rThroughputPerc_rSet zugewiesen
 
       for (let i = 1; i < 5; i++) {
@@ -3206,16 +3195,16 @@ const SetGetlogic = {
       if (sharedState.feeding_auto_start.auto_Start_Feeder) {
 
 
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Status_Auto_Start_On_Off); // Setzt den "Haken"
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_AutoStop_Button) // Lock Condition von Auto Stop auf Off (Button wird anklickbar)
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_AutoStart_Button); // Lock Conditon von Auto Start auf Off (Button wird anklickbar)
+        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Status_Auto_Start_Feeder_On_Off); // Setzt den "Haken"
+        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_Auto_Stop_Button) // Lock Condition von Auto Stop auf Off (Button wird anklickbar)
+        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_Auto_Start_Button); // Lock Conditon von Auto Start auf Off (Button wird anklickbar)
         serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Status_Auto_Stop_On); // Macht auto_Stop "Blau
       } else if (!sharedState.feeding_auto_start.auto_Start_Feeder) {
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Status_Auto_Start_On_Off); // Setzt das "X", (Auto Start Feeder aus)
+        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Status_Auto_Start_Feeder_On_Off); // Setzt das "X", (Auto Start Feeder aus)
         serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Status_Auto_Stop_On); // Auto Stop Button wird nicht mehr anklickbar "grau"
         serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Status_Auto_Start_On); // Auto Start Button wird nicht mehr anklickbar "grau"
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Lock_On_Off_Status_of_AutoStop_Button) // Lock Condition von Auto Stop auf 
-        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Lock_On_Off_Status_of_AutoStart_Button); // Lock Conditon von Auto Start 
+        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Lock_On_Off_Status_of_Auto_Stop_Button) // Lock Condition von Auto Stop auf 
+        serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Lock_On_Off_Status_of_Auto_Start_Button); // Lock Conditon von Auto Start 
       }
       if (sharedState.feeding_auto_start.auto_Start) {
         serverValues[werte.data.SU2110_Feeding_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Status_Auto_Stop_On); // Auto Stop Button ist nicht mehr blau
@@ -4060,7 +4049,7 @@ const SetGetlogic = {
     funktionen.initialSingleValue("SU1000_Line_Hmi_udtLm_dwCtrl", undefined, nameNodeId, serverValues);
     var werte = require('./profiles/simulation/variables/Variablen');
 
-    if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwCtrl.nodeId.value] & (1<<sharedState.dwCtrl.StartWizzard_start)) { // Start  Button Start Wizzard
+    if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.StartWizzard_start)) { // Start  Button Start Wizzard
       sharedState.Process_states.Heating_is_On = true;
       sharedState.Process_states.Cooling_is_On = false;
       sharedState.Process_states.Cooling_is_Off = true;
@@ -4068,66 +4057,63 @@ const SetGetlogic = {
 
       for (var i = 1; i < 14; i++) {
         funktionen.PIDUP(i, nameNodeId, serverValues);
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_dwStat.nodeId.value] |= (1 << 17); // Monitoring values active für die Eieruhr 
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~((1 << sharedState.dwStat.Lock_On_Off_Status_of_Start_Button)); // Macht den start down Button "grau"
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_CoolDown_Button); // Setzt den Cool Down Button, damit er "schwarz" wird
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_ShutDown_Button); // Setzt den Shut Down Button, damit er "  schwarz" ist
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Tolerance_monitoring_is_active); // Tolerance Monitoring On
       }
     }
-    if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwCtrl.nodeId.value] &(1<<sharedState.dwCtrl.StartWizzard_coolDown)) { // Cool Down Button Start Wizzard
-      serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Lock_On_Off_Status_of_CoolDown_Button);// Macht den Cool down Button "an" 8(schwarz geht "aus")
+    if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.StartWizzard_coolDown)) { // Cool Down Button Start Wizzard
       sharedState.Process_states.Heating_is_On = false;
       sharedState.Process_states.Cooling_is_On = true
       sharedState.Process_states.Cooling_is_Off = false;
       sharedState.Process_states.Shutdown_is_On = false;
-      for (var i = 1; i < 14; i++) {
 
+      for (var i = 1; i < 14; i++) {
         funktionen.PIDCOOLDOWN(i, nameNodeId, serverValues);
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Lock_On_Off_Status_of_CoolDown_Button);// Macht den Cool down Button "an" 8(schwarz geht "aus")
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_Start_Button); //Setz den start Button, damit er "Schwarz" wird 
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_ShutDown_Button);// Setzt den Shut Down Button, damit er "schwarz" wird
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.value] &= ~((1 << sharedState.dwStat.Tolerance_monitoring_is_active));// Tolerance Monitoring On
       }
     }
-    if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwCtrl.nodeId.value] &(1<< sharedState.dwCtrl.StartWizzard_shutDown)) { // Shutdown Button Start Wizzard
+    if (serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.StartWizzard_shutDown)) { // Shutdown Button Start Wizzard
       sharedState.Process_states.Shutdown_is_On = true
       sharedState.Process_states.Cooling_is_On = false
       sharedState.Process_states.Heating_is_On = false;
+
       for (var i = 1; i < 14; i++) {
         funktionen.PIDSHUTDOWN(i, nameNodeId, serverValues);
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Lock_On_Off_Status_of_ShutDown_Button);
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_Start_Button);
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_CoolDown_Button);
-        serverValues[werte.data[i].SU3111_ZeExtruder_Hmi_udtEmPz_rPzTemp_dwStat.value] &= ~((1 << sharedState.dwStat.Tolerance_monitoring_is_active));
       }
     }
   },
+
   SU1000_Line_Hmi_udtLm_dwStatGet: function (i, nameNodeId, serverValues) {
     funktionen.initialSingleValue("SU1000_Line_Hmi_udtLm_dwStat", 16785472, nameNodeId, serverValues);
 
     setTimeout(function () {
       var werte = require('./profiles/simulation/variables/Variablen');
-
-      // Wenn der ShutDown Modus an ist, dann wird der Button "grau"
+      // Wenn der Shut Down BUtton an ist, bzw. aktiv
       if (sharedState.Process_states.Shutdown_is_On) {
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << sharedState.BIT_POSITIONSLock_On_Off_Status_of_ShutDown_Button);
+
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Lock_On_Off_Status_of_ShutDown_Button);// Macht den Cool down Button "an" 8(schwarz geht "aus")
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_Start_Button);//Setz den start Button, damit er "Schwarz" wird
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_CoolDown_Button);// Macht den Cool down Button "aus" 8(schwarz geht "an")
       }
       //Wenn alle Prozesszonen aus sind, dann ist der Shutdown Modus beendet und wieder "anklickbar"
       if (sharedState.Process_states.Prozesszones_Are_Off) {
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.BIT_POSITIONSLock_On_Off_Status_of_ShutDown_Button);
       }
-
       // Wenn der Extruder an ist, dann kann der Cool Down Button nicht mehr gedrückt werden
       if (sharedState.Process_states.Extruder_is_Off) {
         serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_CoolDown_Button);
       }
-
       // Wenn der Extruder an ist, oder der Cool Down Modus ist an, so kann der Cool Down Button nicht mehr angeklickt werden, Button ist "grau"
       if (sharedState.Process_states.Extruder_is_On || sharedState.Process_states.Cooling_is_On) {
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Lock_On_Off_Status_of_CoolDown_Button);
-      }
 
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Lock_On_Off_Status_of_CoolDown_Button);// Macht den Cool down Button "an" 8(schwarz geht "aus")
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_Start_Button); //Setz den start Button, damit er "Schwarz" wird 
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_ShutDown_Button);// Setzt den Shut Down Button, damit er "schwarz" wird
+      }
+      // Wenn der Start Button an ist, bzw das Heizen ist aktiv
+      if (sharedState.Process_states.Heating_is_On) {
+
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] &= ~((1 << sharedState.dwStat.Lock_On_Off_Status_of_Start_Button)); // Macht den start down Button "grau"
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_CoolDown_Button); // Setzt den Cool Down Button, damit er "schwarz" wird
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_ShutDown_Button); // Setzt den Shut Down Button, damit er "  schwarz" ist
+      }
     }, 1)
 
 
@@ -4315,10 +4301,10 @@ const SetGetlogic = {
         !sharedState.feeders[3].FeederLineMode &&
         !sharedState.feeders[4].FeederLineMode) {
         // Bit zurücksetzen, wenn keiner der Feeder auf LineMode ist
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Lock_On_Off_Status_of_RampOn_Button);
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Lock_On_Off_Status_of_Ramp_On_Button);
       } else {
         // Bit setzen, wenn mindestens einer der Feeder auf LineMode ist
-        serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_RampOn_Button);
+        serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Lock_On_Off_Status_of_Ramp_On_Button);
       }
 
       // Wenn FeederRamp Mode aktiv ist, so wird on Button grau
@@ -5631,13 +5617,13 @@ const SetGetlogic = {
 
     var werte = require('./profiles/simulation/variables/Variablen');
 
-    if (serverValues[werte.data.SU3131_Zsa_Hmi_udtUm_dwCtrl.nodeId.value] &(1<<sharedState.dwCtrl.AutoStart_Side_Feeder_On_Off)) { // auto_Start Side Feeder On
-      sharedState.Auto_Start_Side_Feeder_is_On = true;
-      sharedState.Auto_Start_Side_Feeder_is_Offf = false;
+    if (serverValues[werte.data.SU3131_Zsa_Hmi_udtUm_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.Auto_Start_Side_Feeder_On_Off)) { // auto_Start Side Feeder On
+      sharedState.Process_states_Auto_Start_Side_Feeder_is_On = true;
+      sharedState.Process_states_Auto_Start_Side_Feeder_is_Off = false;
 
-    } else if (!(serverValues[werte.data.SU3131_Zsa_Hmi_udtUm_dwCtrl.nodeId.value] &(1<< sharedState.dwCtrl.AutoStart_Side_Feeder_Off) )){ // auto_Start Side Feeder Off 
-      sharedState.Auto_Start_Side_Feeder_is_On = false;
-      sharedState.Auto_Start_Side_Feeder_is_Offf = true;
+    } else if (!(serverValues[werte.data.SU3131_Zsa_Hmi_udtUm_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.AutoStart_Side_Feeder_Off))) { // auto_Start Side Feeder Off 
+      sharedState.Process_states_Auto_Start_Side_Feeder_is_On = false;
+      sharedState.Process_states_Auto_Start_Side_Feeder_is_Off = true;
 
     }
 
@@ -5648,11 +5634,11 @@ const SetGetlogic = {
     setTimeout(function () {
       var werte = require('./profiles/simulation/variables/Variablen');
       //Setz den AutoStartSideFeeder Button auf On
-      if (sharedState.Auto_Start_Side_Feeder_is_On) {
+      if (sharedState.Process_states_Auto_Start_Side_Feeder_is_On) {
         serverValues[werte.data.SU3131_Zsa_Hmi_udtUm_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Status_AutoStart_Side_Feeder_is_On_Off);
       }
       //Setz den AutoStartSideFeeder Button auf Off
-      if (sharedState.Auto_Start_Side_Feeder_is_Offf) {
+      if (sharedState.Process_states_Auto_Start_Side_Feeder_is_Off) {
         serverValues[werte.data.SU3131_Zsa_Hmi_udtUm_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Status_AutoStart_Side_Feeder_is_On_Off);
       }
     }, 1);
@@ -5765,14 +5751,14 @@ const SetGetlogic = {
 
     var werte = require('./profiles/simulation/variables/Variablen');
 
-    if (serverValues[werte.data.SU3131_Zsa_Hmi_udtUm_udtButtonStartStop_dwCtrl.nodeId.value] &(1<<sharedState.dwCtrl.Side_Feeder_On)) { //  Side Feeder On (im Start Wizzard)
-      sharedState.SideFeederisOn = true;
-      sharedState.SideFeederisOff = false
+    if (serverValues[werte.data.SU3131_Zsa_Hmi_udtUm_udtButtonStartStop_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.Side_Feeder_On)) { //  Side Feeder On (im Start Wizzard)
+      sharedState.Process_states.Side_Feeder_is_On = true;
+      sharedState.Process_states.Side_Feeder_is_Off = false
 
-    } else if (serverValues[werte.data.SU3131_Zsa_Hmi_udtUm_udtButtonStartStop_dwCtrl.nodeId.value] &(1<< sharedState.dwCtrl.Side_Feeder_Off)) { //  Side Feeder Off (im Start Wizzard)
+    } else if (serverValues[werte.data.SU3131_Zsa_Hmi_udtUm_udtButtonStartStop_dwCtrl.nodeId.value] & (1 << sharedState.dwCtrl.Side_Feeder_Off)) { //  Side Feeder Off (im Start Wizzard)
 
-      sharedState.SideFeederisOn = false;
-      sharedState.SideFeederisOff = true;
+      sharedState.Process_states.Side_Feeder_is_On = false;
+      sharedState.Process_states.Side_Feeder_is_Off = true;
     }
 
   },
@@ -5783,11 +5769,11 @@ const SetGetlogic = {
       var werte = require('./profiles/simulation/variables/Variablen');
 
       // Setzt den Status vom SideFeeder auf On
-      if (sharedState.SideFeederisOn) {
+      if (sharedState.Process_states.Side_Feeder_is_On) {
         serverValues[werte.data.SU3131_Zsa_Hmi_udtUm_udtButtonStartStop_dwStat.nodeId.value] |= (1 << sharedState.dwStat.Status_Side_Feeder_is_On_Off);
       }
       // Setz den Status vom SideFeeder auf Off
-      if (sharedState.SideFeederisOff) {
+      if (sharedState.Process_states.Side_Feeder_is_Off) {
         serverValues[werte.data.SU3131_Zsa_Hmi_udtUm_udtButtonStartStop_dwStat.nodeId.value] &= ~(1 << sharedState.dwStat.Status_Side_Feeder_is_On_Off);
       }
     }, 1);
