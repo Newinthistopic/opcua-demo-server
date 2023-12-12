@@ -1270,7 +1270,8 @@ function simulateFeederLineMode(i, nameNodeId, serverValues) {
   // Holt den Gesamtdurchsatz für die Feederlinie aus den Server-Daten.
   let totalTargetThroughput = serverValues[werte.data.SU1000_Line_Hmi_udtLm_udtLineRamp_Throughput_rSet.nodeId.value];
   // Bestimmt den aktuellen prozentualen Durchsatz des spezifischen Feeders.
-  let currentFeederThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value];
+//  let currentFeederThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughputPerc_rAct.nodeId.value];
+  let currentFeederThroughput = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value]
   // Innere Funktion, die den Durchsatz des Feeders im Line Mode simuliert.
   function simulateFeederLine() {
     // Berechnet den Zieldurchsatz für den Feeder basierend auf dem Gesamtdurchsatz.
@@ -1336,8 +1337,8 @@ function simulateFeederFillLevel(i, nameNodeId, serverValues) {
   var werte = require('./profiles/simulation/variables/Variablen');
   // Die innere Funktion, die das Füllniveau aktualisiert.
   function updateFeederWeight() {
-    // Loggt den Aufruf für Debugging und Überwachungszwecke.
-    console.log("Aufruf von updateFeederWeight für Feeder " + i);
+    
+    
     // Berechnet den neuen Füllstand basierend auf der aktuellen Durchsatzrate.
     let ratePerInterval = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rThroughput_rAct.nodeId.value];
     let currentLevel = serverValues[werte.data[i].SU2110_Feeding_Hmi_udtEmFeeder_rLevel_rAct.nodeId.value];

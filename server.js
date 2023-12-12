@@ -1,7 +1,7 @@
 console.log('Starting... please wait!');
 
 const opcua = require("node-opcua");
-const path = require('path');
+
 const certificateManager = new opcua.OPCUACertificateManager({ automaticallyAcceptUnknownCertificate: true, rootFolder: "./certs", });
 
 const config = require('./profiles/simulation/config.json');

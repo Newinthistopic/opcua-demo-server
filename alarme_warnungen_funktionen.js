@@ -69,8 +69,8 @@ function Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues) {
     }
   }
 
-  // Starten des Timers, der jede Sekunde die Funktion aufruft.
-  let intervalId = setInterval(start_Timer_Alarm_Warning_shutdown_Extruder, 1000);
+  // Starten des Timers, der jede Minute die Funktion aufruft.
+  let intervalId = setInterval(start_Timer_Alarm_Warning_shutdown_Extruder, 60000);
   isTimerRunning = true; // Markieren, dass der Timer nun läuft.
 
   // Zurückgeben der Timer-ID für eventuelles späteres Referenzieren oder Stoppen.

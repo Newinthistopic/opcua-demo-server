@@ -445,7 +445,7 @@ function run1(addressSpace, device) {
     var SU3111_ZeExtruder_Hmi_udtCmMeltTemp = functions.createCustomVariableFloat(undefined, "SU3111_ZeExtruder_Hmi_udtCmMeltTemp", SU3111_ZeExtruder_Hmi, "udtCmMeltTemp", "SU3111_ZeExtruder.Hmi", "udtCmMeltTemp", undefined, undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltTempGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltTempSet)
 
 
-    for (var i = 0; i < 14; i++) {
+    for (var i = 1; i < 6; i++) {
 
 
         data[i].SU3111_ZeExtruder_Hmi_udtCmMeltTempLoop = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Hmi_udtCmMeltTempLoop", SU3111_ZeExtruder_Hmi_udtCmMeltTemp, i.toString(), "SU3111_ZeExtruder.Hmi", "udtCmMeltTemp", undefined, undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltTempLoopGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltTempLoopSet)

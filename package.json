@@ -20,7 +20,8 @@
   "pkg": {
     "assets": [
       "node_modules/**/*",
-      "node_modules/node-opcua-nodesets/nodesets/**/*"
+      "node_modules/node-opcua-nodesets/nodesets/**/*",
+"node_modules/node-opcua-nodesets/nodesets/*.xml"
     ],
     "scripts": [
       "./**/*.js"
