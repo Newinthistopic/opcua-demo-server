@@ -4,8 +4,8 @@ const opcua = require("node-opcua");
 const path = require('path');
 const certificateManager = new opcua.OPCUACertificateManager({ automaticallyAcceptUnknownCertificate: true, rootFolder: "./certs", });
 
-//const config = require(path.join(__dirname, 'profiles', 'simulation', 'config.json'));
 const config = require('./profiles/simulation/config.json');
+
 
 (async () => {
     /*** SERVER INIT ***/

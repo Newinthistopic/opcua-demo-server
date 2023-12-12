@@ -15,5 +15,15 @@
     "xlsx": "^0.18.5"
   },
   "author": "Smart HMI GmbH",
-  "license": "SEE LICENSE IN license.txt"
+  "license": "SEE LICENSE IN license.txt",
+  
+  "pkg": {
+    "assets": [
+      "node_modules/**/*",
+      "node_modules/node-opcua-nodesets/nodesets/**/*"
+    ],
+    "scripts": [
+      "./**/*.js"
+    ]
+  }
 }

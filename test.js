@@ -130,3 +130,21 @@ nnamespace3.addVariable({
     }.
   },
 });
+
+
+function run1(addressSpace, device) {
+  
+  var data = {};
+  var SU3111_ZeExtruder_Hmi_udtUm = functions.createCustomVariableFloat(undefined, "SU3111_ZeExtruder_Hmi_udtUm", SU3111_ZeExtruder_Hmi, "udtUm", "SU3111_ZeExtruder.Hmi", "udtUm", undefined, undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtUmGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtUmSet)
+  data.SU3111_ZeExtruder_Hmi_udtUm_dwStat = functions.createCustomVariableUint32(undefined, "SU3111_ZeExtruder_Hmi_udtUm_dwStat", SU3111_ZeExtruder_Hmi_udtUm, "dwStat", "SU3111_ZeExtruder.Hmi", "udtUm", "dwStat", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtUm_dwStatGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtUm_dwStatSet)
+  data.SU3111_ZeExtruder_Hmi_udtUm_dwCtrl = functions.createCustomVariableFloat(undefined, "SU3111_ZeExtruder_Hmi_udtUm_dwCtrl", SU3111_ZeExtruder_Hmi_udtUm, "dwCtrl", "SU3111_ZeExtruder.Hmi", "udtUm", "dwCtrl", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtUm_dwCtrlGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtUm_dwCtrlSet)
+  data.SU3111_ZeExtruder_Hmi_udtUm_wMessage = functions.createCustomVariableUint16(undefined, "SU3111_ZeExtruder_Hmi_udtUm_wMessage", SU3111_ZeExtruder_Hmi_udtUm, "wMessage", "SU3111_ZeExtruder.Hmi", "udtUm", "wMessage", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtUm_wMessageGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtUm_wMessageSet)
+
+  module.exports = {
+    data: data
+}
+}
+module.exports = {
+run1: run1,
+}
+

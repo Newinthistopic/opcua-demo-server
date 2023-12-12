@@ -35,8 +35,8 @@ function Timer_Alarm_Warning_shutdown_Extruder(i, nameNodeId, serverValues) {
       isTimerRunning = false; // Zurücksetzen des Timer-Laufstatus.
 
       // Aktualisieren des Zustands im sharedState.
-      sharedState.Process_statesExtruder_is_Off = true; // Extruder ist ausgeschaltet.
-      sharedState.Process_statesExtruder_is_On = false; // Extruder ist nicht eingeschaltet.
+      sharedState.Process_states.Extruder_is_Off = true; // Extruder ist ausgeschaltet.
+      sharedState.Process_states.Extruder_is_On = false; // Extruder ist nicht eingeschaltet.
 
       // Setzen der Extrudergeschwindigkeit auf Null.
       serverValues[werte.data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed_rSet.nodeId.value] = 0;

@@ -4,13 +4,67 @@ var sharedState = require('./states');
 
 
 
+
+/**
+ * Erstellt ein neues Objekt in einem bestimmten Namensraum.
+ * 
+.  @param {Object} organizedByValue - Das organisatorische Element, unter dem das neue Objekt erstellt wird.
+ * @param {string} browseName - Der Anzeigename des zu erstellenden Objekts.
+ * @param {string} nodeId - Der eindeutige Identifikator für das neue Objekt. Wird Teil der nodeId.
+ * @returns {Object} Das erstellte Objekt mit der generierten nodeId.
+
+ */
+/* Beispielaufrufe der Funktion
+ var SU3111_ZeExtruder_Hmi = functions.createObject(datablocksGlobal, 'SU3111_ZeExtruder.Hmi', 'SU3111_ZeExtruder.Hmi');
+ var SU3111_ZeExtruder_Config = functions.createObject(datablocksGlobal, 'SU3111_ZeExtruder_Config', 'SU3111_ZeExtruder_Config');
+*/
+
 function createObject(organizedByValue, browseName, nodeId) {
   return namespace3.addObject({
     organizedBy: organizedByValue,
     browseName: browseName,
-       nodeId: "ns=3;s=\"" + nodeId + "\""
+    nodeId: "ns=3;s=\"" + nodeId + "\""
   });
 }
+
+
+/**
+ * Erstellt eine benutzerdefinierte Variable des Typs Float in einem OPC UA Server.
+ * 
+ * Diese Funktion generiert eine Variable mit einem dynamischen nodeId-Format, basierend auf den übergebenen Teilen (part1, part2, etc.).
+ * Die Variable wird einem bestimmten Komponenten-Objekt zugeordnet und kann benutzerdefinierte Logik für Get- und Set-Operationen enthalten.
+ * 
+ * @param {number} i - Der Index, der in die nodeId eingefügt werden soll. Kann undefined sein.
+ * @param {string} variableName - Der Name der zu erstellenden Variable.
+ * @param {Object} componentOf - Das OPC UA-Objekt, zu dem diese Variable gehört.
+ * @param {string} browseName - Der Anzeigename der Variable im OPC UA Server.
+ * @param {string} part1 - Der erste Teil der nodeId.
+ * @param {string} part2 - Der zweite Teil der nodeId.
+ * @param {string} [part3] - Der optionale dritte Teil der nodeId.
+ * @param {string} [part4] - Der optionale vierte Teil der nodeId.
+ * @param {string} [part5] - Der optionale fünfte Teil der nodeId.
+ * @param {Function} [customGetLogic] - Eine optionale benutzerdefinierte Logik, die bei Get-Operationen ausgeführt wird.
+ * @param {Function} [customSetLogic] - Eine optionale benutzerdefinierte Logik, die bei Set-Operationen ausgeführt wird.
+ * @returns {Object} Die erstellte OPC UA-Variable.
+ */
+/* Beispielaufrufe der Funktion
+  var SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower = functions.createCustomVariableFloat(undefined, "SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower", SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl, "rScrewPower", "SU3111_ZeExtruder.Hmi", "udtEmExtruderDriveCtrl", "rScrewPower", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPowerGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPowerSet)
+    data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_dwCtrl = functions.createCustomVariableFloat(undefined, "SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_dwCtrl", SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower, "dwCtrl", "SU3111_ZeExtruder.Hmi", "udtEmExtruderDriveCtrl", "rScrewPower", "dwCtrl", undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_dwCtrlGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_dwCtrlSet)
+    data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_dwStat = functions.createCustomVariableUint32(undefined, "SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_dwStat", SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower, "dwStat", "SU3111_ZeExtruder.Hmi", "udtEmExtruderDriveCtrl", "rScrewPower", "dwStat", undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_dwStatGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_dwStatSet)
+    data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_rAct = functions.createCustomVariableFloat(undefined, "SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_rAct", SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower, "rAct", "SU3111_ZeExtruder.Hmi", "udtEmExtruderDriveCtrl", "rScrewPower", "rAct", undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_rActGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_rActSet)
+    data.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_rActRec = functions.createCustomVariableFloat(undefined, "SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_rActRec", SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower, "rActRec", "SU3111_ZeExtruder.Hmi", "udtEmExtruderDriveCtrl", "rScrewPower", "rActRec", undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_rActRecGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewPower_rActRecSet)
+
+     data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPressLoop = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Hmi_udtCmMeltPressLoop", SU3111_ZeExtruder_Hmi_udtCmMeltPress, i.toString(), "SU3111_ZeExtruder.Hmi", "udtCmMeltPress", undefined, undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPressLoopGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPressLoopSet)
+        data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwCtrl = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwCtrl", data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPressLoop, "dwCtrl", "SU3111_ZeExtruder.Hmi", "udtCmMeltPress", "dwCtrl", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwCtrlGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwCtrlSet)
+        data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwStat = functions.createCustomVariableUint32(i, "SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwStat", data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPressLoop, "dwStat", "SU3111_ZeExtruder.Hmi", "udtCmMeltPress", "dwStat", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwStatGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwStatSet)
+        data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPresValueX1 = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPresValueX1", data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPressLoop, "rPresValueX1", "SU3111_ZeExtruder.Hmi", "udtCmMeltPress", "rPresValueX1", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPresValueX1Get, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPresValueX1Set)
+        data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPresValueX2 = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPresValueX2", data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPressLoop, "rPresValueX2", "SU3111_ZeExtruder.Hmi", "udtCmMeltPress", "rPresValueX2", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPresValueX2Get, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPresValueX2Set)
+        data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress", data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPressLoop, "rPress", "SU3111_ZeExtruder.Hmi", "udtCmMeltPress", "rPress", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPressGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPressSet)
+        data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_dwCtrl = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_dwCtrl", data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress, "dwCtrl", "SU3111_ZeExtruder.Hmi", "udtCmMeltPress", "rPress", "dwCtrl", undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_dwCtrlGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_dwCtrlSet)
+        data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_dwStat = functions.createCustomVariableUint32(i, "SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_dwStat", data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress, "dwStat", "SU3111_ZeExtruder.Hmi", "udtCmMeltPress", "rPress", "dwStat", undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_dwStatGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_dwStatSet)
+        data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_rAct = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_rAct", data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress, "rAct", "SU3111_ZeExtruder.Hmi", "udtCmMeltPress", "rPress", "rAct", undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_rActGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_rActSet)
+        data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_rActRec = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_rActRec", data[i].SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress, "rActRec", "SU3111_ZeExtruder.Hmi", "udtCmMeltPress", "rPress", "rActRec", undefined, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_rActRecGet, SetGetlogic.SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress_rActRecSet)
+*/
 
 function createCustomVariableFloat(i, variableName, componentOf, browseName, part1, part2, part3, part4, part5, customGetLogic, customSetLogic) {
   var nodeId = `"ns=3;s=\"${part1}\".\"${part2}\"`;
@@ -30,15 +84,19 @@ function createCustomVariableFloat(i, variableName, componentOf, browseName, par
         var nameNodeId = {};
         nameNodeId[variableName] = this.nodeId.value;
 
-        if (customGetLogic) {
-          customGetLogic(i, nameNodeId, serverValues);
-        }
+
+        setTimeout(() => {
+          if (customGetLogic) {
+            customGetLogic(i, nameNodeId, serverValues);
+          }
+        }, 1);
+
         return new opcua.Variant({ dataType: opcua.DataType.Float, value: serverValues[nameNodeId[variableName]] });
       },
       set: function (variant) {
         var nameNodeId = {};
-        nameNodeId[variableName ] = this.nodeId.value;
-        serverValues[nameNodeId[variableName ]] = parseFloat(variant.value);
+        nameNodeId[variableName] = this.nodeId.value;
+        serverValues[nameNodeId[variableName]] = parseFloat(variant.value);
         if (customSetLogic) {
           customSetLogic(i, nameNodeId, serverValues);
         }
@@ -74,11 +132,15 @@ function createCustomVariableString(i, variableName, componentOf, browseName, pa
     value: {
       get: function () {
         var nameNodeId = {};
-        nameNodeId[variableName ] = this.nodeId.value;
-        if (customGetLogic) {
-          customGetLogic(i, nameNodeId, serverValues);
-        }
-        return new opcua.Variant({ dataType: opcua.DataType.String, value: serverValues[nameNodeId[variableName ]] });
+        nameNodeId[variableName] = this.nodeId.value;
+
+        setTimeout(() => {
+          if (customGetLogic) {
+            customGetLogic(i, nameNodeId, serverValues);
+          }
+        }, 1);
+
+        return new opcua.Variant({ dataType: opcua.DataType.String, value: serverValues[nameNodeId[variableName]] });
       },
       set: function (variant) {
         return opcua.StatusCodes.Good;
@@ -116,13 +178,15 @@ function createCustomVariableUint16(i, variableName, componentOf, browseName, pa
       get: function () {
         var nameNodeId = {};
 
-        nameNodeId[variableName ] = this.nodeId.value;
+        nameNodeId[variableName] = this.nodeId.value;
 
-        if (customGetLogic) {
-          customGetLogic(i, nameNodeId, serverValues);
-        }
+        setTimeout(() => {
+          if (customGetLogic) {
+            customGetLogic(i, nameNodeId, serverValues);
+          }
+        }, 1);
 
-        var serverValue = serverValues[nameNodeId[variableName ]];
+        var serverValue = serverValues[nameNodeId[variableName]];
         if (serverValue === undefined) {
           serverValue = 0;
         }
@@ -131,8 +195,8 @@ function createCustomVariableUint16(i, variableName, componentOf, browseName, pa
       },
       set: function (variant) {
         var nameNodeId = {};
-        nameNodeId[variableName ] = this.nodeId.value;
-        serverValues[nameNodeId[variableName ]] = parseInt(variant.value);
+        nameNodeId[variableName] = this.nodeId.value;
+        serverValues[nameNodeId[variableName]] = parseInt(variant.value);
         if (customSetLogic) {
           customSetLogic(i, nameNodeId, serverValues);
         }
@@ -157,13 +221,15 @@ function createVariableforTime(i, variableName, componentOf, browseName, nodeId,
       get: function () {
         var nameNodeId = {};
 
-        nameNodeId[variableName ] = this.nodeId.value;
+        nameNodeId[variableName] = this.nodeId.value;
 
-        if (customGetLogic) {
-          customGetLogic(i, nameNodeId, serverValues);
-        }
+        setTimeout(() => {
+          if (customGetLogic) {
+            customGetLogic(i, nameNodeId, serverValues);
+          }
+        }, 1);
 
-        var serverValue = serverValues[nameNodeId[variableName ]];
+        var serverValue = serverValues[nameNodeId[variableName]];
         if (serverValue === undefined) {
           serverValue = 0;
         }
@@ -172,8 +238,8 @@ function createVariableforTime(i, variableName, componentOf, browseName, nodeId,
       },
       set: function (variant) {
         var nameNodeId = {};
-        nameNodeId[variableName ] = this.nodeId.value;
-        serverValues[nameNodeId[variableName ]] = parseInt(variant.value);
+        nameNodeId[variableName] = this.nodeId.value;
+        serverValues[nameNodeId[variableName]] = parseInt(variant.value);
         if (customSetLogic) {
           customSetLogic(i, nameNodeId, serverValues);
         }
@@ -215,13 +281,15 @@ function createCustomVariableUint32(i, variableName, componentOf, browseName, pa
     value: {
       get: function () {
         var nameNodeId = {};
-        nameNodeId[variableName ] = this.nodeId.value;
+        nameNodeId[variableName] = this.nodeId.value;
 
-        if (customGetLogic) {
-          customGetLogic(i, nameNodeId, serverValues);
-        }
+        setTimeout(() => {
+          if (customGetLogic) {
+            customGetLogic(i, nameNodeId, serverValues);
+          }
+        }, 1);
 
-        var serverValue = serverValues[nameNodeId[variableName ]];
+        var serverValue = serverValues[nameNodeId[variableName]];
         if (serverValue === undefined) {
           serverValue = 0;
         }
@@ -230,8 +298,8 @@ function createCustomVariableUint32(i, variableName, componentOf, browseName, pa
       },
       set: function (variant) {
         var nameNodeId = {};
-        nameNodeId[variableName ] = this.nodeId.value;
-        serverValues[nameNodeId[variableName ]] = parseInt(variant.value);
+        nameNodeId[variableName] = this.nodeId.value;
+        serverValues[nameNodeId[variableName]] = parseInt(variant.value);
 
         if (customSetLogic) {
           customSetLogic(i, nameNodeId, serverValues);
@@ -268,13 +336,15 @@ function createCustomVariableInt32(i, variableName, componentOf, browseName, par
     value: {
       get: function () {
         var nameNodeId = {};
-        nameNodeId[variableName ] = this.nodeId.value;
+        nameNodeId[variableName] = this.nodeId.value;
 
-        if (customGetLogic) {
-          customGetLogic(i, nameNodeId, serverValues);
-        }
+        setTimeout(() => {
+          if (customGetLogic) {
+            customGetLogic(i, nameNodeId, serverValues);
+          }
+        }, 1);
 
-        var serverValue = serverValues[nameNodeId[variableName ]];
+        var serverValue = serverValues[nameNodeId[variableName]];
         if (serverValue === undefined) {
           serverValue = 0;
         }
@@ -283,7 +353,7 @@ function createCustomVariableInt32(i, variableName, componentOf, browseName, par
       },
       set: function (variant) {
         var nameNodeId = {};
-        nameNodeId[variableName ] = this.nodeId.value;
+        nameNodeId[variableName] = this.nodeId.value;
         serverValues[nameNodeId[variableName]] = parseInt(variant.value);
 
         if (customSetLogic) {
@@ -325,13 +395,15 @@ function createCustomVariableUint64(i, variableName, componentOf, browseName, pa
       get: function () {
         var nameNodeId = {};
 
-        nameNodeId[variableName ] = this.nodeId.value;
+        nameNodeId[variableName] = this.nodeId.value;
 
-        if (customGetLogic) {
-          customGetLogic(i, nameNodeId, serverValues);
-        }
+        setTimeout(() => {
+          if (customGetLogic) {
+            customGetLogic(i, nameNodeId, serverValues);
+          }
+        }, 1);
 
-        var serverValue = serverValues[nameNodeId[variableName ]];
+        var serverValue = serverValues[nameNodeId[variableName]];
         if (serverValue === undefined) {
           serverValue = 0;
         }
@@ -340,8 +412,8 @@ function createCustomVariableUint64(i, variableName, componentOf, browseName, pa
       },
       set: function (variant) {
         var nameNodeId = {};
-        nameNodeId[variableName ] = this.nodeId.value;
-        serverValues[nameNodeId[variableName ]] = parseInt(variant.value);
+        nameNodeId[variableName] = this.nodeId.value;
+        serverValues[nameNodeId[variableName]] = parseInt(variant.value);
         if (customSetLogic) {
           customSetLogic(i, nameNodeId, serverValues);
         }
@@ -352,8 +424,34 @@ function createCustomVariableUint64(i, variableName, componentOf, browseName, pa
   return newVariable[variableName];
 }
 
-// Definition der Funktion 'initial' mit Parametern für den Variablennamen, 
-// einen Initialwert, benutzerdefinierte Werte, Index, Node-ID und Serverwerte
+/**
+ * Initialisiert Serverwerte für eine Reihe von Node-IDs.
+ * 
+ * Diese Funktion nimmt einen Variablennamen, einen Initialwert, benutzerdefinierte Werte, 
+ * einen Index und ein Objekt mit Node-IDs entgegen. Sie initialisiert die Serverwerte 
+ * für jede Node-ID. Falls benutzerdefinierte Werte vorhanden sind, werden diese verwendet, 
+ * andernfalls wird der Standardinitialwert gesetzt.
+ * 
+ * @param {string} variableName - Der Name der Variable, deren Werte initialisiert werden sollen.
+ * @param {number} initialValue - Der Standardinitialwert, der gesetzt werden soll, falls keine benutzerdefinierten Werte vorliegen.
+ * @param {Object} customValues - Ein Objekt, das benutzerdefinierte Werte enthält. Die Schlüssel sind die Indizes, die Werte sind die benutzerdefinierten Werte.
+ * @param {number} i - Der Index der aktuellen Operation.
+ * @param {Object} nameNodeId - Ein Objekt, das die Node-IDs für die gegebenen Variablennamen enthält.
+ * @param {Object} serverValues - Ein Objekt, das die Serverwerte speichert, die initialisiert oder aktualisiert werden sollen.
+ */
+/*Beispielaufrufe der Funktion
+funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltPress", undefined, {}, i, nameNodeId, serverValues)
+funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwStat", 13, {}, i, nameNodeId, serverValues)
+funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltPress_dwStat", undefined, {}, i, nameNodeId, serverValues)
+funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPresValueX1", 1, {}, i, nameNodeId, serverValues)
+funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPresValueX1", undefined, {}, i, nameNodeId, serverValues)
+funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPresValueX2", 1, {}, i, nameNodeId, serverValues)
+funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPresValueX2", undefined, {}, i, nameNodeId, serverValues)
+funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress", undefined, {}, i, nameNodeId, serverValues)
+funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress", undefined, {}, i, nameNodeId, serverValues)
+funktionen.initial("SU3111_ZeExtruder_Hmi_udtEmPz_dwStat", 1114125, {}, i, nameNodeId, serverValues);
+funktionen.initial("SU3111_ZeExtruder_Hmi_udtCmMeltTemp_rMeltTemp_dwStat", 1049613, {}, i, nameNodeId, serverValues);
+*/
 function initial(variableName, initialValue, customValues, i, nameNodeId, serverValues) {
 
   // Initialisieren eines Arrays zum Speichern der Node-IDs
@@ -396,8 +494,26 @@ function initial(variableName, initialValue, customValues, i, nameNodeId, server
 
 
 
-// Definition der Funktion 'initialSingleValue'.
-// Diese Funktion wird verwendet, um einen Anfangswert für eine spezifische Node-ID zu setzen.
+/**
+ * Setzt einen Anfangswert für eine spezifische Node-ID im ServerValues-Objekt.
+ * 
+ * Diese Funktion nimmt einen Variablennamen, einen Initialwert, ein Objekt mit Node-IDs und ein ServerValues-Objekt entgegen. 
+ * Sie prüft, ob eine Node-ID für den gegebenen Variablennamen existiert und setzt den Initialwert für diese Node-ID im ServerValues-Objekt,
+ * falls diese Node-ID noch nicht vorhanden ist. Die Funktion beendet sich frühzeitig, wenn keine gültige Node-ID gefunden wird.
+ * 
+ * @param {string} variableName - Der Name der Variable, deren Anfangswert gesetzt werden soll.
+ * @param {number} initialValue - Der Initialwert, der für die Node-ID gesetzt werden soll.
+ * @param {Object} nameNodeId - Ein Objekt, das die Node-IDs für die gegebenen Variablennamen enthält.
+ * @param {Object} serverValues - Ein Objekt, das die Serverwerte speichert, die initialisiert oder aktualisiert werden sollen.
+ */
+/*Beispielaufrufe der Funktion
+funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm", undefined, nameNodeId, serverValues); },
+funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm", undefined, nameNodeId, serverValues); },
+funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_dwStat", 1048589, nameNodeId, serverValues); },
+funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_dwStat", undefined, nameNodeId, serverValues); },
+funktionen.initialSingleValue("SU3111_ZeExtruder_Hmi_udtUm_dwCtrl", 0, nameNodeId, serverValues);
+*/
+
 function initialSingleValue(variableName, initialValue, nameNodeId, serverValues) {
 
   // Variable zur Speicherung der Node-ID.
@@ -431,6 +547,23 @@ function initialSingleValue(variableName, initialValue, nameNodeId, serverValues
 var wasBelowTempRelease = Array(13).fill(true);  // Initialzustand für die Überprüfung, ob die Temperatur unterhalb des Freigabewertes gefallen ist
 const checkedItemsReady = Array(13).fill(false); // Statusarray für die Überprüfung, ob alle Prozesszonen "Ready" sind
 const checkedItemsOff = Array(13).fill(false); // Statusarray für die Überprüfung, ob alle Prozesszonen "Off" sind
+
+/**
+ * Verwaltet und aktualisiert den Status von Prozesszonen basierend auf Temperaturwerten und Systemzuständen.
+ * 
+ * Diese Funktion führt verschiedene Aktionen und Zustandsänderungen für Prozesszonen in einem Produktionsprozess aus.
+ * Sie wird genutzt, um den Status von Prozesszonen in Heiz-, Shutdown- und Kühlmodi zu kontrollieren und zu aktualisieren.
+ * Die Funktion prüft Temperaturwerte und Systemzustände, um den aktuellen Zustand der Prozesszonen zu bestimmen und entsprechende
+ * Aktionen durchzuführen (wie das Aktualisieren von Statuswerten oder das Starten/Stopp der Eieruhr).
+ * 
+ * @param {number} i - Der Index der aktuellen Prozesszone.
+ * @param {Object} nameNodeId - Ein Objekt, das Node-IDs für die verschiedenen Variablen und Zustände enthält.
+ * @param {Object} serverValues - Ein Objekt, das aktuelle Werte für verschiedene Servervariablen speichert.
+ */
+/*Beispielaufrufe der Funktion
+funktionen.dwStatStartWizzard(i, nameNodeId, serverValues);
+*/
+
 function dwStatStartWizzard(i, nameNodeId, serverValues) {
   var werte = require('./profiles/simulation/variables/Variablen');
   // Definieren von wichtigen Temperaturwerten und der Eieruhrzeit aus den Serverdaten
@@ -607,7 +740,18 @@ let intervalEieruhrIds = []; // Speichert die IDs der Intervalle (Timer) für di
 let isEierUhrRunning = Array(14).fill(false); // Speichert, ob die Eieruhr für jeden Index läuft
 let hasEierUhrFinished = Array(14).fill(false); // Speichert, ob die Eieruhr für jeden Index abgeschlossen ist
 
-// Funktion zum Starten der Eieruhr-Timer
+/**
+ * Startet einen Eieruhr-Timer für einen spezifischen Index.
+ * 
+ * Diese Funktion initiiert einen Countdown-Timer, der für die Dauer eines Prozesses oder Zustands herunterzählt.
+ * Der Timer läuft für einen spezifischen Index 'i' und nutzt serverseitige Werte, um den Startwert des Timers zu bestimmen.
+ * Die Funktion prüft, ob bereits ein Timer für den gegebenen Index läuft oder abgeschlossen ist, und verhindert
+ * in diesem Fall die Mehrfachausführung des Timers. Nach Ablauf des Timers werden bestimmte Aktionen ausgeführt,
+ * wie das Aktualisieren von Statuswerten und die Ausführung einer optionalen Callback-Funktion.
+ * 
+ * @param {number} i - Der Index, für den der Timer gestartet wird.
+ * @param {Function} callback - Eine optionale Callback-Funktion, die nach Ablauf des Timers ausgeführt wird.
+ */
 function startTimerIconStartWizzard(i, callback) {
   // Importieren notwendiger Variablen aus einer externen Datei
   var werte = require('./profiles/simulation/variables/Variablen');
@@ -661,16 +805,37 @@ let pidTimerIdshutdown = []; // Für das Abschalten der Temperatursteuerung
 const MAX_INDEX = 13; // Maximale Anzahl der speicherbaren Zustände
 const savedValues = {}; // Objekt zum Speichern von Zuständen für rAct1 und integral
 
-// Funktion zur Erstellung eines eindeutigen Schlüssels für die Speicherung von Werten.
-// 'rAct2' ist ein Temperaturwert, der gerundet wird, um Ganzzahligkeit zu sichern.
-// 'index' ist ein Zähler, der unterschiedliche Zustände bei gleichem 'rAct2'-Wert unterscheidet.
-// Der resultierende Schlüssel im Format "gerundeterWert-index" wird zur Identifikation
-// und Speicherung spezifischer Zustände in einem Objekt verwendet.
+/**
+ * Generiert einen eindeutigen Schlüssel für die Speicherung von Temperaturwerten.
+ * 
+ * Diese Funktion nimmt einen Temperaturwert und einen Index auf und erzeugt daraus einen eindeutigen Schlüssel.
+ * Der Temperaturwert wird zuerst gerundet, um Ganzzahligkeit zu gewährleisten. Anschließend wird dieser Wert
+ * mit einem Index kombiniert, um verschiedene Zustände bei gleichem Temperaturwert unterscheiden zu können.
+ * Der resultierende Schlüssel wird im Format "gerundeterWert-index" zurückgegeben und kann für die Identifikation
+ * und Speicherung spezifischer Zustände in einem Objekt verwendet werden.
+ * 
+ * @param {number} rAct2 - Der zu speichernde Temperaturwert.
+ * @param {number} index - Ein Zähler, der zur Unterscheidung verschiedener Zustände bei gleichem Temperaturwert dient.
+ * @returns {string} Ein eindeutiger Schlüssel im Format "gerundeterWert-index".
+ */
 function getSaveKey(rAct2, index) {
   return `${Math.round(rAct2)}-${index}`;
 }
 
-// PIDUP-Funktion zur Temperaturregelung für das Hochfahren
+/**
+ * PID-Regelungsfunktion zum Hochfahren der Temperatur.
+ * 
+ * Diese Funktion steuert das Hochfahren der Temperatur für eine bestimmte Prozesszone.
+ * Sie verwendet PID-Reglerparameter, um die Steuerungsgröße basierend auf dem Unterschied zwischen
+ * dem Sollwert und dem aktuellen Temperaturwert zu berechnen. Die Funktion verhindert die gleichzeitige
+ * Ausführung mit anderen Temperaturregelungsfunktionen, indem sie bestehende Timer für Herunterfahren und
+ * Abschalten der Temperatursteuerung löscht. Sie simuliert den Regelvorgang durch die Anwendung von
+ * PT1-Gliedern und speichert Zustände für zukünftige Regelvorgänge.
+ * 
+ * @param {number} i - Der Index der aktuellen Prozesszone.
+ * @param {Object} nameNodeId - Ein Objekt, das Node-IDs für die verschiedenen Variablen und Zustände enthält.
+ * @param {Object} serverValues - Ein Objekt, das aktuelle Werte für verschiedene Servervariablen speichert.
+ */
 function PIDUP(i, nameNodeId, serverValues) {
   // Einbinden notwendiger Variablen aus einer externen Datei
   var werte = require('./profiles/simulation/variables/Variablen');
@@ -767,7 +932,19 @@ function PIDUP(i, nameNodeId, serverValues) {
   calculateNextValue();
 }
 
-// PIDCOOLDOWN-Funktion zur Temperaturregelung für das Herunterfahren
+/**
+ * PID-Regelungsfunktion zum Herunterfahren der Temperatur.
+ * 
+ * Diese Funktion steuert das Herunterfahren der Temperatur für eine spezifische Prozesszone. Sie verwendet PID-Reglerparameter,
+ * um die Steuerungsgröße auf Basis des Unterschieds zwischen dem Sollwert und dem aktuellen Temperaturwert zu berechnen.
+ * Die Funktion löscht bestehende Timer für Temperaturerhöhung und -abschaltung, um Konflikte zu vermeiden.
+ * Zudem führt sie eine Simulation des Regelvorgangs durch, indem sie PT1-Glieder anwendet, und aktualisiert den Istwert
+ * der Temperatur kontinuierlich. Die Funktion berücksichtigt den aktuellen Systemzustand, um angemessene Sollwerte festzulegen.
+ * 
+ * @param {number} i - Der Index der aktuellen Prozesszone.
+ * @param {Object} nameNodeId - Ein Objekt, das Node-IDs für verschiedene Variablen und Zustände enthält.
+ * @param {Object} serverValues - Ein Objekt, das aktuelle Werte für verschiedene Servervariablen speichert.
+ */
 function PIDCOOLDOWN(i, nameNodeId, serverValues) {
   // Einbinden der notwendigen Variablen aus einer externen Datei
   var werte = require('./profiles/simulation/variables/Variablen')
@@ -849,7 +1026,19 @@ function PIDCOOLDOWN(i, nameNodeId, serverValues) {
   calculateNextValue();
 }
 
-// PIDSHUTDOWN-Funktion für die Temperaturregelung zum Abschalten des Systems
+/**
+ * PID-Regelungsfunktion für das Abschalten des Systems.
+ * 
+ * Diese Funktion steuert den Prozess des Abschaltens der Temperatursteuerung für eine spezifische Prozesszone.
+ * Sie verwendet PID-Reglerparameter, um die Steuerungsgröße auf Basis des Unterschieds zwischen einem festgelegten 
+ * Sollwert und dem aktuellen Temperaturwert zu berechnen. Die Funktion beendet jegliche laufende Temperaturerhöhung 
+ * oder -senkung, indem sie die entsprechenden Timer löscht. Sie führt eine Simulation des Regelvorgangs durch und 
+ * aktualisiert den Istwert der Temperatur kontinuierlich. Der Sollwert für das Abschalten wird auf einen festen Wert gesetzt.
+ * 
+ * @param {number} i - Der Index der aktuellen Prozesszone.
+ * @param {Object} nameNodeId - Ein Objekt, das Node-IDs für verschiedene Variablen und Zustände enthält.
+ * @param {Object} serverValues - Ein Objekt, das aktuelle Werte für verschiedene Servervariablen speichert.
+ */
 function PIDSHUTDOWN(i, nameNodeId, serverValues) {
   // Einbinden notwendiger Variablen aus einer externen Datei
   var werte = require('./profiles/simulation/variables/Variablen');
@@ -865,7 +1054,7 @@ function PIDSHUTDOWN(i, nameNodeId, serverValues) {
   const Ki = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTi.nodeId.value];
   const Kd = serverValues[werte.data[i].SU3111_ZeExtruder_Parameter_udtCmPzPid_udtHeat_udtPid_rTd.nodeId.value];
   // Festlegung von Zeitschritt (dt) und Zeitkonstanten (T1, T2) für die Regelstrecken-Simulation
-  const dt=0.01
+  const dt = 0.01
   const T1 = 50; // Zeitkonstante für das erste PT1-Glied der Regelstrecke
   const T2 = 50; // Zeitkonstante für das zweite PT1-Glied der Regelstrecke
   const K1 = 1; // Verstärkungsfaktor für das erste PT1-Glied
@@ -920,7 +1109,19 @@ function PIDSHUTDOWN(i, nameNodeId, serverValues) {
   // Start der Berechnung
   calculateNextValue();
 }
-// Definition der Funktion 'simulateScrewSpeed', die zur Simulation der Drehzahl eines Extruders dient.
+
+/**
+ * Simuliert die Drehzahl eines Extruders basierend auf Sigmoid-Kurven.
+ * 
+ * Diese Funktion simuliert die Anpassung der Drehzahl eines Extruders von einem Startwert zu einem Zielwert.
+ * Sie verwendet eine Sigmoid-Funktion, um eine gleichmäßige und realistische Beschleunigung und Verzögerung der Drehzahl zu erreichen.
+ * Die Funktion berücksichtigt verschiedene Faktoren wie Rampenzeit, Durchsatz und spezifische Rate, um die Zielgeschwindigkeit
+ * anzupassen. Die Simulation wird in regelmäßigen Intervallen durchgeführt und stoppt, sobald der Zielwert erreicht ist.
+ * 
+ * Die innere Funktion 'simulateScrewRamp' wird periodisch aufgerufen und berechnet die aktuelle Drehzahl
+ * basierend auf der verstrichenen Zeit und den PID-Parametern. Die Funktion passt die Drehzahl kontinuierlich
+ * an, bis der Zielwert erreicht ist oder die Abbruchbedingungen erfüllt sind.
+ */
 function simulateScrewSpeed() {
   // Importieren der Variablendefinitionen aus einer externen Datei für Zugriff auf verschiedene Variablenwerte.
   var werte = require('./profiles/simulation/variables/Variablen');
@@ -984,7 +1185,18 @@ let intervalIds = {
   updateFeederWeight: []
 };
 
-// Definition der Funktion simulateFeederSingleMode für einen einzelnen Feeder.
+/**
+ * Simuliert den Betrieb eines einzelnen Feeders in einem Extrudersystem.
+ * 
+ * Diese Funktion steuert die Durchsatzanpassung eines Feeders, indem sie dessen Durchsatz schrittweise erhöht oder verringert,
+ * um einen vorgegebenen Zielwert zu erreichen. Sie verwendet ein Intervall, um die Durchsatzänderungen regelmäßig zu aktualisieren.
+ * Die Funktion berücksichtigt auch globale Stoppsignale und den Status des Feeders, um die Simulation entsprechend zu steuern.
+ * Wenn der Feeder ausgeschaltet ist oder der Ziel-Durchsatz erreicht wird, wird das Intervall gestoppt.
+ * 
+ * @param {number} i - Der Index des zu simulierenden Feeders.
+ * @param {Object} nameNodeId - Ein Objekt, das Node-IDs für verschiedene Variablen und Zustände enthält.
+ * @param {Object} serverValues - Ein Objekt, das aktuelle Werte für verschiedene Servervariablen speichert.
+ */
 function simulateFeederSingleMode(i, nameNodeId, serverValues) {
   // Prüft, ob für den angegebenen Feeder (identifiziert durch 'i') bereits ein Intervall läuft.
   if (intervalIds.simulateFeederSingle[i]) {
@@ -1035,7 +1247,19 @@ function simulateFeederSingleMode(i, nameNodeId, serverValues) {
 }
 
 
-// Definition der Funktion 'simulateFeederLineMode' für den Line Mode eines Feeders.
+/**
+ * Simuliert den Betrieb eines einzelnen Feeders im Line Mode eines Extrudersystems.
+ * 
+ * Diese Funktion kontrolliert die Anpassung des Durchsatzes eines einzelnen Feeders innerhalb einer Linienkonfiguration,
+ * um einen vorgegebenen Zielwert zu erreichen. Der Zielwert wird basierend auf dem Gesamtdurchsatz der Feederlinie und dem
+ * prozentualen Anteil des spezifischen Feeders berechnet. Die Funktion verwendet ein Intervall, um die Durchsatzänderungen
+ * regelmäßig zu aktualisieren. Sie berücksichtigt globale Stoppsignale und den Status des Feeders, um die Simulation
+ * entsprechend zu steuern. Das Intervall wird gestoppt, wenn der Feeder ausgeschaltet ist oder der Ziel-Durchsatz erreicht wird.
+ * 
+ * @param {number} i - Der Index des zu simulierenden Feeders im Line Mode.
+ * @param {Object} nameNodeId - Ein Objekt, das Node-IDs für verschiedene Variablen und Zustände enthält.
+ * @param {Object} serverValues - Ein Objekt, das aktuelle Werte für verschiedene Servervariablen speichert.
+ */
 function simulateFeederLineMode(i, nameNodeId, serverValues) {
   // Prüft, ob bereits ein Intervall für den aktuellen Feeder (identifiziert durch 'i') läuft.
   if (intervalIds.simulateFeederLine[i]) {
@@ -1090,7 +1314,18 @@ function simulateFeederLineMode(i, nameNodeId, serverValues) {
 
 
 
-// Diese Funktion aktualisiert kontinuierlich das Füllniveau eines Feeders in der Simulation.
+/**
+ * Simuliert kontinuierlich die Verringerung des Füllniveaus eines Feeders in einem Extrudersystem.
+ * 
+ * Diese Funktion reduziert das Füllniveau eines spezifischen Feeders basierend auf der aktuellen Durchsatzrate.
+ * Sie berechnet das neue Füllniveau in regelmäßigen Intervallen und aktualisiert die entsprechenden Werte in den Serverdaten.
+ * Die Funktion berücksichtigt auch Abbruchbedingungen wie den Stop-Button in der HMI, das Erreichen eines leeren Füllstandes
+ * oder das Ausschalten des Feeders, um das Intervall zu stoppen und die Simulation zu beenden. 
+ * 
+ * @param {number} i - Der Index des zu simulierenden Feeders.
+ * @param {Object} nameNodeId - Ein Objekt, das Node-IDs für verschiedene Variablen und Zustände enthält.
+ * @param {Object} serverValues - Ein Objekt, das aktuelle Werte für verschiedene Servervariablen speichert.
+ */
 function simulateFeederFillLevel(i, nameNodeId, serverValues) {
   // Überprüft, ob für diesen Feeder bereits ein Intervall aktiv ist, um Doppelungen zu vermeiden.
   if (intervalIds.updateFeederWeight[i]) {
@@ -1141,13 +1376,25 @@ function simulateFeederFillLevel(i, nameNodeId, serverValues) {
     }
   }
   // Legt ein neues Intervall an, das updateFeederWeight jede Minute aufruft.
-  let intervalId = setInterval(updateFeederWeight, 600);
+  let intervalId = setInterval(updateFeederWeight, 60000);
   // Speichert die ID des Intervalls, damit es später gestoppt werden kann.
   intervalIds.updateFeederWeight[i] = intervalId;
 }
 
 
-// Funktion zur Simulation der Durchsatzrampensteuerung für einen Feeder
+/**
+ * Simuliert die Rampensteuerung des Durchsatzes für einen Feeder im Line Mode eines Extrudersystems.
+ * 
+ * Diese Funktion steuert die schrittweise Anpassung des Durchsatzes eines Feeders an einen Zielwert, der auf Basis des Gesamtdurchsatzes
+ * und des prozentualen Anteils des Feeders berechnet wird. Die Funktion verwendet ein Intervall, um die Durchsatzänderungen
+ * regelmäßig zu aktualisieren. Sie berücksichtigt globale Stoppsignale und den Modus des Feeders, um die Simulation
+ * entsprechend zu steuern. Das Intervall wird gestoppt, wenn der Feeder ausgeschaltet ist, der Ziel-Durchsatz erreicht wird
+ * oder über globale Steuerungssignale ein Stopp der Rampensteuerung signalisiert wird.
+ * 
+ * @param {number} i - Der Index des zu simulierenden Feeders im Line Mode.
+ * @param {Object} nameNodeId - Ein Objekt, das Node-IDs für verschiedene Variablen und Zustände enthält.
+ * @param {Object} serverValues - Ein Objekt, das aktuelle Werte für verschiedene Servervariablen speichert.
+ */
 function simulateFeederLineModeRamp(i, nameNodeId, serverValues) {
   // Überprüfen, ob bereits ein Intervall für diesen Feeder existiert
   // Verhindert das mehrfache Starten des Intervalls für denselben Feeder
@@ -1232,7 +1479,16 @@ function simulateFeederLineModeRamp(i, nameNodeId, serverValues) {
 }
 
 
-// Diese Funktion verteilt den gesamten Durchsatz auf die im Line Mode aktiven Feeder.
+/**
+ * Verteilt den Gesamtdurchsatz auf die im Line Mode aktiven Feeder und berechnet deren prozentualen Anteil.
+ * 
+ * Diese Funktion ermittelt den Gesamtdurchsatz eines Extrudersystems und verteilt diesen auf mehrere im Line Mode aktive Feeder.
+ * Sie berechnet den prozentualen Anteil jedes Feeders am Gesamtdurchsatz. Wenn nur ein Feeder im Line Mode ist, wird ihm der gesamte
+ * Durchsatz zugewiesen. Bei mehreren Feedern im Line Mode wird der Durchsatz basierend auf den eingestellten Werten und
+ * der Anzahl der aktiven Feeder neu berechnet und verteilt. Die Funktion aktualisiert die Serverwerte, um die prozentuale
+ * Verteilung des Durchsatzes auf die einzelnen Feeder widerzuspiegeln.
+ * 
+ */
 function PercentagedistributionFeederLineMode() {
   // Summe der Durchsätze wird initialisiert, um später die Gesamtdurchsätze zu berechnen.
   let sum = 0;
@@ -1305,7 +1561,15 @@ function PercentagedistributionFeederLineMode() {
 
 
 
-// Definition der Funktion 'GearboxOilLubricationFollowUpTimer' für die Nachlaufzeit der Getriebeölschmierung.
+/**
+ * Verwaltet einen Nachlauf-Timer für die Getriebeölschmierung eines Extrudersystems.
+ * 
+ * Diese Funktion initialisiert und startet einen Countdown-Timer für die Nachlaufphase der Getriebeölschmierung.
+ * Der Timer beginnt mit einem voreingestellten Wert und zählt jede Sekunde herunter. Während dieser Nachlaufzeit
+ * wird das Getriebeöl weiterhin geschmiert, um einen optimalen Schutz des Getriebes zu gewährleisten. Nach Ablauf des Timers
+ * wird der Zustand der Schmierung aktualisiert, und es wird eine kurze Verzögerung eingeführt, bevor der Zustand zurückgesetzt wird.
+ * Diese Funktion ist entscheidend für die Aufrechterhaltung der Lebensdauer und Leistungsfähigkeit des Extruders.
+ */
 function GearboxOilLubricationFollowUpTimer() {
   // Protokollierung in der Konsole, dass die Funktion ausgeführt wird.
   console.log("In der Funktion GearboxOilLubricationFollowUpTimer");
@@ -1344,7 +1608,14 @@ function GearboxOilLubricationFollowUpTimer() {
 
 
 
-// Definition der Funktion 'GearboxOilLubricationTimerPreRun' zur Verwaltung des PreRun-Timers für die Getriebeölschmierung.
+/**
+ * Verwaltet einen PreRun-Timer für die Getriebeölschmierung eines Extrudersystems.
+ * 
+ * Diese Funktion initialisiert und startet einen Countdown-Timer, der für die Getriebeölschmierung vor dem Start des Extruders benötigt wird.
+ * Der Timer beginnt mit einem voreingestellten Wert und zählt jede Sekunde herunter. Der aktuelle Wert des Timers wird kontinuierlich
+ * in den Serverdaten aktualisiert. Sobald der Timer den Wert 0 erreicht, wird er gestoppt, und ein entsprechender Zustand im System
+ * wird gesetzt, um anzuzeigen, dass die Getriebeölschmierung abgeschlossen ist und der Extruder startbereit ist.
+ */
 function GearboxOilLubricationTimerPreRun() {
 
   // Importieren der Variablendefinitionen aus einer externen Datei.
@@ -1380,22 +1651,39 @@ function GearboxOilLubricationTimerPreRun() {
 let previousRAct = {};
 let consecutiveCounter = {};
 
+/**
+ * Aktualisiert die Statusanzeigen in der HMI basierend auf aktuellen Werten und Toleranzbereichen.
+ * 
+ * Diese Funktion liest die aktuellen Werte und Toleranzbereiche für verschiedene Parameter des Extrudersystems aus den Serverdaten.
+ * Sie überprüft die Toleranzbereiche und aktualisiert die visuellen Anzeigen in der HMI entsprechend.
+ * Die Funktion berücksichtigt sowohl absolute als auch relative Toleranzen und verändert die Anzeigen für Tendenzen
+ * und Toleranzüberschreitungen. Sie speichert den aktuellen Wert für zukünftige Vergleiche und passt die Statusbits (`dwStat`)
+ * basierend auf den gelesenen und berechneten Werten an.
+ * 
+ * @param {number} i - Der Index des zu aktualisierenden Elements.
+ * @param {string} NameVariabel - Der Name der zu überwachenden Variablen.
+ */
+/*Beispielaufruf der Funktion
+funktionen.updatedwstat(undefined, "SU3111_ZeExtruder_Hmi_udtEmExtruderDriveCtrl_rScrewSpeed");
+funktionen.updatedwstat(i, "SU3111_ZeExtruder_Hmi_udtCmMeltPress_rPress")
+*/
+
 function updatedwstat(i, NameVariabel) {
- // Importiere erforderliche Werte aus einer externen Datei.
- var werte = require('./profiles/simulation/variables/Variablen');
- var rActKey; // Schlüssel für den Zugriff auf den aktuellen Wert.
- var data; // Variable für die Speicherung der Daten.
+  // Importiere erforderliche Werte aus einer externen Datei.
+  var werte = require('./profiles/simulation/variables/Variablen');
+  var rActKey; // Schlüssel für den Zugriff auf den aktuellen Wert.
+  var data; // Variable für die Speicherung der Daten.
 
   // Erstelle den Schlüssel basierend auf dem Präfix, falls 'i' definiert ist.
   if (typeof i !== "undefined") {
-    
+
     rActKey = i + "_" + "." + NameVariabel; // Schlüssel basierend auf dem Präfix erstellen
     data = werte.data[i];
   } else {
-       rActKey = "." + NameVariabel;
+    rActKey = "." + NameVariabel;
     data = werte.data;
   }
- // Lese aktuelle Werte und Toleranzwerte aus den Serverdaten.
+  // Lese aktuelle Werte und Toleranzwerte aus den Serverdaten.
   var rAct = serverValues[data[NameVariabel + "_rAct"].nodeId.value];
   let rSetTolMin = serverValues[data[NameVariabel + "_rSetTolMin"].nodeId.value];
   let rSetTolMinMin = serverValues[data[NameVariabel + "_rSetTolMinMin"].nodeId.value];
@@ -1404,22 +1692,22 @@ function updatedwstat(i, NameVariabel) {
   let set = serverValues[data[NameVariabel + "_rSet"].nodeId.value];
   let dwStat = serverValues[data[NameVariabel + "_dwStat"].nodeId.value];
 
-   // Überprüfe und bearbeite dwStat, wenn die Toleranzüberwachung inaktiv ist.
+  // Überprüfe und bearbeite dwStat, wenn die Toleranzüberwachung inaktiv ist.
   if (!(dwStat & (1 << sharedState.dwStat.Tolerance_monitoring_is_active))) { // Wenn das Bit für Tolerance Monitoring aus,  dann werden die Farben rot und orange "gelöscht"
-     // Setze die Bits für MaxMax und Max Toleranzüberschreitungen zurück.
+    // Setze die Bits für MaxMax und Max Toleranzüberschreitungen zurück.
     dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
     dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_Max);
   }
 
- // Behandelt den Fall, wenn der aktuelle Wert (rAct) gleich 0 ist.
+  // Behandelt den Fall, wenn der aktuelle Wert (rAct) gleich 0 ist.
   if (rAct === 0) {
-     // Setzt verschiedene Bits zurück, die Tendenz und Toleranzüberschreitungen anzeigen.
+    // Setzt verschiedene Bits zurück, die Tendenz und Toleranzüberschreitungen anzeigen.
     dwStat &= ~(1 << sharedState.dwStat.Actual_value_tendence_is_down); // Pfeil runter wird gelöscht
     dwStat &= ~(1 << sharedState.dwStat.Actual_value_tendence_is_up); // Pfeil hoch wird gelöscht
     dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_MaxMax); // Löschen der Toleranzzonen MaxMax 
     dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_Max); // Löschen der Toleranzzonen Max
   } else {
-     // Prüft und aktualisiert Tendenzinformationen basierend auf früheren Werten.
+    // Prüft und aktualisiert Tendenzinformationen basierend auf früheren Werten.
     if (typeof previousRAct[rActKey] !== 'undefined') {
       // Vergleicht aktuellen Wert mit dem vorherigen und aktualisiert dwStat und Zähler.
       if (rAct > previousRAct[rActKey]) {
@@ -1432,8 +1720,8 @@ function updatedwstat(i, NameVariabel) {
         dwStat &= ~(1 << sharedState.dwStat.Actual_value_tendence_is_up);// Löscht Bit für aufsteigende Tendenz.
       } else {
         consecutiveCounter[rActKey] = (consecutiveCounter[rActKey] || 0) + 1;// Erhöht Zähler bei gleichbleibendem Wert.
-          // Wenn der Wert für mehr als 20 Iterationen gleich bleibt, werden die Tendenzbits zurückgesetzt.
-        if (consecutiveCounter[rActKey] > 20) { 
+        // Wenn der Wert für mehr als 20 Iterationen gleich bleibt, werden die Tendenzbits zurückgesetzt.
+        if (consecutiveCounter[rActKey] > 20) {
           dwStat &= ~(1 << sharedState.dwStat.Actual_value_tendence_is_down);  // Löscht das Bit für absteigende Tendenz.
           dwStat &= ~(1 << sharedState.dwStat.Actual_value_tendence_is_up); // Löscht das Bit für aufsteigende Tendenz.
         }
@@ -1442,11 +1730,11 @@ function updatedwstat(i, NameVariabel) {
   }
   // Behandlung von absoluten Toleranzen: Setzt entsprechende Bits basierend auf Toleranzüberschreitungen.
   if ((dwStat & (1 << sharedState.dwStat.Tolerance_monitoring_is_active)) && (dwStat & (1 << sharedState.dwStat.Tolreances_are_absolute))) {
-  // Prüft und setzt Bits für unterschiedliche Toleranzüberschreitungen.
+    // Prüft und setzt Bits für unterschiedliche Toleranzüberschreitungen.
     if (rSetTolMin === 0 && rAct < rSetTolMinMin && rAct < rSetTolMax && rAct < rSetTolMaxMax) {
       dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_Max);
-      dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_MaxMax); 
-          }
+      dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
+    }
     if (rAct === 0) {
       dwStat &= ~(1 << sharedState.dwStat.Actual_value_tendence_is_down);
       dwStat &= ~(1 << sharedState.dwStat.Actual_value_tendence_is_up);
@@ -1455,32 +1743,32 @@ function updatedwstat(i, NameVariabel) {
     }
     if (rAct < rSetTolMin && rAct < rSetTolMinMin && rAct < rSetTolMax && rAct < rSetTolMaxMax) {
       dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_Max);
-      dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_MaxMax); 
-          }
+      dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
+    }
     if (rAct > rSetTolMin && rSetTolMin > 0 && rAct < rSetTolMinMin && rAct < rSetTolMax && rAct < rSetTolMaxMax) {
       dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
       dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_Max);
-         }
+    }
 
     if (rAct > rSetTolMinMin && rAct < rSetTolMax && rAct < rSetTolMaxMax) {
       dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
       dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_Max);
-         }
+    }
 
     if (rAct > rSetTolMin && rAct > rSetTolMinMin && rAct < rSetTolMaxMax && rAct > rSetTolMax) {
       dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
       dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_Max);
-          }
+    }
     if (rAct > rSetTolMin && rAct > rSetTolMinMin && rAct > rSetTolMaxMax && rAct > rSetTolMax) {
       dwStat &= ~(1 << sharedState.dwStat.Out_of_tolerance_Max);
       dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
-     
+
     }
   }
 
-// Behandlung von relativen Toleranzen
+  // Behandlung von relativen Toleranzen
   if ((dwStat & (1 << sharedState.dwStat.Tolerance_monitoring_is_active)) && !(dwStat & (1 << sharedState.dwStat.Tolreances_are_absolute))) {
-      // Behandelt den Fall relativer Toleranzen und setzt entsprechende Bits in Relation zum Set-Wert.
+    // Behandelt den Fall relativer Toleranzen und setzt entsprechende Bits in Relation zum Set-Wert.
     if (rAct < set - rSetTolMinMin) {
       dwStat |= (1 << sharedState.dwStat.Out_of_tolerance_MaxMax);
     }
@@ -1500,11 +1788,25 @@ function updatedwstat(i, NameVariabel) {
     }
 
   }
- // Speichert den aktuellen Wert von rAct für zukünftige Vergleiche.
+  // Speichert den aktuellen Wert von rAct für zukünftige Vergleiche.
   previousRAct[rActKey] = rAct;
-   // Aktualisiert den dwStat-Wert im Server.
+  // Aktualisiert den dwStat-Wert im Server.
   serverValues[data[NameVariabel + "_dwStat"].nodeId.value] = dwStat
 };
+
+
+/**
+ * Verwaltet die Zustände eines Systems und ermöglicht deren Aktualisierung.
+ * 
+ * Diese Klasse repräsentiert eine Zustandsmaschine mit verschiedenen Zuständen wie 'IDLE', 'RUNNING', 'STOPPED' usw.
+ * Jeder Zustand ist durch einen Namen und einen Bitwert gekennzeichnet. Die Klasse bietet eine Methode `setState`,
+ * um den Zustand eines bestimmten Elements im System zu aktualisieren. Die Aktualisierung erfolgt durch das Setzen
+ * des entsprechenden Bitwerts in einem serverbasierten Wertespeicher.
+ * 
+ * Methoden:
+ *  - setState(variableName, stateName): Aktualisiert den Zustand eines Elements im System. Die Methode nimmt den
+ *    Namen der Variablen und den Namen des Zielzustands entgegen und setzt den entsprechenden Bitwert im Serverwert.
+ */
 
 class StateMachine {
   constructor() {
@@ -1531,6 +1833,19 @@ class StateMachine {
   }
 }
 
+
+/**
+ * Verwaltet die Zustände einer Navigationsleiste in einem System.
+ * 
+ * Diese Klasse repräsentiert eine Zustandsmaschine speziell für die Navigationsleiste eines Systems, mit Zuständen wie 'STOPPED', 
+ * 'RUNNING', 'WARNING', 'ERROR' und 'CRITICAL'. Jeder Zustand ist durch einen Namen und einen Bitwert gekennzeichnet. Die Klasse
+ * bietet eine Methode `setState`, um den Zustand der Navigationsleiste zu aktualisieren. Die Aktualisierung erfolgt durch das
+ * Setzen des entsprechenden Bitwerts in einem serverbasierten Wertespeicher.
+ * 
+ * Methoden:
+ *  - setState(variableName, stateName): Aktualisiert den Zustand der Navigationsleiste. Die Methode nimmt den Namen der Variablen
+ *    und den Namen des Zielzustands entgegen und setzt den entsprechenden Bitwert im Serverwert.
+ */
 class StateMachineNavigationBar {
   constructor() {
     this.states = {
