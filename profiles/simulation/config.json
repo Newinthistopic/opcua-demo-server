@@ -1,0 +1,81 @@
+{
+  "opcua"       : {
+    "serverPort"  : 48010,
+    "resourcePath": "/WebIQ/DemoServer",
+    "browseName"  : "deviceSet",
+    "productName" : "WebIQ OPC UA Demo Server",
+    "buildNumber" : "1",
+    "buildDate"   : "2019-08-23 08:38:14"
+  },
+  "mqtt"        : {
+    "active"           : false,
+    "brokerUrl"        : "mqtt://mqtt",
+    "subscriptionTopic": "#"
+  },
+  "mqttMappings": {
+    "rooms/lab/climate"                  : [
+      {
+        "$..payload[?(@.type=='temperature')].value": {
+          "itemName"        : "lab.temperature",
+          "opcDataType"     : "Double",
+          "setTopic"        : null,
+          "setPayload"      : null,
+          "setFunction"     : null,
+          "setQos"          : null,
+          "setRetain"       : null,
+          "callbackFunction": null
+        },
+        "$..payload[?(@.type=='humidity')].value"   : {
+          "itemName"        : "lab.humidity",
+          "opcDataType"     : "Double",
+          "setTopic"        : null,
+          "setPayload"      : null,
+          "setFunction"     : null,
+          "setQos"          : null,
+          "setRetain"       : null,
+          "callbackFunction": null
+        },
+        "$..ts"                                     : {
+          "itemName"        : "lab.lastUpdateTs",
+          "opcDataType"     : "Double",
+          "setTopic"        : null,
+          "setPayload"      : null,
+          "setFunction"     : null,
+          "setQos"          : null,
+          "setRetain"       : null,
+          "callbackFunction": null
+        }
+      }
+    ],
+    "acmeinc/product/airvents/0012391234": [
+      {
+        "$..currentValue": {
+          "itemName"        : "lab.airVentPercentage",
+          "opcDataType"     : "Double",
+          "setTopic"        : "acmeinc/product/airvents/0012391234/setValue",
+          "setPayload"      : null,
+          "setFunction"     : "setAirVentPercentage",
+          "setQos"          : 1,
+          "setRetain"       : false,
+          "callbackFunction": null
+        }
+      }
+    ],
+    "acmeinc/product/airvents/0012391235": [
+      {
+        "$..currentValue": {
+          "itemName"        : "lab.airVentPercentage2",
+          "opcDataType"     : "Double",
+          "setTopic"        : "acmeinc/product/airvents/0012391235/setValue",
+          "setPayload"      : "{\"value\":${mqttValues.lab.airVentPercentage2}, \"anotherVariable\":${serverValues.saw}}",
+          "setFunction"     : null,
+          "setQos"          : 1,
+          "setRetain"       : false,
+          "callbackFunction": null
+        }
+      }
+    ]
+  },
+  "verbose"     : true,
+  "debugMqtt"   : false
+}

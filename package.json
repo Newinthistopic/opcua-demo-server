@@ -1,0 +1,30 @@
+{
+  "name": "opcua-demo-server",
+  "version": "1.0.0",
+  "description": "This repository contains a small OPC-UA Server implemented in JavaScript (Node.js) using\r the [node-opcua](https://github.com/node-opcua) library. It provides a few\r static as well as dynamic variables and methods.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "jsonpath": "1.0.2",
+    "mathjs": "^11.8.2",
+    "mqtt": "3.0.0",
+    "node-opcua": "^2.4.4",
+    "xlsx": "^0.18.5"
+  },
+  "author": "Smart HMI GmbH",
+  "license": "SEE LICENSE IN license.txt",
+  
+  "pkg": {
+    "assets": [
+      "node_modules/**/*",
+      "node_modules/node-opcua-nodesets/nodesets/**/*",
+"node_modules/node-opcua-nodesets/nodesets/*.xml"
+    ],
+    "scripts": [
+      "./**/*.js"
+    ]
+  }
+}
