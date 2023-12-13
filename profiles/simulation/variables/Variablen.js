@@ -1100,12 +1100,12 @@ function run1(addressSpace, device) {
     var SU3111_ZeExtruder_Config_udtCmMeltPress = functions.createCustomVariableFloat(undefined, "SU3111_ZeExtruder_Config_udtCmMeltPress", SU3111_ZeExtruder_Config, "udtCmMeltPress", "SU3111_ZeExtruder.Config", "udtCmMeltPress", undefined, undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Config_udtCmMeltPressGet, SetGetlogic.SU3111_ZeExtruder_Config_udtCmMeltPressSet)
 
 
-    //var data = {};
+  
 
-    for (var i = 0; i < 2; i++) {
-        //  data[i] = {};
+    for (var i = 1; i < 14; i++) {
+        
 
-
+        data[i].SU3111_ZeExtruder_Config_udtCmMeltPressLoop = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Config_udtCmMeltPress_dwConfig", SU3111_ZeExtruder_Config_udtCmMeltPress, i.toString(), "SU3111_ZeExtruder.Config", "udtCmMeltPress", undefined, undefined, undefined, undefined,undefined)
         data[i].SU3111_ZeExtruder_Config_udtCmMeltPress_dwConfig = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Config_udtCmMeltPress_dwConfig", data[i].SU3111_ZeExtruder_Config_udtCmMeltPressLoop, "dwConfig", "SU3111_ZeExtruder.Config", "udtCmMeltPress", "dwConfig", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Config_udtCmMeltPress_dwConfigGet, SetGetlogic.SU3111_ZeExtruder_Config_udtCmMeltPress_dwConfigSet)
         data[i].SU3111_ZeExtruder_Config_udtCmMeltPress_rPressRange = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Config_udtCmMeltPress_rPressRange", data[i].SU3111_ZeExtruder_Config_udtCmMeltPressLoop, "rPressRange", "SU3111_ZeExtruder.Config", "udtCmMeltPress", "rPressRange", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Config_udtCmMeltPress_rPressRangeGet, SetGetlogic.SU3111_ZeExtruder_Config_udtCmMeltPress_rPressRangeSet)
         data[i].SU3111_ZeExtruder_Config_udtCmMeltPress_rPressRange_Max = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Config_udtCmMeltPress_rPressRange_Max", data[i].SU3111_ZeExtruder_Config_udtCmMeltPress_rPressRange, "Max", "SU3111_ZeExtruder.Config", "udtCmMeltPress", "rPressRange", "Max", undefined, SetGetlogic.SU3111_ZeExtruder_Config_udtCmMeltPress_rPressRange_MaxGet, SetGetlogic.SU3111_ZeExtruder_Config_udtCmMeltPress_rPressRange_MaxSet)
@@ -1125,10 +1125,10 @@ function run1(addressSpace, device) {
     var SU3111_ZeExtruder_Config_udtCmMeltTemp = functions.createCustomVariableFloat(undefined, "SU3111_ZeExtruder_Config_udtCmMeltTemp", SU3111_ZeExtruder_Config, "udtCmMeltTemp", "SU3111_ZeExtruder.Config", "udtCmMeltTemp", undefined, undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Config_udtCmMeltTempGet, SetGetlogic.SU3111_ZeExtruder_Config_udtCmMeltTempSet)
 
 
-    //var data = {};
+    
 
-    for (var i = 0; i < 2; i++) {
-        //  data[i] = {};
+    for (var i = 0; i < 14; i++) {
+        
         data[i].SU3111_ZeExtruder_Config_udtCmMeltTempLoop = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Config_udtCmMeltTempLoop", SU3111_ZeExtruder_Config_udtCmMeltTemp, i.toString(), "SU3111_ZeExtruder.Config", "udtCmMeltTemp", undefined, undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Config_udtCmMeltTempLoopGet, SetGetlogic.SU3111_ZeExtruder_Config_udtCmMeltTempLoopSet)
         data[i].SU3111_ZeExtruder_Config_udtCmMeltTemp_dwConfig = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Config_udtCmMeltTemp_dwConfig", data[i].SU3111_ZeExtruder_Config_udtCmMeltTempLoop, "dwConfig", "SU3111_ZeExtruder.Config", "udtCmMeltTemp", "dwConfig", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Config_udtCmMeltTemp_dwConfigGet, SetGetlogic.SU3111_ZeExtruder_Config_udtCmMeltTemp_dwConfigSet)
         data[i].SU3111_ZeExtruder_Config_udtCmMeltTemp_udPos = functions.createCustomVariableFloat(i, "SU3111_ZeExtruder_Config_udtCmMeltTemp_udPos", data[i].SU3111_ZeExtruder_Config_udtCmMeltTempLoop, "udPos", "SU3111_ZeExtruder.Config", "udtCmMeltTemp", "udPos", undefined, undefined, SetGetlogic.SU3111_ZeExtruder_Config_udtCmMeltTemp_udPosGet, SetGetlogic.SU3111_ZeExtruder_Config_udtCmMeltTemp_udPosSet)
